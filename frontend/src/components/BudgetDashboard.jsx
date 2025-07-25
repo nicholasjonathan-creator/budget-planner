@@ -51,6 +51,15 @@ const BudgetDashboard = () => {
     return transactionDate.getMonth() === selectedMonth && transactionDate.getFullYear() === selectedYear;
   });
 
+  console.log('Debug info:', {
+    selectedMonth,
+    selectedYear,
+    totalTransactions: transactions.length,
+    currentMonthTransactions: currentMonthTransactions.length,
+    sampleTransaction: transactions[0],
+    sampleFilteredTransaction: currentMonthTransactions[0]
+  });
+
   const totals = calculateCategoryTotals(currentMonthTransactions);
   const totalIncome = currentMonthTransactions
     .filter(t => t.type === 'income')
