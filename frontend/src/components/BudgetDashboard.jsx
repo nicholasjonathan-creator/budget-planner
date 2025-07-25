@@ -27,12 +27,16 @@ const BudgetDashboard = () => {
       setTransactions(JSON.parse(savedTransactions));
     } else {
       setTransactions(mockTransactions);
+      // Save mock data to localStorage for persistence
+      localStorage.setItem('budget_transactions', JSON.stringify(mockTransactions));
     }
     
     if (savedBudgetLimits) {
       setBudgetLimits(JSON.parse(savedBudgetLimits));
     } else {
       setBudgetLimits(mockBudgetLimits);
+      // Save mock data to localStorage for persistence
+      localStorage.setItem('budget_limits', JSON.stringify(mockBudgetLimits));
     }
   }, []);
 
