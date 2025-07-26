@@ -64,6 +64,20 @@ const BudgetDashboard = () => {
       setCategoryTotals(totalsData);
       setFailedSMSCount(failedSMSData.success ? failedSMSData.failed_sms.length : 0);
       
+      // Detect multi-currency transactions (transactions with non-INR currencies)
+      const nonINRTransactions = transactionsData.filter(transaction => {
+        // Check if transaction has currency information in raw_data or if description/merchant suggests foreign currency
+        const hasNonINRCurrency = transaction.raw_data?.currency && transaction.raw_data.currency !== 'INR' ||
+                                  transaction.description?.includes('$') || 
+                                  transaction.description?.includes('USD') ||
+                                  transaction.description?.includes('EUR') ||
+                                  transaction.description?.includes('€') ||
+                                  transaction.merchant?.includes('$');
+        return hasNonINRCurrency;
+      });
+      
+      setMultiCurrencyTransactions(nonINRTransactions);
+      
     } catch (error) {
       console.error('Error loading data:', error);
       toast({
