@@ -29,10 +29,15 @@ class TransactionService:
             logger.error(f"Error creating transaction: {e}")
             raise
     
-    async def get_transactions(self, month: int = None, year: int = None) -> List[Transaction]:
+    async def get_transactions(self, month: int = None, year: int = None, user_id: str = None) -> List[Transaction]:
         """Get transactions by month/year"""
         try:
             query = {}
+            
+            # Filter by user_id if provided
+            if user_id:
+                query['user_id'] = user_id
+                
             if month is not None and year is not None:
                 # Frontend sends 0-indexed months (0=January, 6=July)
                 # Convert to 1-indexed for datetime (1=January, 7=July)
