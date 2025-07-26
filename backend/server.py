@@ -412,6 +412,10 @@ async def clear_all_sms():
         failed_sms_collection = db.failed_sms
         failed_result = await failed_sms_collection.delete_many({})
         
+        # Clear SMS transactions collection (this contains the actual failed SMS)
+        sms_transactions_collection = db.sms_transactions
+        sms_result = await sms_transactions_collection.delete_many({})
+        
         # Clear all SMS transactions (transactions with source = 'sms' or 'sms_manual')
         transactions_collection = db.transactions
         trans_result = await transactions_collection.delete_many({
@@ -426,6 +430,7 @@ async def clear_all_sms():
             "success": True,
             "message": "ALL SMS data cleared successfully",
             "deleted_failed_sms": failed_result.deleted_count,
+            "deleted_sms_transactions": sms_result.deleted_count,
             "deleted_transactions": trans_result.deleted_count
         }
     except Exception as e:
