@@ -72,21 +72,46 @@ class SMSTransactionParser:
             }
         }
         
-        # Fallback patterns for other banks
-        self.bank_patterns = {
-            'debit': [
-                r'debited.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-                r'spent.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-                r'paid.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-                r'withdrawn.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-                r'(?:rs|inr|₹)\.?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:debited|spent|paid|sent)'
-            ],
-            'credit': [
-                r'credited.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-                r'received.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-                r'deposited.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-                r'(?:rs|inr|₹)\.?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:credited|received|deposited)'
-            ]
+        # Axis Bank SMS patterns  
+        self.axis_patterns = {
+            # Pattern 1: "Spent\nCard no. XXXX\nINR amount\ndate time\nMERCHANT\nAvl Lmt INR amount"
+            'card_spent_multiline': {
+                'regex': r'spent\s*\n?\s*card\s+no\.\s+([x\d]+)\s*\n?\s*(?:inr|usd)\s+([\d,]+(?:\.\d{2})?)\s*\n?\s*(\d{2}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2})\s*\n?\s*(.+?)\s*\n?\s*avl\s+lmt',
+                'amount_group': 2,
+                'account_group': 1,
+                'date_group': 3,
+                'time_group': 4,
+                'payee_group': 5,
+                'type': 'expense'
+            },
+            # Pattern 2: "Debit INR amount\nAxis Bank A/c XXXX\ndate time\nACH-DR-MERCHANT"
+            'debit_multiline': {
+                'regex': r'debit\s+inr\s+([\d,]+(?:\.\d{2})?)\s*\n?\s*axis\s+bank\s+a/c\s+([x\d]+)\s*\n?\s*(\d{2}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2})\s*\n?\s*ach-dr-(.+?)-',
+                'amount_group': 1,
+                'account_group': 2,
+                'date_group': 3,
+                'time_group': 4,
+                'payee_group': 5,
+                'type': 'expense'
+            },
+            # Pattern 3: "INR amount debited\nA/c no. XXXX\ndate, time\nUPI/P2A/ref/MERCHANT"
+            'upi_debit_multiline': {
+                'regex': r'inr\s+([\d,]+(?:\.\d{2})?)\s+debited\s*\n?\s*a/c\s+no\.\s+([x\d]+)\s*\n?\s*(\d{2}-\d{2}-\d{2}),\s+(\d{2}:\d{2}:\d{2})\s*\n?\s*upi/p2a/[^/]+/(.+?)(?:\s|$)',
+                'amount_group': 1,
+                'account_group': 2,
+                'date_group': 3,
+                'time_group': 4,
+                'payee_group': 5,
+                'type': 'expense'
+            },
+            # Pattern 4: "PAYMENT ALERT!\nINR amount deducted from HDFC Bank A/C No XXXX towards MERCHANT"
+            'payment_alert': {
+                'regex': r'payment\s+alert!\s*\n?\s*inr\s+([\d,]+(?:\.\d{2})?)\s+deducted\s+from\s+hdfc\s+bank\s+a/c\s+no\s+(\d+)\s+towards\s+(.+?)(?:\s+umrn|$)',
+                'amount_group': 1,
+                'account_group': 2,
+                'payee_group': 3,
+                'type': 'expense'
+            }
         }
         
         # Merchant extraction patterns
