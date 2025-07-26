@@ -142,20 +142,53 @@ backend:
         comment: "Need API endpoints to provide detailed SMS transaction breakdown for enhanced drill-down feature, including source SMS text, parsed details, and transaction metadata."
 
 frontend:
-  - task: "SMS Demo functionality"
+  - task: "Fix financial summary refresh in BudgetDashboard"
+    implemented: false
+    working: false
+    file: "frontend/src/components/BudgetDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "BudgetDashboard has refresh mechanism with refreshKey state and handleManualClassificationComplete function that calls loadData(), but financial summaries (Total Income, Total Expenses, Balance) do not update after manual SMS classification. Need to investigate if the refresh mechanism is working correctly."
+
+  - task: "Implement dynamic budget counters"
+    implemented: false
+    working: false
+    file: "frontend/src/components/BudgetLimitsManager.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Budget limits should have dynamic counters that move along as values are tagged to categories. Currently budget limits are static. Need real-time counters showing current spend vs budget limit with visual indicators."
+
+  - task: "Create Manual Validation Needed section"
     implemented: true
     working: true
-    file: "frontend/src/components/SMSDemo.jsx"
+    file: "frontend/src/components/ManualClassification.jsx"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "SMS Demo component exists and should work with improved parser"
+        comment: "ManualClassification component exists under 'Manual' tab, but need to create a separate prominent 'Manual Validation Needed' header/section in the main UI to make unclassified SMS more visible to users."
+
+  - task: "Enhanced drill-down feature for income/expense totals"
+    implemented: true
+    working: false
+    file: "frontend/src/components/BudgetDashboard.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
       - working: true
         agent: "main"
-        comment: "VERIFIED: Frontend SMS Demo tested successfully with all 10 real HDFC SMS examples. All SMS processed correctly with success notifications, statistics updated properly (final: 51 total, 44 processed, 86.3% success rate), and transactions were added to the system. Found 7 HDFC-related transactions in the UI."
+        comment: "Income and expense cards are clickable and filter transactions, but need enhanced drill-down showing detailed SMS transaction breakdown with source SMS text, parsed details, and transaction metadata."
 
 metadata:
   created_by: "main_agent"
