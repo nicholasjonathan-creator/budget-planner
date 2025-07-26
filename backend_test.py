@@ -156,7 +156,7 @@ class BackendAPITester:
         try:
             # Test updating the transaction category
             update_data = {
-                "category": "entertainment",
+                "category_id": 2,  # Use category_id instead of category
                 "description": "Updated description - manual categorization test"
             }
             
