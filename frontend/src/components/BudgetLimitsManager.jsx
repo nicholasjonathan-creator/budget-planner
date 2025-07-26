@@ -6,9 +6,8 @@ import { Label } from './ui/label';
 import { Progress } from './ui/progress';
 import { Badge } from './ui/badge';
 import { Edit2, Save, X } from 'lucide-react';
-import { mockCategories } from './mock/mockData';
 
-const BudgetLimitsManager = ({ budgetLimits, onUpdateLimits, currentTransactions }) => {
+const BudgetLimitsManager = ({ budgetLimits, categories, onUpdateLimits, currentTransactions }) => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [editValue, setEditValue] = useState('');
 
@@ -20,13 +19,26 @@ const BudgetLimitsManager = ({ budgetLimits, onUpdateLimits, currentTransactions
   const handleSaveEdit = (categoryId) => {
     const newLimit = parseFloat(editValue);
     if (newLimit >= 0) {
-      onUpdateLimits({
-        ...budgetLimits,
-        [categoryId]: {
-          ...budgetLimits[categoryId],
+      // Create new limits object
+      const newLimits = { ...budgetLimits };
+      const existingBudget = budgetLimits.find(b => b.category_id === categoryId);
+      
+      if (existingBudget) {
+        // Update existing budget
+        newLimits[categoryId] = {
+          ...existingBudget,
           limit: newLimit
-        }
-      });
+        };
+      } else {
+        // Create new budget
+        newLimits[categoryId] = {
+          category_id: categoryId,
+          limit: newLimit,
+          spent: 0
+        };
+      }
+      
+      onUpdateLimits(newLimits);
     }
     setEditingCategory(null);
     setEditValue('');
@@ -39,16 +51,24 @@ const BudgetLimitsManager = ({ budgetLimits, onUpdateLimits, currentTransactions
 
   const calculateSpent = (categoryId) => {
     return currentTransactions
-      .filter(t => t.categoryId === categoryId && t.type === 'expense')
+      .filter(t => t.category_id === categoryId && t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
   };
 
+  const getBudgetForCategory = (categoryId) => {
+    const budget = budgetLimits.find(b => b.category_id === categoryId);
+    return budget || { limit: 0, spent: 0 };
+  };
+
   const getBudgetStatus = (spent, limit) => {
-    const percentage = (spent / limit) * 100;
+    const percentage = limit > 0 ? (spent / limit) * 100 : 0;
     if (percentage >= 100) return { status: 'over', color: 'bg-red-500' };
     if (percentage >= 80) return { status: 'warning', color: 'bg-amber-500' };
     return { status: 'good', color: 'bg-green-500' };
   };
+
+  // Filter to only show expense categories
+  const expenseCategories = categories.filter(cat => cat.type === 'expense');
 
   return (
     <div className="space-y-6">
@@ -58,8 +78,8 @@ const BudgetLimitsManager = ({ budgetLimits, onUpdateLimits, currentTransactions
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {mockCategories.expense.map(category => {
-          const budget = budgetLimits[category.id] || { limit: 0, spent: 0 };
+        {expenseCategories.map(category => {
+          const budget = getBudgetForCategory(category.id);
           const spent = calculateSpent(category.id);
           const percentage = budget.limit > 0 ? (spent / budget.limit) * 100 : 0;
           const budgetStatus = getBudgetStatus(spent, budget.limit);
@@ -148,7 +168,7 @@ const BudgetLimitsManager = ({ budgetLimits, onUpdateLimits, currentTransactions
                   </div>
                 </div>
 
-                {spent > budget.limit && (
+                {spent > budget.limit && budget.limit > 0 && (
                   <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
                     <p className="text-sm text-red-700">
                       <strong>Over budget by ${(spent - budget.limit).toFixed(2)}</strong>
