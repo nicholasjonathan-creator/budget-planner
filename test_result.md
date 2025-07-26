@@ -146,7 +146,7 @@ backend:
 
 frontend:
   - task: "Fix financial summary refresh in BudgetDashboard"
-    implemented: false
+    implemented: true
     working: false
     file: "frontend/src/components/BudgetDashboard.jsx"
     stuck_count: 0
@@ -156,6 +156,9 @@ frontend:
       - working: false
         agent: "main"
         comment: "BudgetDashboard has refresh mechanism with refreshKey state and handleManualClassificationComplete function that calls loadData(), but financial summaries (Total Income, Total Expenses, Balance) do not update after manual SMS classification. Need to investigate if the refresh mechanism is working correctly."
+      - working: false
+        agent: "main"
+        comment: "IDENTIFIED ROOT CAUSE: The useEffect dependency array was missing 'refreshKey'. Added refreshKey to useEffect dependencies so that when manual classification increments refreshKey, the useEffect triggers and calls loadData() to refresh all data including monthlySummary. Backend testing confirmed APIs work perfectly - issue was frontend refresh mechanism."
 
   - task: "Implement dynamic budget counters"
     implemented: false
