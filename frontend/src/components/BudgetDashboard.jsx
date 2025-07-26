@@ -157,7 +157,7 @@ const BudgetDashboard = () => {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Budget Planner</h1>
-          <p className="text-gray-600">Track your income, expenses, and stay within budget</p>
+          <p className="text-gray-600">Track your income, expenses, and stay within budget - Built for India 🇮🇳</p>
         </div>
 
         {/* Month/Year Selector */}
