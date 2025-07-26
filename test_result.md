@@ -198,22 +198,14 @@ metadata:
 
 test_plan:
   current_focus:
-    - "XX0003 pattern parsing validation completed successfully"
-    - "Multi-bank SMS format support confirmed working"
-    - "Amount parsing accuracy validated - no amount=3 errors"
-    - "Fallback pattern mechanisms tested and working"
+    - "Fix financial summary refresh after manual classification - HIGH PRIORITY"
+    - "Implement dynamic budget counters"
+    - "Add smart date validation for SMS parsing"
+    - "Create prominent Manual Validation Needed section in UI"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "Starting to fix HDFC SMS parser. User provided 10 real HDFC SMS examples that show multiline format and various patterns not handled by current regex. Will update patterns to handle these formats and test thoroughly."
-  - agent: "main"
-    message: "COMPLETED: Successfully fixed HDFC SMS parser. All 10 user-provided real HDFC SMS examples now parse with 100% accuracy. Key improvements: Indian number format support, multiline SMS handling, enhanced payee extraction for ACH transactions, proper balance parsing. Ready for backend testing."
-  - agent: "main"
-    message: "SUCCESS: Both backend and frontend testing completed successfully! Backend: 80% success rate with all real HDFC SMS examples parsing correctly. Frontend: All 10 real HDFC SMS examples processed successfully through SMS Demo with proper UI feedback, statistics updates, and transaction integration. Final SMS Demo stats: 51 total, 44 processed, 86.3% success rate."
-  - agent: "testing"
-    message: "BACKEND TESTING COMPLETED: Comprehensive testing of HDFC SMS parser shows 80% success rate (12/15 tests passed). All real HDFC SMS examples parse correctly with accurate data extraction. Key findings: ✅ All 8 real HDFC SMS examples work perfectly ✅ Multiline SMS handling works ✅ Indian number format (1,37,083.00) parsed correctly ✅ All account formats (*2953, XX2953, x2953, x7722) work ✅ Payee extraction accurate (FINZOOM, Old Man, INDIANESIGN, etc.) ✅ Balance extraction working ✅ Error handling for invalid SMS works ❌ 3 pattern matching tests failed on incomplete SMS fragments (expected behavior). SMS parser is production-ready for real HDFC SMS messages."
-  - agent: "testing"
-    message: "SMS PARSER TESTING COMPLETED: Comprehensive testing of SMS parsing functionality shows 86.7% success rate (13/15 tests passed). Key findings: ✅ XX0003 PATTERN WORKING CORRECTLY - All XX0003 test cases parsed with correct amounts (1000, 500, 250, 1500.50, 30) and NO amount=3 parsing errors detected ✅ Multi-bank support working perfectly (HDFC, Axis, Scapia/Federal all 100% successful) ✅ Account number extraction working correctly across formats (XX0003, 2953, 1234, 9876, 5432) ✅ Amount parsing accuracy validated - no critical failures where amounts are parsed as 3 instead of actual values ✅ Indian number format (1,37,083.00) parsed correctly ✅ Multiline SMS formats working ✅ Generic fallback patterns working (67% success rate) ❌ 2 minor parsing failures on edge case SMS formats (expected behavior for incomplete patterns). CRITICAL ISSUE RESOLVED: The XX0003 pattern parsing issue has been fixed - amounts are correctly extracted and not parsed as 3. SMS parser is production-ready for real-world usage."
+    message: "Starting work on fixing financial summary refresh issue and implementing enhanced features as requested. The core problem is that Total Income, Total Expenses, and Balance cards don't update after manual SMS classification, despite having refresh mechanisms in place. Will investigate the refresh flow and implement all requested enhancements."
