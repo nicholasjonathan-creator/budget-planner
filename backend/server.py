@@ -190,14 +190,15 @@ async def get_all_users(admin_user: User = Depends(get_admin_user)):
 # ==================== TRANSACTION ENDPOINTS ====================
 
 @api_router.post("/transactions", response_model=Transaction)
-async def create_transaction(transaction: TransactionCreate):
+async def create_transaction(transaction: TransactionCreate, current_user: User = Depends(get_current_active_user)):
     """Create a new transaction"""
     try:
-        result = await transaction_service.create_transaction(transaction)
+        result = await transaction_service.create_transaction(transaction, current_user.id)
         # Update budget spent amounts
         await transaction_service.update_budget_spent(
             transaction.date.month if transaction.date else datetime.now().month,
-            transaction.date.year if transaction.date else datetime.now().year
+            transaction.date.year if transaction.date else datetime.now().year,
+            current_user.id
         )
         return result
     except Exception as e:
@@ -205,19 +206,19 @@ async def create_transaction(transaction: TransactionCreate):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/transactions", response_model=List[Transaction])
-async def get_transactions(month: Optional[int] = None, year: Optional[int] = None):
+async def get_transactions(month: Optional[int] = None, year: Optional[int] = None, current_user: User = Depends(get_current_active_user)):
     """Get transactions by month/year"""
     try:
-        return await transaction_service.get_transactions(month, year)
+        return await transaction_service.get_transactions(month, year, current_user.id)
     except Exception as e:
         logger.error(f"Error getting transactions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/transactions/{transaction_id}", response_model=Transaction)
-async def get_transaction(transaction_id: str):
+async def get_transaction(transaction_id: str, current_user: User = Depends(get_current_active_user)):
     """Get a specific transaction"""
     try:
-        transaction = await transaction_service.get_transaction_by_id(transaction_id)
+        transaction = await transaction_service.get_transaction_by_id(transaction_id, current_user.id)
         if not transaction:
             raise HTTPException(status_code=404, detail="Transaction not found")
         return transaction
