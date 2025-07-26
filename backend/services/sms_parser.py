@@ -215,7 +215,7 @@ class SMSTransactionParser:
                     category_id=self._auto_categorize(parsed_data['payee'], parsed_data['payee']),
                     amount=parsed_data['amount'],
                     description=self._generate_description(parsed_data['payee'], sms_text),
-                    date=parsed_data.get('date', datetime.now().strftime('%d-%m-%y')),
+                    date=self._parse_date(parsed_data.get('date', datetime.now().strftime('%d/%m/%y'))),
                     source=TransactionSource.SMS,
                     merchant=parsed_data['payee'],
                     account_number=parsed_data.get('account', 'Scapia Card'),
