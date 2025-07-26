@@ -385,17 +385,28 @@ class SMSParserTester:
                 
                 if response.status_code == 200:
                     result = response.json()
-                    if result.get('success') and result.get('transaction'):
-                        account = result['transaction'].get('account_number', '')
-                        if test['expected'].lower() in account.lower() or account.lower() in test['expected'].lower():
-                            print(f"✅ Account extracted correctly: {test['expected']} -> {account}")
-                            extraction_working += 1
+                    if result.get('success') and result.get('transaction_id'):
+                        # Fetch the created transaction to check account extraction
+                        transaction_response = requests.get(
+                            f"{API_BASE}/transactions/{result['transaction_id']}",
+                            timeout=10
+                        )
+                        
+                        if transaction_response.status_code == 200:
+                            transaction = transaction_response.json()
+                            account = transaction.get('account_number', '')
+                            if test['expected'].lower() in account.lower() or account.lower() in test['expected'].lower():
+                                print(f"✅ Account extracted correctly: {test['expected']} -> {account}")
+                                extraction_working += 1
+                            else:
+                                print(f"❌ Account extraction failed: expected {test['expected']}, got {account}")
                         else:
-                            print(f"❌ Account extraction failed: expected {test['expected']}, got {account}")
+                            print(f"❌ Failed to fetch transaction for account test: {transaction_response.status_code}")
                     else:
-                        print(f"❌ SMS parsing failed for account test")
+                        print(f"❌ SMS parsing failed for account test: {result.get('message', 'Unknown error')}")
                 else:
                     print(f"❌ Endpoint error for account test: {response.status_code}")
+                    print(f"   Response: {response.text}")
                     
             except Exception as e:
                 print(f"❌ Error testing account extraction: {e}")
