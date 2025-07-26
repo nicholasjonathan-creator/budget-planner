@@ -100,11 +100,6 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
       month: '2-digit', 
       year: 'numeric'
     });
-    
-    const time = new Date(transaction.date).toLocaleTimeString('en-IN', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
 
     return (
       <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -114,12 +109,12 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
           <Calendar className="h-3 w-3" />
           <span>{date}</span>
         </div>
-        {transaction.source === 'sms' && (
+        {(transaction.source === 'sms' || transaction.source === 'sms_manual') && transaction.account_number && (
           <>
             <span>•</span>
             <div className="flex items-center gap-1">
               <Building className="h-3 w-3" />
-              <span>{transaction.account_number ? `A/C ${transaction.account_number}` : 'Unknown'}</span>
+              <span>A/C {transaction.account_number}</span>
             </div>
           </>
         )}
