@@ -161,7 +161,7 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
             const hasSMSData = transaction.source === 'sms' || transaction.source === 'sms_manual';
             
             return (
-              <Collapsible key={transaction.id}>
+              <div key={transaction.id}>
                 <div className="border rounded-lg hover:bg-gray-50 transition-colors">
                   <div className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-3 flex-1">
