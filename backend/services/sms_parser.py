@@ -513,6 +513,32 @@ class SMSTransactionParser:
         # This line should never be reached, but just in case
         # return datetime.now()
 
+    def _extract_date_from_sms(self, sms_text: str) -> Optional[str]:
+        """Extract date string from generic SMS text for validation"""
+        try:
+            # Common date patterns in SMS
+            date_patterns = [
+                r'on\s+(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',        # "on 26/07/25" or "on 26-07-25"
+                r'on\s+(\d{1,2}[/-][A-Za-z]{3}[/-]\d{2,4})',    # "on 26-JUL-25"
+                r'dated?\s+(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',    # "dated 26/07/25"
+                r'at\s+(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',        # "at 26/07/25"
+                r'(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\s+\d{1,2}:\d{2}',  # "26/07/25 14:30"
+                r'(\d{4}-\d{2}-\d{2}:\d{2}:\d{2}:\d{2})',       # "2025-07-26:14:30:25"
+                r'(\d{1,2}[/-][A-Za-z]{3}[/-]\d{2,4})',         # "26-JUL-25"
+                r'(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',             # Generic "26/07/25"
+            ]
+            
+            for pattern in date_patterns:
+                match = re.search(pattern, sms_text, re.IGNORECASE)
+                if match:
+                    return match.group(1)
+                    
+            return None
+            
+        except Exception as e:
+            print(f"Error extracting date from SMS: {e}")
+            return None
+
     def _extract_amount_and_type(self, sms_text: str) -> tuple:
         """Extract transaction amount and determine type - Enhanced for HDFC formats"""
         # Try debit patterns first
