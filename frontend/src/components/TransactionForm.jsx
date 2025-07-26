@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from './ui/textarea';
 import { X } from 'lucide-react';
 
-const TransactionForm = ({ categories, onSubmit, onCancel }) => {
+const TransactionForm = ({ categories, onSubmit, onCancel, selectedMonth, selectedYear }) => {
   const [formData, setFormData] = useState({
     type: 'expense',
     category_id: '',
@@ -19,11 +19,14 @@ const TransactionForm = ({ categories, onSubmit, onCancel }) => {
     e.preventDefault();
     if (!formData.category_id || !formData.amount) return;
     
+    // Create date for the selected month/year instead of current date
+    const transactionDate = new Date(selectedYear, selectedMonth, 1);
+    
     onSubmit({
       ...formData,
       amount: parseFloat(formData.amount),
       category_id: parseInt(formData.category_id),
-      date: new Date().toISOString()
+      date: transactionDate.toISOString()
     });
   };
 
