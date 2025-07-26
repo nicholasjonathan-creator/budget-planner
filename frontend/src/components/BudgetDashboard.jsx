@@ -243,7 +243,7 @@ const BudgetDashboard = () => {
               <TrendingDown className="h-4 w-4 text-red-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-900">${monthlySummary.expense.toFixed(2)}</div>
+              <div className="text-2xl font-bold text-red-900">₹{monthlySummary.expense.toLocaleString('en-IN')}</div>
               <p className="text-xs text-red-600">
                 {monthNames[selectedMonth]} {selectedYear}
               </p>
