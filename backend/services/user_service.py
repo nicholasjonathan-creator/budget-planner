@@ -96,6 +96,7 @@ class UserService:
         user_doc = await users_collection.find_one({"email": email, "is_active": True})
         if user_doc:
             user_doc["id"] = str(user_doc["_id"])
+            user_doc.pop("_id", None)  # Remove _id to avoid conflicts
             return User(**user_doc)
         return None
     
