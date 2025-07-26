@@ -188,6 +188,7 @@ class SMSTransactionParser:
         self.balance_patterns = [
             r'avl\s+bal:\s*inr\s+([\d,]+(?:\.\d{2})?)',
             r'avl\s+bal\s+inr\s+([\d,]+(?:\.\d{2})?)',
+            r'avl\s+limit:\s*inr\s+([\d,]+(?:\.\d{2})?)',  # ICICI Bank balance format
             r'avl\s+lmt\s+inr\s+([\d,]+(?:\.\d{2})?)',  # Axis Bank balance format
             r'bal\s+rs\.([\d,]+(?:\.\d{2})?)',
             r'balance.*?(?:rs|inr|₹)?\s*([\d,]+(?:\.\d{2})?)'
