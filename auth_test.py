@@ -176,7 +176,7 @@ class AuthenticationTester:
             
             if response.status_code == 400:
                 error_detail = response.json().get('detail', '')
-                if 'email' in error_detail.lower() and ('exists' in error_detail.lower() or 'duplicate' in error_detail.lower()):
+                if 'email' in error_detail.lower() and 'already' in error_detail.lower():
                     print("✅ Duplicate email properly rejected")
                     self.passed_tests += 1
                 else:
