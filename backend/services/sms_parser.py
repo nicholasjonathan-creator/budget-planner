@@ -350,6 +350,19 @@ def test_sms_parser():
     parser = SMSTransactionParser()
     
     real_hdfc_messages = [
+        # User-provided real HDFC examples (multiline format)
+        "Sent Rs.134985.00\nFrom HDFC Bank A/C *2953\nTo FINZOOM INVESTMENT ADVISORS PRIVATE LIMITED\nOn 25/07/25\nRef 520648518501\nNot You?\nCall 18002586161/SMS BLOCK UPI to 7308080808",
+        "Sent Rs.5000.00\nFrom HDFC Bank A/C *2953\nTo MELODY HENRIETTA NICHOLAS\nOn 25/07/25\nRef 108669255361\nNot You?\nCall 18002586161/SMS BLOCK UPI to 7308080808",
+        "Sent Rs.175.00\nFrom HDFC Bank A/C *2953\nTo RAMESH .  H.R..\nOn 18/07/25\nRef 108305259738\nNot You?\nCall 18002586161/SMS BLOCK UPI to 7308080808",
+        "UPDATE: INR 1,37,083.00 debited from HDFC Bank XX2953 on 25-JUL-25. Info: IMPS-520611360945-Old Man-HDFC-xxxxxxxxxx5124-Rent. Avl bal:INR 3,75,261.90",
+        "Update! INR 4,95,865.00 deposited in HDFC Bank A/c XX2953 on 25-JUL-25 for WFISPL CREDIT.Avl bal INR 5,12,344.90. Cheque deposits in A/C are subject to clearing",
+        "IMPS INR 5,000.00\nsent from HDFC Bank A/c XX2953 on 25-07-25\nTo A/c xxxxxxxxxxx1254\nRef-520611366849\nNot you?Call 18002586161/SMS BLOCK OB to 7308080808",
+        "Spent Rs.15065.08 From HDFC Bank Card x7722 At RAZ*Allard Educational On 2025-07-15:00:18:09 Bal Rs.25407.31 Not You? Call 18002586161/SMS BLOCK DC  7722 to 7308080808",
+        "UPDATE: INR 5,000.00 debited from HDFC Bank XX2953 on 01-JUL-25. Info: ACH D- TP ACH INDIANESIGN-1862188817. Avl bal:INR 2,40,315.16",
+        "UPDATE: INR 25,000.00 debited from HDFC Bank XX2953 on 01-JUL-25. Info: ACH D- TP ACH INDIANESIGN-1862147866. Avl bal:INR 2,45,315.16",
+        "Sent Rs.549.00\nFrom HDFC Bank A/C x2953\nTo Blinkit\nOn 29/06/25\nRef 107215970082\nNot You?\nCall 18002586161/SMS BLOCK UPI to 7308080808",
+        
+        # Original test examples
         "Sent Rs.134985.00 From HDFC Bank A/C *2953 To FINZOOM INVESTMENT ADVISORS PRIVATE LIMITED On 25/07/25 Ref 520648518501 Not You? Call 18002586161/SMS BLOCK UPI to 7308080808",
         "Sent Rs.5000.00 From HDFC Bank A/C *2953 To MELODY HENRIETTA NICHOLAS On 25/07/25 Ref 108669255361 Not You? Call 18002586161/SMS BLOCK UPI to 7308080808",
         "UPDATE: INR 1,37,083.00 debited from HDFC Bank XX2953 on 25-JUL-25. Info: IMPS-520611360945-Old Man-HDFC-xxxxxxxxxx5124-Rent. Avl bal:INR 3,75,261.90",
