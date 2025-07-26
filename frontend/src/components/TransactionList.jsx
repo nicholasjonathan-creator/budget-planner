@@ -21,6 +21,7 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
   const getSourceIcon = (source) => {
     switch(source) {
       case 'sms':
+      case 'sms_manual':
         return <MessageSquare className="h-4 w-4 text-blue-600" />;
       case 'email':
         return <Edit className="h-4 w-4 text-purple-600" />;
@@ -33,11 +34,36 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
     switch(source) {
       case 'sms':
         return 'bg-blue-100 text-blue-800';
+      case 'sms_manual':
+        return 'bg-orange-100 text-orange-800';
       case 'email':
         return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getSourceLabel = (source) => {
+    switch(source) {
+      case 'sms':
+        return 'SMS Auto';
+      case 'sms_manual':
+        return 'SMS Manual';
+      case 'email':
+        return 'Email';
+      default:
+        return 'Manual';
+    }
+  };
+
+  const toggleTransactionDetails = (transactionId) => {
+    const newExpanded = new Set(expandedTransactions);
+    if (newExpanded.has(transactionId)) {
+      newExpanded.delete(transactionId);
+    } else {
+      newExpanded.add(transactionId);
+    }
+    setExpandedTransactions(newExpanded);
   };
 
   const handleUpdateTransaction = async (transactionId, updates) => {
