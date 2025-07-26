@@ -287,9 +287,10 @@ class SMSParserTester:
                         print(f"✅ {bank_test['bank']} format parsed successfully")
                         banks_working += 1
                     else:
-                        print(f"❌ {bank_test['bank']} format failed to parse")
+                        print(f"❌ {bank_test['bank']} format failed to parse: {result.get('message', 'Unknown error')}")
                 else:
                     print(f"❌ {bank_test['bank']} format endpoint error: {response.status_code}")
+                    print(f"   Response: {response.text}")
                     
             except Exception as e:
                 print(f"❌ Error testing {bank_test['bank']} format: {e}")
