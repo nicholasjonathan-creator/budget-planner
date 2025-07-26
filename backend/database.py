@@ -84,6 +84,17 @@ async def create_indexes():
         await users_collection.create_index("is_active")
         await users_collection.create_index("created_at")
         
+        # Notification preferences indexes
+        await notification_preferences_collection.create_index("user_id", unique=True)
+        await notification_preferences_collection.create_index("created_at")
+        
+        # Notification logs indexes
+        await notification_logs_collection.create_index("user_id")
+        await notification_logs_collection.create_index("notification_type")
+        await notification_logs_collection.create_index("sent_at")
+        await notification_logs_collection.create_index("delivery_status")
+        await notification_logs_collection.create_index([("user_id", 1), ("sent_at", -1)])
+        
         print("Database indexes created successfully")
         
     except Exception as e:
