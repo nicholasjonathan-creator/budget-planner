@@ -44,13 +44,15 @@ const BudgetDashboard = () => {
         budgetLimitsData,
         categoriesData,
         summaryData,
-        totalsData
+        totalsData,
+        failedSMSData
       ] = await Promise.all([
         ApiService.getTransactions(selectedMonth, selectedYear),
         ApiService.getBudgetLimits(selectedMonth, selectedYear),
         ApiService.getCategories(),
         ApiService.getMonthlySummary(selectedMonth, selectedYear),
-        ApiService.getCategoryTotals(selectedMonth, selectedYear)
+        ApiService.getCategoryTotals(selectedMonth, selectedYear),
+        ApiService.getFailedSMS()
       ]);
 
       setTransactions(transactionsData);
@@ -58,6 +60,7 @@ const BudgetDashboard = () => {
       setCategories(categoriesData);
       setMonthlySummary(summaryData);
       setCategoryTotals(totalsData);
+      setFailedSMSCount(failedSMSData.success ? failedSMSData.failed_sms.length : 0);
       
     } catch (error) {
       console.error('Error loading data:', error);
