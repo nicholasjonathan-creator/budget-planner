@@ -335,6 +335,7 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
                 </div>
               </Collapsible>
             );
+          })}
         </div>
       </CardContent>
     </Card>
