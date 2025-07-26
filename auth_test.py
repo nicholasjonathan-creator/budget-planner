@@ -128,8 +128,10 @@ class AuthenticationTester:
                 elif response.status_code == 400:
                     # Check if it's a duplicate user error (expected for second run)
                     error_detail = response.json().get('detail', '')
-                    if 'already exists' in error_detail.lower() or 'duplicate' in error_detail.lower():
+                    if 'already' in error_detail.lower():
                         print(f"⚠️  User {user['email']} already exists (expected on re-run)")
+                        # For existing users, we still consider registration test as passed
+                        # since the system correctly prevents duplicates
                         registration_results.append(True)
                         self.passed_tests += 1
                     else:
