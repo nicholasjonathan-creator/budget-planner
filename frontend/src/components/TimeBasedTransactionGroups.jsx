@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { ChevronDown, ChevronRight, Sunrise, Sun, Sunset, Moon, Clock, TrendingUp, TrendingDown } from 'lucide-react';
 
 const TimeBasedTransactionGroups = ({ transactions }) => {
@@ -135,129 +134,124 @@ const TimeBasedTransactionGroups = ({ transactions }) => {
         const Icon = period.icon;
         const hasTransactions = total.count > 0;
         const expensePercentage = maxExpense > 0 ? (total.expense / maxExpense) * 100 : 0;
+        const isExpanded = expandedGroups[periodKey];
 
         return (
           <Card key={periodKey} className={`bg-gradient-to-br ${period.color} ${period.borderColor} transition-all duration-200 hover:shadow-md`}>
-            <Collapsible 
-              open={expandedGroups[periodKey]} 
-              onOpenChange={() => toggleGroup(periodKey)}
+            <CardHeader 
+              className="cursor-pointer hover:bg-white/20 transition-colors duration-150 rounded-t-lg"
+              onClick={() => toggleGroup(periodKey)}
             >
-              <CollapsibleTrigger asChild>
-                <CardHeader className="cursor-pointer hover:bg-white/20 transition-colors duration-150 rounded-t-lg">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Icon className={`h-5 w-5 ${period.iconColor}`} />
-                      <div>
-                        <CardTitle className={`text-base font-medium ${period.textColor}`}>
-                          {period.label}
-                        </CardTitle>
-                        <p className={`text-xs ${period.textColor} opacity-70`}>
-                          {period.timeRange}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-4">
-                      {hasTransactions && (
-                        <>
-                          <div className="text-right">
-                            <div className={`text-sm font-medium ${period.textColor}`}>
-                              {formatCurrency(total.expense)}
-                            </div>
-                            <div className={`text-xs ${period.textColor} opacity-70`}>
-                              {total.count} transaction{total.count !== 1 ? 's' : ''}
-                            </div>
-                          </div>
-                          <div className="w-16">
-                            <Progress 
-                              value={expensePercentage} 
-                              className="h-2 bg-white/30"
-                            />
-                          </div>
-                        </>
-                      )}
-                      
-                      {!hasTransactions && (
-                        <Badge variant="outline" className={`${period.textColor} border-current`}>
-                          No transactions
-                        </Badge>
-                      )}
-                      
-                      {hasTransactions ? (
-                        expandedGroups[periodKey] ? 
-                          <ChevronDown className={`h-4 w-4 ${period.textColor}`} /> : 
-                          <ChevronRight className={`h-4 w-4 ${period.textColor}`} />
-                      ) : null}
-                    </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Icon className={`h-5 w-5 ${period.iconColor}`} />
+                  <div>
+                    <CardTitle className={`text-base font-medium ${period.textColor}`}>
+                      {period.label}
+                    </CardTitle>
+                    <p className={`text-xs ${period.textColor} opacity-70`}>
+                      {period.timeRange}
+                    </p>
                   </div>
-                </CardHeader>
-              </CollapsibleTrigger>
-
-              {hasTransactions && (
-                <CollapsibleContent>
-                  <CardContent className="pt-0">
-                    {/* Summary Row */}
-                    <div className="flex justify-between items-center mb-4 p-3 bg-white/40 rounded-lg">
-                      <div className="flex gap-6">
-                        {total.income > 0 && (
-                          <div className="flex items-center gap-1">
-                            <TrendingUp className="h-4 w-4 text-green-600" />
-                            <span className="text-sm font-medium text-green-800">
-                              {formatCurrency(total.income)}
-                            </span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-1">
-                          <TrendingDown className="h-4 w-4 text-red-600" />
-                          <span className="text-sm font-medium text-red-800">
-                            {formatCurrency(total.expense)}
-                          </span>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  {hasTransactions && (
+                    <>
+                      <div className="text-right">
+                        <div className={`text-sm font-medium ${period.textColor}`}>
+                          {formatCurrency(total.expense)}
+                        </div>
+                        <div className={`text-xs ${period.textColor} opacity-70`}>
+                          {total.count} transaction{total.count !== 1 ? 's' : ''}
                         </div>
                       </div>
-                      <div className={`text-sm font-medium ${total.balance >= 0 ? 'text-green-800' : 'text-red-800'}`}>
-                        Net: {formatCurrency(Math.abs(total.balance))} {total.balance < 0 ? 'deficit' : 'surplus'}
+                      <div className="w-16">
+                        <Progress 
+                          value={expensePercentage} 
+                          className="h-2 bg-white/30"
+                        />
                       </div>
-                    </div>
+                    </>
+                  )}
+                  
+                  {!hasTransactions && (
+                    <Badge variant="outline" className={`${period.textColor} border-current`}>
+                      No transactions
+                    </Badge>
+                  )}
+                  
+                  {hasTransactions ? (
+                    isExpanded ? 
+                      <ChevronDown className={`h-4 w-4 ${period.textColor}`} /> : 
+                      <ChevronRight className={`h-4 w-4 ${period.textColor}`} />
+                  ) : null}
+                </div>
+              </div>
+            </CardHeader>
 
-                    {/* Transactions List */}
-                    <div className="space-y-2">
-                      {groupedTransactions[periodKey]
-                        .sort((a, b) => new Date(b.date) - new Date(a.date))
-                        .map((transaction, index) => (
-                          <div 
-                            key={transaction.id || index} 
-                            className="flex items-center justify-between p-3 bg-white/60 rounded-lg hover:bg-white/80 transition-colors duration-150"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="flex flex-col">
-                                <span className="text-sm font-medium text-gray-800">
-                                  {transaction.merchant || transaction.description}
-                                </span>
-                                <span className="text-xs text-gray-600">
-                                  {formatTime(transaction.date)}
-                                </span>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center gap-2">
-                              <span className={`text-sm font-medium ${
-                                transaction.type === 'income' ? 'text-green-700' : 'text-red-700'
-                              }`}>
-                                {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                              </span>
-                              {transaction.currency && transaction.currency !== 'INR' && (
-                                <Badge variant="outline" className="text-xs">
-                                  {transaction.currency}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        ))}
+            {hasTransactions && isExpanded && (
+              <CardContent className="pt-0">
+                {/* Summary Row */}
+                <div className="flex justify-between items-center mb-4 p-3 bg-white/40 rounded-lg">
+                  <div className="flex gap-6">
+                    {total.income > 0 && (
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-800">
+                          {formatCurrency(total.income)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <TrendingDown className="h-4 w-4 text-red-600" />
+                      <span className="text-sm font-medium text-red-800">
+                        {formatCurrency(total.expense)}
+                      </span>
                     </div>
-                  </CardContent>
-                </CollapsibleContent>
-              )}
-            </Collapsible>
+                  </div>
+                  <div className={`text-sm font-medium ${total.balance >= 0 ? 'text-green-800' : 'text-red-800'}`}>
+                    Net: {formatCurrency(Math.abs(total.balance))} {total.balance < 0 ? 'deficit' : 'surplus'}
+                  </div>
+                </div>
+
+                {/* Transactions List */}
+                <div className="space-y-2">
+                  {groupedTransactions[periodKey]
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .map((transaction, index) => (
+                      <div 
+                        key={transaction.id || index} 
+                        className="flex items-center justify-between p-3 bg-white/60 rounded-lg hover:bg-white/80 transition-colors duration-150"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-gray-800">
+                              {transaction.merchant || transaction.description}
+                            </span>
+                            <span className="text-xs text-gray-600">
+                              {formatTime(transaction.date)}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <span className={`text-sm font-medium ${
+                            transaction.type === 'income' ? 'text-green-700' : 'text-red-700'
+                          }`}>
+                            {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                          </span>
+                          {transaction.currency && transaction.currency !== 'INR' && (
+                            <Badge variant="outline" className="text-xs">
+                              {transaction.currency}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            )}
           </Card>
         );
       })}
