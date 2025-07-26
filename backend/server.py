@@ -110,6 +110,16 @@ async def register_user(user_data: UserCreate):
         # Create access token
         access_token, expires_at = create_user_token(user.id, user.email)
         
+        # Send welcome email (in background)
+        try:
+            # Get full user object for email
+            full_user = await UserService.get_user_by_id(user.id)
+            if full_user:
+                await email_service.send_welcome_email(full_user)
+        except Exception as e:
+            logger.warning(f"Failed to send welcome email to {user.email}: {e}")
+            # Don't fail registration if email fails
+        
         return Token(
             access_token=access_token,
             token_type="bearer",
