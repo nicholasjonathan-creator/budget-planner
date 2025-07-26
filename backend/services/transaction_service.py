@@ -188,14 +188,18 @@ class TransactionService:
     
     # Budget Limits Management
     async def create_budget_limit(self, budget_limit: BudgetLimitCreate) -> BudgetLimit:
-        """Create a new budget limit"""
+        """Create or update a budget limit"""
         try:
             budget_dict = budget_limit.dict()
+            
+            # Frontend sends 0-indexed months, but we store 1-indexed
+            actual_month = budget_dict['month'] + 1
+            budget_dict['month'] = actual_month
             
             # Check if limit already exists for this category/month/year
             existing = await self.budget_limits_collection.find_one({
                 "category_id": budget_dict['category_id'],
-                "month": budget_dict['month'],
+                "month": actual_month,
                 "year": budget_dict['year']
             })
             
