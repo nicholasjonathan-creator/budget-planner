@@ -31,7 +31,7 @@ const BudgetDashboard = () => {
 
   useEffect(() => {
     loadData();
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, refreshKey]);
 
   const loadData = async () => {
     try {
