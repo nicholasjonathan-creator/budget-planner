@@ -171,10 +171,10 @@ class BackendAPITester:
                 updated_transaction = response.json()
                 
                 # Verify the update worked
-                if (updated_transaction.get('category') == 'entertainment' and 
+                if (updated_transaction.get('category_id') == 2 and 
                     'manual categorization test' in updated_transaction.get('description', '')):
                     print("✅ Transaction update endpoint working correctly")
-                    print(f"   Updated category: {updated_transaction.get('category')}")
+                    print(f"   Updated category_id: {updated_transaction.get('category_id')}")
                     print(f"   Updated description: {updated_transaction.get('description')}")
                     self.passed_tests += 1
                 else:
