@@ -18,6 +18,8 @@ budget_limits_collection = db.budget_limits
 sms_collection = db.sms_transactions
 categories_collection = db.categories
 users_collection = db.users
+notification_preferences_collection = db.notification_preferences
+notification_logs_collection = db.notification_logs
 
 # Initialize default categories
 async def init_categories():
