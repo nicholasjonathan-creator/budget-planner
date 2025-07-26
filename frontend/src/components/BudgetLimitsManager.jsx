@@ -171,7 +171,7 @@ const BudgetLimitsManager = ({ budgetLimits, categories, onUpdateLimits, current
                 {spent > budget.limit && budget.limit > 0 && (
                   <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
                     <p className="text-sm text-red-700">
-                      <strong>Over budget by ${(spent - budget.limit).toFixed(2)}</strong>
+                      <strong>Over budget by ₹{(spent - budget.limit).toLocaleString('en-IN')}</strong>
                     </p>
                   </div>
                 )}
