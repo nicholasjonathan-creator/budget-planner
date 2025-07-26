@@ -76,11 +76,10 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
         description: "Transaction updated successfully!",
       });
       
-      if (onTransactionUpdate) {
-        onTransactionUpdate();
-      }
-      
       setEditingTransaction(null);
+      if (onTransactionUpdate) {
+        await onTransactionUpdate();
+      }
     } catch (error) {
       console.error('Error updating transaction:', error);
       toast({
