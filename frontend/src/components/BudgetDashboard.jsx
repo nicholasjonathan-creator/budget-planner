@@ -230,7 +230,7 @@ const BudgetDashboard = () => {
               <TrendingUp className="h-4 w-4 text-emerald-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-emerald-900">${monthlySummary.income.toFixed(2)}</div>
+              <div className="text-2xl font-bold text-emerald-900">₹{monthlySummary.income.toLocaleString('en-IN')}</div>
               <p className="text-xs text-emerald-600">
                 {monthNames[selectedMonth]} {selectedYear}
               </p>
