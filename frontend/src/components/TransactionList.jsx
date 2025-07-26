@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { TrendingUp, TrendingDown, MessageSquare, Edit, Tag, Calendar, Building, CreditCard } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import { TrendingUp, TrendingDown, MessageSquare, Edit, Tag, Calendar, Building, CreditCard, ChevronDown, ChevronUp, Info, Smartphone } from 'lucide-react';
 import ApiService from '../services/api';
 import { useToast } from '../hooks/use-toast';
 
