@@ -252,6 +252,9 @@ class SMSTransactionParser:
             if parsed_data:
                 try:
                     parsed_date = self._parse_date(parsed_data.get('date', datetime.now().strftime('%d/%m/%y')))
+                    # Extract currency from SMS
+                    currency = self._extract_currency(sms_text)
+                    
                     return Transaction(
                         type=parsed_data['type'],
                         category_id=self._auto_categorize(parsed_data['payee'], parsed_data['payee']),
@@ -262,12 +265,14 @@ class SMSTransactionParser:
                         merchant=parsed_data['payee'],
                         account_number=parsed_data.get('account', 'Scapia Card'),
                         balance=parsed_data.get('balance'),
+                        currency=currency,  # Add currency field
                         raw_data={
                             'sms_text': sms_text,
                             'phone_number': phone_number,
                             'parsed_at': datetime.now().isoformat(),
                             'bank': 'Federal Bank (Scapia)',
-                            'parsing_method': 'scapia_specific'
+                            'parsing_method': 'scapia_specific',
+                            'currency': currency
                         }
                     )
                 except ValueError as e:
