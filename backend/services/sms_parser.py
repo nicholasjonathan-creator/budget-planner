@@ -305,6 +305,39 @@ class SMSTransactionParser:
                     print(f"Scapia SMS date validation failed: {str(e)}")
                     return None
             
+            # Try ICICI Bank specific patterns
+            parsed_data = self._parse_icici_sms(sms_text)
+            if parsed_data:
+                try:
+                    parsed_date = self._parse_date(parsed_data['date'])
+                    # Extract currency from SMS or use parsed currency
+                    currency = parsed_data.get('currency', 'INR')
+                    
+                    return Transaction(
+                        type=parsed_data['type'],
+                        category_id=self._auto_categorize(parsed_data['payee'], parsed_data['payee']),
+                        amount=parsed_data['amount'],
+                        description=self._generate_description(parsed_data['payee'], sms_text),
+                        date=parsed_date,
+                        source=TransactionSource.SMS,
+                        merchant=parsed_data['payee'],
+                        account_number=parsed_data['account'],
+                        balance=parsed_data.get('balance'),
+                        currency=currency,  # Use parsed currency
+                        raw_data={
+                            'sms_text': sms_text,
+                            'phone_number': phone_number,
+                            'parsed_at': datetime.now().isoformat(),
+                            'bank': 'ICICI Bank',
+                            'parsing_method': 'icici_specific',
+                            'currency': currency
+                        }
+                    )
+                except ValueError as e:
+                    # Date validation failed - return None to trigger manual classification
+                    print(f"ICICI SMS date validation failed: {str(e)}")
+                    return None
+            
             # Fallback to generic patterns
             transaction_type, amount = self._extract_amount_and_type(sms_lower)
             if not amount:
