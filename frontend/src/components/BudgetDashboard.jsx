@@ -263,6 +263,43 @@ const BudgetDashboard = () => {
           </Card>
         )}
 
+        {/* Manual Validation Needed Section */}
+        {failedSMSCount > 0 && (
+          <Card className="mb-6 border-l-4 border-l-orange-500 bg-orange-50">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-orange-800">
+                  <AlertTriangle className="h-5 w-5" />
+                  Manual Validation Needed
+                  <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-300">
+                    {failedSMSCount} SMS pending
+                  </Badge>
+                </div>
+                <Button
+                  onClick={() => {
+                    // Switch to Manual tab
+                    const manualTab = document.querySelector('[data-value="manual"]');
+                    if (manualTab) manualTab.click();
+                  }}
+                  size="sm"
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                >
+                  Review Now
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-orange-700 text-sm">
+                {failedSMSCount} SMS message{failedSMSCount !== 1 ? 's' : ''} couldn't be automatically processed and require{failedSMSCount === 1 ? 's' : ''} your manual review. 
+                These may include transactions with unusual formatting, future dates, or unclear transaction types.
+              </p>
+              <p className="text-orange-600 text-xs mt-2">
+                📱 Click "Review Now" to manually classify these transactions and update your financial summary.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card 
