@@ -155,47 +155,58 @@ class SMSParserTester:
                     result = response.json()
                     
                     # Check if parsing was successful
-                    if result.get('success') and result.get('transaction'):
-                        transaction = result['transaction']
-                        parsed_amount = transaction.get('amount', 0)
-                        parsed_account = transaction.get('account_number', '')
+                    if result.get('success') and result.get('transaction_id'):
+                        # Fetch the created transaction from the API
+                        transaction_response = requests.get(
+                            f"{API_BASE}/transactions/{result['transaction_id']}",
+                            timeout=10
+                        )
                         
-                        print(f"✅ SMS Parsed Successfully")
-                        print(f"   Expected Amount: ₹{test_case['expected_amount']:,.2f}")
-                        print(f"   Parsed Amount: ₹{parsed_amount:,.2f}")
-                        print(f"   Expected Account: {test_case['expected_account']}")
-                        print(f"   Parsed Account: {parsed_account}")
-                        
-                        # Validate amount parsing (critical check)
-                        amount_correct = abs(parsed_amount - test_case['expected_amount']) < 0.01
-                        
-                        # Validate account extraction
-                        account_correct = (test_case['expected_account'].lower() in parsed_account.lower() or 
-                                         parsed_account.lower() in test_case['expected_account'].lower())
-                        
-                        # Check for critical failure: amount parsed as 3 when it shouldn't be
-                        amount_is_three = abs(parsed_amount - 3.0) < 0.01
-                        expected_not_three = test_case['expected_amount'] != 3.0
-                        
-                        if amount_is_three and expected_not_three:
-                            print(f"❌ CRITICAL: Amount incorrectly parsed as 3 when expected {test_case['expected_amount']}")
-                            critical_failures.append({
-                                'test_case': i,
-                                'description': test_case['description'],
-                                'issue': f"Amount parsed as 3 instead of {test_case['expected_amount']}"
-                            })
-                            failed_count += 1
-                            self.failed_tests += 1
-                        elif amount_correct and account_correct:
-                            print(f"✅ PASS: Amount and account parsed correctly")
-                            passed_count += 1
-                            self.passed_tests += 1
+                        if transaction_response.status_code == 200:
+                            transaction = transaction_response.json()
+                            parsed_amount = transaction.get('amount', 0)
+                            parsed_account = transaction.get('account_number', '')
+                            
+                            print(f"✅ SMS Parsed Successfully")
+                            print(f"   Expected Amount: ₹{test_case['expected_amount']:,.2f}")
+                            print(f"   Parsed Amount: ₹{parsed_amount:,.2f}")
+                            print(f"   Expected Account: {test_case['expected_account']}")
+                            print(f"   Parsed Account: {parsed_account}")
+                            
+                            # Validate amount parsing (critical check)
+                            amount_correct = abs(parsed_amount - test_case['expected_amount']) < 0.01
+                            
+                            # Validate account extraction
+                            account_correct = (test_case['expected_account'].lower() in parsed_account.lower() or 
+                                             parsed_account.lower() in test_case['expected_account'].lower())
+                            
+                            # Check for critical failure: amount parsed as 3 when it shouldn't be
+                            amount_is_three = abs(parsed_amount - 3.0) < 0.01
+                            expected_not_three = test_case['expected_amount'] != 3.0
+                            
+                            if amount_is_three and expected_not_three:
+                                print(f"❌ CRITICAL: Amount incorrectly parsed as 3 when expected {test_case['expected_amount']}")
+                                critical_failures.append({
+                                    'test_case': i,
+                                    'description': test_case['description'],
+                                    'issue': f"Amount parsed as 3 instead of {test_case['expected_amount']}"
+                                })
+                                failed_count += 1
+                                self.failed_tests += 1
+                            elif amount_correct and account_correct:
+                                print(f"✅ PASS: Amount and account parsed correctly")
+                                passed_count += 1
+                                self.passed_tests += 1
+                            else:
+                                print(f"❌ FAIL: Parsing inaccurate")
+                                if not amount_correct:
+                                    print(f"   Amount mismatch: expected {test_case['expected_amount']}, got {parsed_amount}")
+                                if not account_correct:
+                                    print(f"   Account mismatch: expected {test_case['expected_account']}, got {parsed_account}")
+                                failed_count += 1
+                                self.failed_tests += 1
                         else:
-                            print(f"❌ FAIL: Parsing inaccurate")
-                            if not amount_correct:
-                                print(f"   Amount mismatch: expected {test_case['expected_amount']}, got {parsed_amount}")
-                            if not account_correct:
-                                print(f"   Account mismatch: expected {test_case['expected_account']}, got {parsed_account}")
+                            print(f"❌ Failed to fetch created transaction: {transaction_response.status_code}")
                             failed_count += 1
                             self.failed_tests += 1
                             
