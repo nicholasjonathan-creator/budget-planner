@@ -434,6 +434,7 @@ const BudgetDashboard = () => {
               transactions={getFilteredTransactions()} 
               categories={categories} 
               onTransactionUpdate={loadData}
+              showDetailedView={transactionFilter !== 'all'}
             />
           </TabsContent>
           
