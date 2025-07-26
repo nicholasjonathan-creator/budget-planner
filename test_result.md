@@ -207,7 +207,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Fix financial summary refresh after manual classification - HIGH PRIORITY"
     - "Implement dynamic budget counters"
     - "Add smart date validation for SMS parsing"
     - "Create prominent Manual Validation Needed section in UI"
