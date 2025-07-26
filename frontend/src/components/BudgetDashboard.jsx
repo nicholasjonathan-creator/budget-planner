@@ -89,6 +89,18 @@ const BudgetDashboard = () => {
     setTransactionFilter('all');
   };
 
+  const handleManualClassificationComplete = async () => {
+    // Force a complete refresh of all data
+    setRefreshKey(prev => prev + 1);
+    await loadData();
+    
+    // Show success message
+    toast({
+      title: "Dashboard Updated",
+      description: "Financial data refreshed with new transaction",
+    });
+  };
+
   const handleAddTransaction = async (newTransaction) => {
     try {
       await ApiService.createTransaction(newTransaction);
