@@ -325,6 +325,8 @@ const BudgetDashboard = () => {
         {showTransactionForm && (
           <TransactionForm 
             categories={categories}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
             onSubmit={handleAddTransaction}
             onCancel={() => setShowTransactionForm(false)}
           />
