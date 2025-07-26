@@ -138,7 +138,7 @@ const BudgetLimitsManager = ({ budgetLimits, categories, onUpdateLimits, current
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <span className="font-bold">${budget.limit.toFixed(2)}</span>
+                        <span className="font-bold">₹{budget.limit.toLocaleString('en-IN')}</span>
                         <Button
                           size="sm"
                           variant="ghost"
