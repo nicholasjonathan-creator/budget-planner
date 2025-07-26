@@ -36,7 +36,7 @@ git push origin main
    ```
    MONGO_URL = mongodb+srv://your-username:your-password@your-cluster.mongodb.net/budget_planner?retryWrites=true&w=majority&appName=YourAppName
    
-   SENDGRID_API_KEY = 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
+   SENDGRID_API_KEY = SG.your-sendgrid-api-key-here
    
    JWT_SECRET = your-super-secret-jwt-key-for-production-nicholasjonathan-2025
    
