@@ -64,3 +64,4 @@ class SMSTransaction(BaseModel):
     timestamp: datetime
     processed: bool = False
     transaction_id: Optional[str] = None
+    user_id: Optional[str] = None  # Associate SMS with user
