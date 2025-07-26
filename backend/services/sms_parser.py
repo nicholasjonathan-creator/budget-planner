@@ -7,7 +7,16 @@ class SMSTransactionParser:
     def __init__(self):
         # Real-world HDFC SMS patterns based on actual messages
         self.hdfc_patterns = {
-            # Pattern 1: "Sent Rs.X From HDFC Bank A/C *XXXX To PAYEE On DD/MM/YY"
+            # Pattern 1: Multiline "Sent Rs.X\nFrom HDFC Bank A/C *XXXX\nTo PAYEE\nOn DD/MM/YY"
+            'upi_sent_multiline': {
+                'regex': r'sent\s+rs\.(\d+(?:,\d{3})*(?:\.\d{2})?)\s*\n?\s*from\s+hdfc\s+bank\s+a/c\s*\*?([x\d]+)\s*\n?\s*to\s+(.+?)\s*\n?\s*on\s+(\d{2}/\d{2}/\d{2})',
+                'amount_group': 1,
+                'account_group': 2,
+                'payee_group': 3,
+                'date_group': 4,
+                'type': 'expense'
+            },
+            # Pattern 1b: Single line "Sent Rs.X From HDFC Bank A/C *XXXX To PAYEE On DD/MM/YY"
             'upi_sent': {
                 'regex': r'sent\s+rs\.(\d+(?:,\d{3})*(?:\.\d{2})?)\s+from\s+hdfc\s+bank\s+a/c\s*\*?([x\d]+)\s+to\s+(.+?)\s+on\s+(\d{2}/\d{2}/\d{2})',
                 'amount_group': 1,
