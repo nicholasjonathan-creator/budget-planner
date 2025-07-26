@@ -102,7 +102,7 @@ const TransactionList = ({ transactions, categories }) => {
                 </div>
                 <div className="text-right">
                   <p className={`font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                    {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                    {transaction.type === 'income' ? '+' : '-'}₹{transaction.amount.toLocaleString('en-IN')}
                   </p>
                 </div>
               </div>
