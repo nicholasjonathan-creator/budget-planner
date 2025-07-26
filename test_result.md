@@ -105,119 +105,41 @@
 user_problem_statement: "Fix financial summary refresh issue where Total Income, Total Expenses, and Balance cards on BudgetDashboard do not automatically update after manual SMS classification. Additionally, implement enhanced features: 1) Dynamic budget counters that update as transactions are tagged, 2) Separate 'Manual Validation Needed' section in UI for unclassified SMS, 3) Enhanced drill-down feature for income/expense totals with detailed SMS transaction breakdown, 4) Smart date validation to detect illogical SMS dates and route them to manual validation, 5) Overall error-free functionality."
 
 backend:
-  - task: "Fix HDFC SMS parser for multiline format"
-    implemented: true
-    working: true
-    file: "backend/services/sms_parser.py"
+  - task: "Fix financial summary refresh after manual classification"
+    implemented: false
+    working: false
+    file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: false
         agent: "main"
-        comment: "Current parser fails on multiline HDFC SMS formats. Need to update regex patterns to handle multiline SMS and various account number formats (*2953, XX2953, x2953, x7722)"
-      - working: true
-        agent: "main"
-        comment: "FIXED: Updated regex patterns to handle Indian number format (1,37,083.00), multiline SMS formats, and various HDFC account number patterns. All 10 user-provided real HDFC SMS examples now parse successfully (100% success rate)"
-      - working: true
-        agent: "testing"
-        comment: "TESTED: Comprehensive testing confirms all real HDFC SMS examples parse correctly. Multiline UPI (₹134,985), UPDATE debit with IMPS (₹137,083), Card transactions (₹15,065), ACH debits (₹5,000), and UPDATE credits (₹495,865) all work perfectly. Indian number formatting, account number extraction (*2953, XX2953, x2953, x7722), payee identification, and balance extraction all functioning correctly."
-      - working: true
-        agent: "testing"
-        comment: "RE-TESTED: SMS parser working correctly with 86.7% success rate. All HDFC patterns including multiline formats parse successfully. Indian number format (1,37,083.00) handled correctly. Account number extraction working for all formats (*2953, XX2953, x2953, x7722). No critical parsing failures detected."
+        comment: "Financial summaries (Total Income, Total Expenses, Balance) on BudgetDashboard do not automatically refresh after manual SMS classification. ManualClassification component calls refresh but totals remain unchanged. Need to investigate if there's a timing issue, caching problem, or date/month mismatch in the transaction creation."
 
-  - task: "Test SMS parser with real HDFC examples"
-    implemented: true
-    working: true
+  - task: "Smart date validation for SMS parsing"
+    implemented: false
+    working: false
     file: "backend/services/sms_parser.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: false
         agent: "main"
-        comment: "Need to test parser with 10 real HDFC SMS examples provided by user"
-      - working: true
+        comment: "Need to implement date validation logic to detect illogical SMS dates (e.g., future months like August when it's July) and automatically route such SMS to Manual Validation Needed section."
+
+  - task: "Enhanced SMS transaction details API"
+    implemented: false
+    working: false
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: false
         agent: "main"
-        comment: "SUCCESS: All 10 user-provided real HDFC SMS examples parse correctly: amounts, payees, dates, balances all extracted accurately. Key fixes: Indian number format, multiline support, ACH payee extraction, balance parsing"
-      - working: true
-        agent: "testing"
-        comment: "COMPREHENSIVE TESTING COMPLETED: Created and executed backend_test.py with 15 test cases. Results: 8/8 real HDFC SMS examples passed (100% success on actual SMS formats), 3/3 edge cases passed (proper error handling), 1/4 pattern matching tests failed (incomplete SMS fragments - expected behavior). Overall success rate: 80%. All critical functionality working correctly for production use."
-      - working: true
-        agent: "testing"
-        comment: "RE-TESTED: All real HDFC SMS examples continue to parse correctly. Multiline UPI format (₹134,985), UPDATE debit with Indian number format (₹137,083), Axis Bank multiline (₹2,500), and Scapia/Federal Bank (₹750) all working perfectly. 100% success rate on real-world SMS formats."
-
-  - task: "Fix XX0003 pattern parsing and amount extraction accuracy"
-    implemented: true
-    working: true
-    file: "backend/services/sms_parser.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "TESTED: XX0003 pattern parsing issue has been resolved. All test cases with XX0003 account pattern parse correctly with accurate amounts: ✅ XX0003 with ₹1,000.00 (not 3) ✅ XX0003 with ₹500.00 (not 3) ✅ XX0003 with ₹250.00 (not 3) ✅ XX0003 with ₹1,500.50 (not 3) ✅ XX0003 with ₹30.00 (not 3). Account numbers extracted correctly as XX0003 or 0003. No critical failures where amounts are incorrectly parsed as 3. SMS parser fallback patterns working correctly for generic SMS formats."
-
-  - task: "Multi-bank SMS format support validation"
-    implemented: true
-    working: true
-    file: "backend/services/sms_parser.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "TESTED: Multi-bank SMS format support working perfectly. All 3 bank formats tested successfully: ✅ HDFC Bank multiline and single-line formats ✅ Axis Bank card spent multiline format ✅ Scapia/Federal Bank credit card format. Each bank's specific patterns are correctly identified and parsed with accurate amount and account extraction. Fallback patterns also working for generic bank SMS formats."
-
-  - task: "Month filtering fix (0-indexed to 1-indexed conversion)"
-    implemented: true
-    working: true
-    file: "backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "TESTED: Month filtering fix is working correctly. GET /api/transactions?month=6&year=2025 returns 48 July 2025 transactions as expected. The 0-indexed to 1-indexed month conversion fix is functioning properly."
-
-  - task: "Transaction update endpoint for manual categorization"
-    implemented: true
-    working: true
-    file: "backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "TESTED: PUT /api/transactions/{id} endpoint working correctly for manual categorization. Successfully created test transaction, updated category_id and description, and verified changes were applied. Transaction update functionality is fully operational."
-
-  - task: "SMS transaction display with proper formatting"
-    implemented: true
-    working: true
-    file: "backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "TESTED: SMS transaction display is working correctly. Found 45 SMS transactions in system with proper formatting. Required fields (amount, date, merchant, type) are present, and optional fields (account_number, balance) are properly populated where available. SMS transactions display all necessary information for the frontend."
-
-  - task: "Real HDFC transaction data verification"
-    implemented: true
-    working: true
-    file: "backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "TESTED: Real HDFC transaction data is showing up correctly in the API. Found 19 HDFC transactions with all 8 expected merchants: FINZOOM INVESTMENT ADVISORS PRIVATE LIMITED, MELODY HENRIETTA NICHOLAS, RAMESH . H.R., Old Man, WFISPL CREDIT, INDIANESIGN, RAZ*Allard Educational, and Blinkit. All transactions include proper account numbers, amounts, dates, and balance information where available. Key review merchants (FINZOOM, MELODY, INDIANESIGN, Blinkit, Old Man) are all present and working correctly."
+        comment: "Need API endpoints to provide detailed SMS transaction breakdown for enhanced drill-down feature, including source SMS text, parsed details, and transaction metadata."
 
 frontend:
   - task: "SMS Demo functionality"
