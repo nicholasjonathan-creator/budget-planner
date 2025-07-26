@@ -101,7 +101,10 @@ const ManualClassification = ({ onClassificationComplete }) => {
           description: ''
         });
         
-        // Notify parent component
+        // Refresh the failed SMS list to get updated count
+        await loadFailedSMS();
+        
+        // Notify parent component to refresh dashboard data
         if (onClassificationComplete) {
           onClassificationComplete();
         }
