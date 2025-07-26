@@ -43,7 +43,16 @@ class SMSTransactionParser:
                 'payee_group': 4,
                 'type': 'income'
             },
-            # Pattern 4: "IMPS INR X,XXX.XX sent from HDFC Bank A/c XXXX on DD-MM-YY To A/c XXXXXXXXXX"
+            # Pattern 4: "IMPS INR X\nsent from HDFC Bank A/c XXXX on DD-MM-YY\nTo A/c XXXXXXXX"
+            'imps_sent_multiline': {
+                'regex': r'imps\s+inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s*\n?\s*sent\s+from\s+hdfc\s+bank\s+a/c\s+([x\d]+)\s+on\s+(\d{2}-\d{2}-\d{2})\s*\n?\s*to\s+a/c\s+([x\d]+)',
+                'amount_group': 1,
+                'account_group': 2,
+                'date_group': 3,
+                'payee_group': 4,
+                'type': 'expense'
+            },
+            # Pattern 4b: Single line "IMPS INR X sent from HDFC Bank A/c XXXX on DD-MM-YY To A/c XXXXXXXX"
             'imps_sent': {
                 'regex': r'imps\s+inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+sent\s+from\s+hdfc\s+bank\s+a/c\s+([x\d]+)\s+on\s+(\d{2}-\d{2}-\d{2})\s+to\s+a/c\s+([x\d]+)',
                 'amount_group': 1,
