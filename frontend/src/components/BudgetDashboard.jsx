@@ -27,6 +27,7 @@ const BudgetDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [transactionFilter, setTransactionFilter] = useState('all'); // 'all', 'income', 'expense'
   const [refreshKey, setRefreshKey] = useState(0); // Force refresh key
+  const [failedSMSCount, setFailedSMSCount] = useState(0); // Count of failed SMS needing manual validation
   const { toast } = useToast();
 
   useEffect(() => {
