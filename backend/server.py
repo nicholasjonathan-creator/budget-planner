@@ -259,6 +259,94 @@ async def get_notification_logs(
         logger.error(f"Error getting notification logs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ==================== PRODUCTION EMAIL ENDPOINTS ====================
+
+@api_router.get("/notifications/production/status")
+async def get_production_email_status(admin_user: User = Depends(get_admin_user)):
+    """Get production email system status (admin only)"""
+    try:
+        config_status = await production_email_config.verify_sender_configuration()
+        checklist = await production_email_config.get_production_checklist()
+        
+        scheduler_status = {
+            'running': email_scheduler.is_running,
+            'jobs': len(email_scheduler.scheduler.get_jobs()) if email_scheduler.scheduler else 0
+        }
+        
+        return {
+            'configuration': config_status,
+            'production_checklist': checklist,
+            'scheduler': scheduler_status,
+            'environment': production_email_config.environment
+        }
+    except Exception as e:
+        logger.error(f"Error getting production email status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/notifications/production/start-scheduler")
+async def start_email_scheduler(admin_user: User = Depends(get_admin_user)):
+    """Start the email scheduler (admin only)"""
+    try:
+        if not email_scheduler.is_running:
+            email_scheduler.start()
+            return {"message": "Email scheduler started successfully", "status": "running"}
+        else:
+            return {"message": "Email scheduler is already running", "status": "running"}
+    except Exception as e:
+        logger.error(f"Error starting email scheduler: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/notifications/production/stop-scheduler")
+async def stop_email_scheduler(admin_user: User = Depends(get_admin_user)):
+    """Stop the email scheduler (admin only)"""
+    try:
+        if email_scheduler.is_running:
+            email_scheduler.stop()
+            return {"message": "Email scheduler stopped successfully", "status": "stopped"}
+        else:
+            return {"message": "Email scheduler is not running", "status": "stopped"}
+    except Exception as e:
+        logger.error(f"Error stopping email scheduler: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/notifications/production/checklist")
+async def get_production_checklist(admin_user: User = Depends(get_admin_user)):
+    """Get production readiness checklist (admin only)"""
+    try:
+        return await production_email_config.get_production_checklist()
+    except Exception as e:
+        logger.error(f"Error getting production checklist: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/notifications/production/smtp-config")
+async def get_smtp_config(admin_user: User = Depends(get_admin_user)):
+    """Get production SMTP configuration options (admin only)"""
+    try:
+        return production_email_config.get_production_smtp_config()
+    except Exception as e:
+        logger.error(f"Error getting SMTP config: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/notifications/production/trigger-budget-alerts")
+async def trigger_budget_alerts(admin_user: User = Depends(get_admin_user)):
+    """Manually trigger budget alerts for testing (admin only)"""
+    try:
+        await email_scheduler.send_budget_alerts()
+        return {"message": "Budget alerts triggered successfully"}
+    except Exception as e:
+        logger.error(f"Error triggering budget alerts: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/notifications/production/trigger-monthly-summaries")
+async def trigger_monthly_summaries(admin_user: User = Depends(get_admin_user)):
+    """Manually trigger monthly summaries for testing (admin only)"""
+    try:
+        await email_scheduler.send_monthly_summaries()
+        return {"message": "Monthly summaries triggered successfully"}
+    except Exception as e:
+        logger.error(f"Error triggering monthly summaries: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ==================== TRANSACTION ENDPOINTS ====================
 
 @api_router.post("/transactions", response_model=Transaction)
