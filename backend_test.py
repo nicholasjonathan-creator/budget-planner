@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend API Testing - SMS Parser Focus
-Tests the SMS parsing functionality with emphasis on:
-1. XX0003 pattern handling and amount parsing accuracy
-2. Multi-bank SMS format support (HDFC, Axis, Scapia/Federal)
-3. Fallback pattern mechanisms
-4. Account number extraction across different formats
-5. Amount parsing validation (ensuring no incorrect parsing as amount=3)
+Comprehensive Backend System Status & Verification Testing
+Tests requested by user for budget planner system verification:
+1. Current Data Status (SMS count, failed SMS, transactions, monthly summary)
+2. Core Features Verification (SMS parsing, manual classification, analytics, CRUD)
+3. System Health Check (API endpoints, database connectivity, authentication)
+4. Issue Detection (backend logs, data integrity, error handling)
 """
 
 import requests
