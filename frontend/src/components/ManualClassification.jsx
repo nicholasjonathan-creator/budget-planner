@@ -233,7 +233,7 @@ const ManualClassification = ({ onClassificationComplete }) => {
               
               {classifying === sms.id ? (
                 <div className="space-y-4 border-t pt-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
                       <Label htmlFor="transaction_type">Transaction Type</Label>
                       <Select 
@@ -261,7 +261,7 @@ const ManualClassification = ({ onClassificationComplete }) => {
                     </div>
                     
                     <div>
-                      <Label htmlFor="amount">Amount (₹)</Label>
+                      <Label htmlFor="amount">Amount</Label>
                       <Input
                         id="amount"
                         type="number"
@@ -270,6 +270,80 @@ const ManualClassification = ({ onClassificationComplete }) => {
                         value={classificationData.amount}
                         onChange={(e) => handleInputChange('amount', e.target.value)}
                       />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="currency">Currency</Label>
+                      <Select 
+                        value={classificationData.currency} 
+                        onValueChange={(value) => handleInputChange('currency', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select currency" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="INR">
+                            <div className="flex items-center gap-2">
+                              <span>🇮🇳</span>
+                              <span>INR (₹)</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="USD">
+                            <div className="flex items-center gap-2">
+                              <span>🇺🇸</span>
+                              <span>USD ($)</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="EUR">
+                            <div className="flex items-center gap-2">
+                              <span>🇪🇺</span>
+                              <span>EUR (€)</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="GBP">
+                            <div className="flex items-center gap-2">
+                              <span>🇬🇧</span>
+                              <span>GBP (£)</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="PHP">
+                            <div className="flex items-center gap-2">
+                              <span>🇵🇭</span>
+                              <span>PHP</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="JPY">
+                            <div className="flex items-center gap-2">
+                              <span>🇯🇵</span>
+                              <span>JPY (¥)</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="AUD">
+                            <div className="flex items-center gap-2">
+                              <span>🇦🇺</span>
+                              <span>AUD</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="CAD">
+                            <div className="flex items-center gap-2">
+                              <span>🇨🇦</span>
+                              <span>CAD</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="CHF">
+                            <div className="flex items-center gap-2">
+                              <span>🇨🇭</span>
+                              <span>CHF</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="SGD">
+                            <div className="flex items-center gap-2">
+                              <span>🇸🇬</span>
+                              <span>SGD</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   
