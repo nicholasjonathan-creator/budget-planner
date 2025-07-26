@@ -29,6 +29,7 @@ const BudgetDashboard = () => {
   const [transactionFilter, setTransactionFilter] = useState('all'); // 'all', 'income', 'expense'
   const [refreshKey, setRefreshKey] = useState(0); // Force refresh key
   const [failedSMSCount, setFailedSMSCount] = useState(0); // Count of failed SMS needing manual validation
+  const [multiCurrencyTransactions, setMultiCurrencyTransactions] = useState([]); // Track non-INR transactions
   const { toast } = useToast();
 
   useEffect(() => {
