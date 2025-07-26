@@ -247,6 +247,9 @@ class TransactionService:
     async def update_budget_spent(self, month: int, year: int):
         """Update spent amounts for all budget limits"""
         try:
+            # Frontend sends 0-indexed months, convert to 1-indexed
+            actual_month = month + 1
+            
             category_totals = await self.get_category_totals(month, year)
             
             budget_limits = await self.get_budget_limits(month, year)
@@ -259,7 +262,7 @@ class TransactionService:
                     {"$set": {"spent": spent}}
                 )
             
-            logger.info(f"Updated budget spent amounts for {month}/{year}")
+            logger.info(f"Updated budget spent amounts for {actual_month}/{year}")
             
         except Exception as e:
             logger.error(f"Error updating budget spent: {e}")
