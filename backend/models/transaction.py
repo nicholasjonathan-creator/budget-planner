@@ -31,6 +31,7 @@ class Transaction(BaseModel):
     merchant: Optional[str] = None
     account_number: Optional[str] = None
     balance: Optional[float] = None
+    currency: Optional[str] = "INR"  # Add currency field with INR default
 
 class TransactionCreate(BaseModel):
     type: TransactionType
