@@ -304,7 +304,11 @@ const BudgetDashboard = () => {
                 Add Transaction
               </Button>
             </div>
-            <TransactionList transactions={transactions} categories={categories} />
+            <TransactionList 
+              transactions={transactions} 
+              categories={categories} 
+              onTransactionUpdate={loadData}
+            />
           </TabsContent>
           
           <TabsContent value="budget">
