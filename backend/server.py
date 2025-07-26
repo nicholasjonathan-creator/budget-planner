@@ -403,3 +403,31 @@ async def clear_sms_data():
     except Exception as e:
         logger.error(f"Error clearing SMS data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/admin/clear-all-sms")
+async def clear_all_sms():
+    """Clear ALL SMS data including failed SMS for complete reset"""
+    try:
+        # Clear failed SMS collection completely
+        failed_sms_collection = db.failed_sms
+        failed_result = await failed_sms_collection.delete_many({})
+        
+        # Clear all SMS transactions (transactions with source = 'sms' or 'sms_manual')
+        transactions_collection = db.transactions
+        trans_result = await transactions_collection.delete_many({
+            "source": {"$in": ["sms", "sms_manual"]}
+        })
+        
+        # Clear any cached SMS data or processing collections
+        # Add any other SMS-related collections here
+        
+        logger.info("ALL SMS data cleared successfully")
+        return {
+            "success": True,
+            "message": "ALL SMS data cleared successfully",
+            "deleted_failed_sms": failed_result.deleted_count,
+            "deleted_transactions": trans_result.deleted_count
+        }
+    except Exception as e:
+        logger.error(f"Error clearing all SMS data: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
