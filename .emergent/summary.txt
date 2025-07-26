@@ -1,47 +1,47 @@
 <analysis>
-The AI engineer's work trajectory focused on building a full-stack budget planner MVP. Initially, a React frontend was developed using mock data, followed by FastAPI backend implementation with MongoDB for data persistence. A key pivot occurred when the user requested automated transaction tracking via SMS parsing, which was then prioritized and implemented for Indian banks (HDFC, SBI, ICICI). The final phase concentrated on production readiness, involving setting up deployment configurations for Railway/Render (backend) and Vercel (frontend), connecting to MongoDB Atlas, and fine-tuning the application for Indian localization (INR currency, DD-MM-YYYY date format). Throughout, debugging involved screenshot analysis, log checks, and iterative code adjustments, particularly for date handling and refining the SMS parser based on real user feedback and examples. The project successfully reached a fully deployed, production-ready state with core features implemented.
+The AI engineer's work trajectory revolved around developing and refining a full-stack budget planner MVP. Initially, the focus was on building core features with a React frontend, FastAPI backend, and MongoDB. A significant pivot involved implementing automated transaction tracking via SMS parsing for Indian banks (HDFC, SBI, ICICI, Axis, Scapia/Federal), necessitating extensive regex pattern refinement. Concurrently, the application was prepared for production deployment on Railway/Render and Vercel, integrating with MongoDB Atlas and localizing for INR currency and DD-MM-YYYY dates. Recent efforts concentrated on enhancing the SMS parser's accuracy across diverse bank formats, enabling UI drill-down functionality for financial summaries, and crucially, adding a manual classification feature for unparsed SMS messages. The current challenge involves ensuring the frontend financial summaries dynamically update post-manual classification.
 </analysis>
 
 <product_requirements>
-The primary objective was to build a simple budget planner application. Core functionalities include income/expense tracking, category-based summaries, monthly charts, and local storage. The UI was specified to be clean, responsive, use pastel colors, and have easy input forms, adhering to modern design guidelines including motion, depth, bold typography, and asymmetry.
+The primary goal was to create a simple budget planner application with core functionalities including income/expense tracking, category-based summaries, monthly charts, and local storage. The UI was specified to be clean, responsive, use pastel colors, and adhere to modern design principles (motion, depth, bold typography, asymmetry).
 
-During development, the requirements evolved to include:
-1.  **Automated Transaction Tracking**: Initially via email (Gmail/Outlook), then shifted to SMS alerts due to user preference and perceived directness. The SMS parsing was to handle multiple Indian bank formats (HDFC, SBI, ICICI) and auto-categorize transactions.
-2.  **Backend Integration**: Transition from mock data to a real database (MongoDB), implementing essential CRUD operations for transactions, categories, and budgets, with proper API prefixing ().
-3.  **Production Readiness**: Preparing the application for deployment to cloud platforms (Railway/Render for backend, Vercel for frontend) with a MongoDB Atlas database. This included creating Dockerfiles, Railway/Vercel configurations, and deployment scripts.
-4.  **Localization**: Adapting the application for India-specific currency (INR with Indian formatting) and date formats (DD-MM-YYYY) based on user feedback.
+During development, the requirements expanded to include:
+1.  **Automated Transaction Tracking**: Shifted from email to SMS alerts, with a critical need to parse and auto-categorize transactions from various Indian banks (HDFC, SBI, ICICI, later extended to Axis and Scapia/Federal) using advanced regex.
+2.  **Backend Integration**: Transition from mock data to a MongoDB database, implementing comprehensive CRUD operations for transactions, categories, and budgets, ensuring all API endpoints are prefixed with .
+3.  **Production Readiness**: Configuring the application for cloud deployment on Railway/Render (backend) and Vercel (frontend), connected to a MongoDB Atlas database. This included creating necessary Dockerfiles and deployment configurations.
+4.  **Localization**: Adapting the application for India-specific currency (INR with Indian formatting) and date formats (DD-MM-YYYY).
+5.  **Enhanced UI & Manual Classification**: Adding the ability for users to drill down into income/expense totals, and implement a feature to manually classify SMS messages that the automated parser fails to process.
 </product_requirements>
 
 <key_technical_concepts>
--   **React**: Frontend framework for building the user interface.
--   **FastAPI**: Python framework for the backend API.
+-   **React**: Frontend framework for UI development.
+-   **FastAPI**: Python framework for backend API.
 -   **MongoDB**: NoSQL database for data persistence.
--   **SMS Parsing**: Utilizes regex patterns to extract transaction details from bank SMS.
--   **Cloud Deployment**: Leverages Railway/Render (backend) and Vercel (frontend) for production hosting, and MongoDB Atlas for cloud database.
+-   **SMS Parsing**: Utilizes regex for extracting transaction details from bank SMS.
+-   **Cloud Deployment**: Leverages Railway/Render (backend) and Vercel (frontend), with MongoDB Atlas.
 -   **Tailwind CSS**: Utility-first CSS framework for styling.
--   **Recharts**: JavaScript charting library for data visualization.
--   **Environment Variables**: Securely manages sensitive configurations (, ).
--   **CORS**: Cross-Origin Resource Sharing configuration for frontend-backend communication.
--   **Git/GitHub**: Version control and code hosting.
+-   **Recharts**: JavaScript library for data visualization.
+-   **Environment Variables**: Secure management of configurations.
+-   **CORS**: Cross-Origin Resource Sharing.
 </key_technical_concepts>
 
 <code_architecture>
-The application follows a standard full-stack architecture with a React frontend, FastAPI backend, and MongoDB database. Communication between frontend and backend occurs via REST APIs, with all backend routes prefixed with  for Kubernetes ingress compatibility.
+The application follows a standard full-stack architecture with a React frontend, FastAPI backend, and MongoDB database. Frontend-backend communication uses REST APIs, with all backend routes prefixed with  for Kubernetes ingress compatibility.
 
 
 
--   : The main FastAPI application. It includes the  for all API endpoints, defines Pydantic models for , and handles CORS. It was updated to include transaction and SMS parsing endpoints and integrate with MongoDB.
--   , , : New files defining the Pydantic data models for the MongoDB collections. These are crucial for structuring the application's data.
--   : Contains the core logic for processing transactions, including the advanced regex patterns for parsing various bank SMS formats. This file encapsulates the business logic for transaction management.
--   : The root React component. It sets up  for navigation. Initially a placeholder, it was updated to integrate the  and other components. Changes involved removing placeholder API calls and ensuring routing.
--   : Created to provide mock data for initial frontend development, allowing the UI to be built and tested independently before backend integration.
--   : A new file that centralizes all API calls from the frontend to the backend, using . This file abstracts API endpoint details, making frontend components cleaner and easier to manage.
--   : The main dashboard component displaying financial summaries, charts, and transaction overviews. This file underwent extensive modifications to fetch data from the real backend API, handle dynamic date filtering, display INR currency, and correct date formatting.
--   : A new component added to the frontend specifically for demonstrating the SMS parsing functionality. It allows users to simulate SMS inputs and see immediate results.
--   , , , : These components were updated to consume data from the  service, replacing mock data usage. They also incorporated the INR currency and Indian date formatting changes.
--   , , : Configuration files for Docker, Railway (backend deployment), and Vercel (frontend deployment), respectively. These are essential for containerization and automated deployment pipelines.
--   , : Environment specific files for production configurations, preventing hardcoding of sensitive information.
--   Various markdown files (, , , etc.): Created to provide detailed, step-by-step instructions for manual cloud deployment.
+-   : The main FastAPI application, handling API endpoints and CORS. Updated to include endpoints for SMS processing and manual classification.
+-   : Defines the Pydantic  model. Modified to include  in the  enum for manual classifications.
+-   : Contains business logic for transactions. Modified to correctly handle 0-indexed month from frontend to 1-indexed for backend processing and budget updates.
+-   : Newly discovered during development, this file holds the advanced regex patterns for SMS parsing. Heavily modified to improve parsing accuracy for HDFC bank (handling Indian number formats, multiline SMS, payee, and balance extraction), and expanded to support Axis Bank and Scapia/Federal Bank SMS formats. Missing  and  were re-added.
+-   : Handles receiving and processing SMS, utilizing . New backend endpoints (, ) were added here to manage failed SMS and their manual classification.
+-   : The root React component.
+-   : Centralizes API calls. Updated to include new methods (, ) for fetching failed SMS and sending manual classification data.
+-   : The main dashboard component. Extensively modified to make Total Income, Total Expenses, and Balance summary cards clickable for drill-down filtering of transactions. Integrated the new  component within a Manual tab and implemented a  state to trigger dashboard data reloads.
+-   : Component for demonstrating SMS parsing.
+-   : A new component created to provide a UI for users to view failed SMS messages and manually classify them (as debit or credit) by entering amount and description. It includes loading states and feedback mechanisms.
+-   : An existing ShadCN UI component confirmed to be present and utilized by the new manual classification feature.
+-   : Used extensively to log problem statements, testing protocols, and results.
 </code_architecture>
 
 <pending_tasks>
@@ -51,14 +51,22 @@ The application follows a standard full-stack architecture with a React frontend
 -   Integrate with bank APIs (Plaid, Yodlee, Open Banking) for direct data access.
 -   Implement advanced analytics, including spending patterns, budget recommendations, and financial health scores.
 -   Set up real SMS webhooks (e.g., Twilio) for production and configure SMS forwarding from a phone.
+-   UI adjustment for better tag button visibility in transaction display.
 </pending_tasks>
 
 <current_work>
-The budget planner application is fully developed and deployed to the internet. The backend is hosted on Render, and the frontend on Vercel, both connected to a MongoDB Atlas cloud database. The application successfully provides income/expense tracking, category-based summaries, and interactive charts. A key feature is the SMS transaction parsing, which automatically extracts and categorizes financial data from bank SMS alerts, with support for HDFC, SBI, and ICICI formats. The application has been localized for India, displaying amounts in INR (₹) with Indian number formatting and dates in DD-MM-YYYY format.
+The budget planner application is fully developed and deployed, offering income/expense tracking, category summaries, and charts. Its core strength is the SMS transaction parser, which now supports HDFC, SBI, ICICI, Axis, and Scapia/Federal bank formats with high accuracy (93.5% success rate on 93 live messages). The application also features Indian localization (INR, DD-MM-YYYY).
 
-Currently, the AI engineer is actively working on improving the accuracy of the SMS parser. The user has provided new, real-world HDFC bank SMS examples that previously caused parsing failures. The task is to specifically customize the existing regex patterns within the  to correctly extract the amount, date/time, payee (merchant/person), and bank from these new real-world message formats. The engineer has already made several edits to the  and is preparing to test these new parsing rules locally.
+Currently, the AI engineer is actively working on resolving a critical UI refresh issue. A **manual classification feature** has been implemented, allowing users to classify SMS messages that failed automatic parsing (the remaining 6.5% of messages). This feature includes:
+-   New backend API endpoints ( and ).
+-   A dedicated Manual tab and  component in the frontend where users can view failed SMS, input transaction details (type, amount, description), and submit them.
+-   The dashboard's financial summary cards (Total Income, Total Expenses, Balance) are now clickable, providing a drill-down feature to filter transactions.
+
+During the implementation of manual classification, an issue where the backend's  enum did not recognize  was identified and fixed in . Backend API calls for transactions and monthly summaries are now validated as correctly working.
+
+However, the **immediate problem being addressed** is that after a user manually classifies an SMS, while the new transaction correctly appears in the Recent Transactions list, the **financial summaries (Total Income, Total Expenses, Balance) on the  do not automatically refresh to reflect these changes**. The engineer has implemented refresh mechanisms, including a  state in  and loading indicators, but the financial totals remain unchanged post-classification. The last action confirms the new transaction appears, but the summary totals do not update, indicating a persistent frontend refresh problem specifically for the financial overview.
 </current_work>
 
 <optional_next_step>
-Test the updated SMS parser locally with the provided real-world HDFC SMS examples to ensure accurate data extraction.
+Improve the frontend UI refresh mechanism to ensure financial summaries update immediately after manual SMS classification.
 </optional_next_step>

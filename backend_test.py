@@ -17,7 +17,7 @@ from datetime import datetime
 import uuid
 
 # Get backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://faec72d5-b1ac-459e-9b2a-3a68f118503b.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://9893592c-ea62-43ea-a69a-4d1e92118114.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class SMSParserTester:
