@@ -230,7 +230,7 @@ class SMSTransactionParser:
         # Handle ACH patterns: "ACH D- TP ACH INDIANESIGN-1862188817"
         if 'ach d-' in payee.lower():
             # Extract company name from ACH pattern
-            ach_match = re.search(r'ach\s+d-\s*.*?([a-zA-Z]+)-?\d*', payee, re.IGNORECASE)
+            ach_match = re.search(r'ach\s+d-\s*.*?([a-zA-Z]+)-\d+', payee, re.IGNORECASE)
             if ach_match:
                 company_part = ach_match.group(1)
                 if company_part and len(company_part) > 2:
