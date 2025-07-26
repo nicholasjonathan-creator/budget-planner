@@ -627,14 +627,33 @@ app.include_router(api_router)
 # Startup event
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database on startup"""
+    """Initialize database and start email scheduler on startup"""
     await init_db()
+    
+    # Start email scheduler if in production
+    if production_email_config.environment == 'production':
+        try:
+            email_scheduler.start()
+            logger.info("Email scheduler started for production environment")
+        except Exception as e:
+            logger.error(f"Failed to start email scheduler: {e}")
+    else:
+        logger.info("Email scheduler not started (development environment)")
+    
     logger.info("Budget Planner API started successfully")
 
 # Shutdown event
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
+    # Stop email scheduler
+    try:
+        if email_scheduler.is_running:
+            email_scheduler.stop()
+            logger.info("Email scheduler stopped")
+    except Exception as e:
+        logger.error(f"Error stopping email scheduler: {e}")
+    
     logger.info("Budget Planner API shutting down")
 
 # ==================== ADMIN ENDPOINTS
