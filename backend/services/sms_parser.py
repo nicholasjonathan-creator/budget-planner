@@ -110,6 +110,7 @@ class SMSTransactionParser:
                 'amount_group': 1,
                 'account_group': 2,
                 'payee_group': 3,
+                'date_group': None,  # No date in this format
                 'type': 'expense'
             }
         }
