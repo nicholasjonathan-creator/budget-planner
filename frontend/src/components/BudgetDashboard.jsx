@@ -19,24 +19,26 @@ const BudgetDashboard = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
-    // Load data from localStorage or use mock data
+    // Always load mock data initially to show functionality
+    setTransactions(mockTransactions);
+    setBudgetLimits(mockBudgetLimits);
+    
+    // Also try to load from localStorage
     const savedTransactions = localStorage.getItem('budget_transactions');
     const savedBudgetLimits = localStorage.getItem('budget_limits');
     
     if (savedTransactions) {
-      setTransactions(JSON.parse(savedTransactions));
-    } else {
-      setTransactions(mockTransactions);
-      // Save mock data to localStorage for persistence
-      localStorage.setItem('budget_transactions', JSON.stringify(mockTransactions));
+      const parsedTransactions = JSON.parse(savedTransactions);
+      if (parsedTransactions.length > 0) {
+        setTransactions(parsedTransactions);
+      }
     }
     
     if (savedBudgetLimits) {
-      setBudgetLimits(JSON.parse(savedBudgetLimits));
-    } else {
-      setBudgetLimits(mockBudgetLimits);
-      // Save mock data to localStorage for persistence
-      localStorage.setItem('budget_limits', JSON.stringify(mockBudgetLimits));
+      const parsedLimits = JSON.parse(savedBudgetLimits);
+      if (Object.keys(parsedLimits).length > 0) {
+        setBudgetLimits(parsedLimits);
+      }
     }
   }, []);
 
