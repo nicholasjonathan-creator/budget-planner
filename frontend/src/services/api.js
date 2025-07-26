@@ -133,12 +133,13 @@ class ApiService {
     return response.data;
   }
 
-  async manualClassifySMS(smsId, transactionType, amount, description) {
+  async manualClassifySMS(smsId, transactionType, amount, description, currency = 'INR') {
     const response = await this.client.post('/sms/manual-classify', {
       sms_id: smsId,
       transaction_type: transactionType,
       amount: amount,
-      description: description
+      description: description,
+      currency: currency
     });
     return response.data;
   }
