@@ -33,8 +33,8 @@ class ProductionEmailAutomationTester:
         
         # Test credentials for admin and regular user
         self.admin_credentials = {
-            "email": "admin@example.com",
-            "password": "adminpassword123"
+            "email": "superadmin@example.com",
+            "password": "superadminpass123"
         }
         
         self.regular_user_credentials = {
