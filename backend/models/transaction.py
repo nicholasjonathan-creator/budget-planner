@@ -45,6 +45,7 @@ class TransactionCreate(BaseModel):
 
 class BudgetLimit(BaseModel):
     id: Optional[str] = None
+    user_id: Optional[str] = None  # Associate budget limit with user
     category_id: int
     limit: float
     spent: float = 0.0
