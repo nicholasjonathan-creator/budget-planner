@@ -441,7 +441,10 @@ class SMSTransactionParser:
         return payee.strip()
 
     def _parse_date(self, date_str: str) -> datetime:
-        """Parse various date formats from HDFC SMS with smart validation"""
+        """Parse various date formats from SMS with smart validation"""
+        if not date_str or not isinstance(date_str, str):
+            return datetime.now()
+            
         try:
             current_date = datetime.now()
             parsed_date = None
@@ -461,30 +464,41 @@ class SMSTransactionParser:
             # Format: DD-MM-YY
             elif '-' in date_str and len(date_str) == 8:
                 parsed_date = datetime.strptime(date_str, '%d-%m-%y')
+                
+            # Format: DD/MM/YYYY (full year)
+            elif '/' in date_str and len(date_str) == 10:
+                parsed_date = datetime.strptime(date_str, '%d/%m/%Y')
+                
+            # Format: DD-MM-YYYY (full year)
+            elif '-' in date_str and len(date_str) == 10:
+                parsed_date = datetime.strptime(date_str, '%d-%m-%Y')
             
-            # Smart date validation
+            # Smart date validation - CRITICAL for routing to manual classification
             if parsed_date:
                 # Check for future dates (illogical SMS dates)
                 if parsed_date > current_date:
                     # If the parsed date is in the future, it's likely incorrect
                     # This will cause the SMS to fail parsing and go to manual classification
-                    raise ValueError(f"SMS contains future date: {date_str} (parsed as {parsed_date.strftime('%d-%m-%Y')})")
+                    raise ValueError(f"SMS contains future date: {date_str} (parsed as {parsed_date.strftime('%d-%m-%Y')}). Current date: {current_date.strftime('%d-%m-%Y')}")
                 
-                # Check for dates that are too far in the past (more than 1 year)
+                # Check for dates that are too far in the past (more than 2 years)
                 days_diff = (current_date - parsed_date).days
-                if days_diff > 365:
-                    raise ValueError(f"SMS contains date too far in past: {date_str} (parsed as {parsed_date.strftime('%d-%m-%Y')})")
+                if days_diff > 730:  # 2 years = 730 days
+                    raise ValueError(f"SMS contains date too far in past: {date_str} (parsed as {parsed_date.strftime('%d-%m-%Y')}). {days_diff} days ago.")
                 
                 return parsed_date
             
         except ValueError as e:
-            # Log the validation error for manual review
+            # Log the validation error for manual review and re-raise to trigger manual classification
             print(f"Date validation failed for '{date_str}': {str(e)}")
             # Re-raise the error so SMS goes to manual classification
             raise e
         
-        # Default to current time if parsing fails
-        return datetime.now()
+        # If no parsing succeeded, raise error to trigger manual classification
+        raise ValueError(f"Unable to parse date format: {date_str}")
+        
+        # This line should never be reached, but just in case
+        # return datetime.now()
 
     def _extract_amount_and_type(self, sms_text: str) -> tuple:
         """Extract transaction amount and determine type - Enhanced for HDFC formats"""
