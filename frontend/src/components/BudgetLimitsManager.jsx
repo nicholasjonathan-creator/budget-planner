@@ -158,17 +158,40 @@ const BudgetLimitsManager = ({ budgetLimits, categories, onUpdateLimits, current
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Spent: ₹{spent.toLocaleString('en-IN')}</span>
-                    <span>Remaining: ₹{Math.max(0, budget.limit - spent).toLocaleString('en-IN')}</span>
+                    <span className="flex items-center gap-1">
+                      <span className="text-red-600">Spent:</span>
+                      <span className="font-semibold text-red-700">₹{spent.toLocaleString('en-IN')}</span>
+                      {budget.limit > 0 && (
+                        <span className="text-xs text-gray-500">
+                          ({((spent / budget.limit) * 100).toFixed(1)}%)
+                        </span>
+                      )}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="text-green-600">Remaining:</span>
+                      <span className="font-semibold text-green-700">₹{Math.max(0, budget.limit - spent).toLocaleString('en-IN')}</span>
+                    </span>
                   </div>
-                  <Progress 
-                    value={Math.min(percentage, 100)} 
-                    className="h-2"
-                  />
+                  <div className="relative">
+                    <Progress 
+                      value={Math.min(percentage, 100)} 
+                      className="h-3"
+                    />
+                    {/* Dynamic counter that moves with progress */}
+                    <div 
+                      className="absolute top-0 h-3 bg-gradient-to-r from-transparent to-white/50 pointer-events-none"
+                      style={{ 
+                        width: `${Math.min(percentage, 100)}%`,
+                        transition: 'width 0.3s ease-in-out'
+                      }}
+                    />
+                  </div>
                   <div className="flex justify-between text-xs text-gray-500">
-                    <span>0%</span>
-                    <span>{percentage.toFixed(1)}%</span>
-                    <span>100%</span>
+                    <span>₹0</span>
+                    <span className={`font-semibold ${percentage > 100 ? 'text-red-600' : percentage > 80 ? 'text-amber-600' : 'text-green-600'}`}>
+                      {percentage.toFixed(1)}% used
+                    </span>
+                    <span>₹{budget.limit.toLocaleString('en-IN')}</span>
                   </div>
                 </div>
 
