@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend API Testing
-Tests the updated backend API endpoints and SMS transactions display functionality
-Focus areas:
-1. Month filtering fix (0-indexed to 1-indexed conversion)
-2. Transaction update endpoint for manual categorization
-3. SMS transaction display with proper formatting
-4. Real HDFC transaction data verification
+Comprehensive Backend API Testing - SMS Parser Focus
+Tests the SMS parsing functionality with emphasis on:
+1. XX0003 pattern handling and amount parsing accuracy
+2. Multi-bank SMS format support (HDFC, Axis, Scapia/Federal)
+3. Fallback pattern mechanisms
+4. Account number extraction across different formats
+5. Amount parsing validation (ensuring no incorrect parsing as amount=3)
 """
 
 import requests
