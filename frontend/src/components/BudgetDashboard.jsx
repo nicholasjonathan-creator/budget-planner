@@ -490,6 +490,10 @@ const BudgetDashboard = () => {
               onClassificationComplete={handleManualClassificationComplete}
             />
           </TabsContent>
+          
+          <TabsContent value="notifications">
+            <NotificationSettings />
+          </TabsContent>
         </Tabs>
 
         {/* Transaction Form Modal */}
