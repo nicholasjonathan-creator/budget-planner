@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { TrendingUp, TrendingDown, MessageSquare, Edit, Tag, Calendar, Building, ChevronDown, ChevronUp, Info, Smartphone } from 'lucide-react';
 import ApiService from '../services/api';
 import { useToast } from '../hooks/use-toast';
@@ -194,7 +193,8 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
                           {hasSMSData && showDetailedView && (
                             <button
                               onClick={() => toggleTransactionDetails(transaction.id)}
-                              className="ml-auto p-2 hover:bg-gray-200 rounded-full border border-gray-300 bg-white"
+                              className="ml-auto p-2 hover:bg-blue-100 rounded-full border border-blue-300 bg-blue-50"
+                              title="Click to view original SMS details"
                             >
                               {isExpanded ? (
                                 <ChevronUp className="h-4 w-4 text-blue-600" />
@@ -264,61 +264,76 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
 
                   {/* Detailed SMS Information - Expandable */}
                   {hasSMSData && showDetailedView && isExpanded && (
-                    <div className="px-4 pb-4 border-t bg-gray-50">
-                      <div className="pt-3 space-y-3">
+                    <div className="px-4 pb-4 border-t bg-gradient-to-r from-blue-50 to-indigo-50">
+                      <div className="pt-4 space-y-3">
                         <div className="flex items-start gap-3">
-                          <Smartphone className="h-4 w-4 text-blue-600 mt-1 flex-shrink-0" />
+                          <Smartphone className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
                           <div className="flex-1">
-                            <h4 className="text-sm font-semibold text-gray-700 mb-2">SMS Transaction Details</h4>
+                            <h4 className="text-sm font-semibold text-blue-800 mb-3">📱 Original SMS Transaction Details</h4>
                             
                             {transaction.raw_data?.sms_text && (
-                              <div className="bg-white p-3 rounded border text-sm">
-                                <strong className="text-gray-600">Original SMS:</strong>
-                                <p className="mt-1 text-gray-800 whitespace-pre-wrap font-mono text-xs">
+                              <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500 shadow-sm text-sm mb-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <strong className="text-blue-700">Original SMS Message:</strong>
+                                  <Badge variant="outline" className="text-xs bg-blue-100 text-blue-800">
+                                    {transaction.raw_data.bank || 'Bank SMS'}
+                                  </Badge>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded border font-mono text-xs text-gray-800 leading-relaxed">
                                   {transaction.raw_data.sms_text}
-                                </p>
+                                </div>
                               </div>
                             )}
+                            
+                            <div className="grid grid-cols-2 gap-4 text-xs">
+                              {transaction.raw_data?.phone_number && (
+                                <div className="bg-white p-3 rounded border">
+                                  <span className="font-medium text-gray-600 block mb-1">📞 From Number:</span>
+                                  <p className="text-gray-800 font-semibold">{transaction.raw_data.phone_number}</p>
+                                </div>
+                              )}
                               
-                              <div className="mt-3 grid grid-cols-2 gap-4 text-xs">
-                                {transaction.raw_data?.phone_number && (
-                                  <div>
-                                    <span className="font-medium text-gray-600">From:</span>
-                                    <p className="text-gray-800">{transaction.raw_data.phone_number}</p>
-                                  </div>
-                                )}
-                                
-                                {transaction.raw_data?.bank && (
-                                  <div>
-                                    <span className="font-medium text-gray-600">Bank:</span>
-                                    <p className="text-gray-800">{transaction.raw_data.bank}</p>
-                                  </div>
-                                )}
-                                
-                                {transaction.raw_data?.parsing_method && (
-                                  <div>
-                                    <span className="font-medium text-gray-600">Parsing Method:</span>
-                                    <p className="text-gray-800">{transaction.raw_data.parsing_method}</p>
-                                  </div>
-                                )}
-                                
-                                {transaction.raw_data?.parsed_at && (
-                                  <div>
-                                    <span className="font-medium text-gray-600">Processed:</span>
-                                    <p className="text-gray-800">
-                                      {new Date(transaction.raw_data.parsed_at).toLocaleDateString('en-IN')}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
+                              {transaction.raw_data?.bank && (
+                                <div className="bg-white p-3 rounded border">
+                                  <span className="font-medium text-gray-600 block mb-1">🏦 Bank:</span>
+                                  <p className="text-gray-800 font-semibold">{transaction.raw_data.bank}</p>
+                                </div>
+                              )}
                               
-                              {transaction.source === 'sms_manual' && transaction.raw_data?.manual_classification && (
-                                <div className="mt-3 p-2 bg-orange-50 border border-orange-200 rounded text-xs">
-                                  <Info className="h-3 w-3 inline text-orange-600 mr-1" />
-                                  <span className="text-orange-800">This transaction was manually classified from a failed SMS parse.</span>
+                              {transaction.raw_data?.parsing_method && (
+                                <div className="bg-white p-3 rounded border">
+                                  <span className="font-medium text-gray-600 block mb-1">⚙️ Parsing Method:</span>
+                                  <p className="text-gray-800 font-semibold">{transaction.raw_data.parsing_method}</p>
+                                </div>
+                              )}
+                              
+                              {transaction.raw_data?.parsed_at && (
+                                <div className="bg-white p-3 rounded border">
+                                  <span className="font-medium text-gray-600 block mb-1">🕒 Processed At:</span>
+                                  <p className="text-gray-800 font-semibold">
+                                    {new Date(transaction.raw_data.parsed_at).toLocaleDateString('en-IN', {
+                                      day: '2-digit',
+                                      month: '2-digit', 
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </p>
                                 </div>
                               )}
                             </div>
+                            
+                            {transaction.source === 'sms_manual' && transaction.raw_data?.manual_classification && (
+                              <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-sm">
+                                <div className="flex items-center gap-2">
+                                  <Info className="h-4 w-4 text-orange-600 flex-shrink-0" />
+                                  <span className="text-orange-800 font-medium">Manual Classification</span>
+                                </div>
+                                <p className="text-orange-700 mt-1 text-xs">
+                                  This transaction was manually classified because the automatic SMS parser couldn't determine the transaction type.
+                                </p>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
