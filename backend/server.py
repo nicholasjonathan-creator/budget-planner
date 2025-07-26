@@ -16,10 +16,13 @@ from models.transaction import (
     Category, TransactionType, SMSTransaction
 )
 from models.user import User, UserCreate, UserLogin, UserResponse, Token
+from models.notification import UserNotificationPreferences, NotificationPreferencesUpdate
 from services.transaction_service import TransactionService
 from services.sms_service import SMSService
 from services.user_service import UserService
 from services.auth import create_user_token
+from services.email_templates import EmailTemplates
+from services.notification_service import NotificationPreferencesService
 from dependencies.auth import get_current_user, get_current_active_user, get_admin_user, get_optional_user
 from database import init_db, db
 
