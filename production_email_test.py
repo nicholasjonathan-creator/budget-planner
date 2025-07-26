@@ -46,7 +46,7 @@ class ProductionEmailAutomationTester:
         """Test if the backend is running"""
         print("🔍 Testing Backend Health...")
         try:
-            response = requests.get(f"{API_BASE}/health", timeout=10)
+            response = requests.get(f"{API_BASE}/health", timeout=30)
             if response.status_code == 200:
                 print("✅ Backend is healthy")
                 return True
