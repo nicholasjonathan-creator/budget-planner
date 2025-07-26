@@ -154,8 +154,8 @@ const BudgetLimitsManager = ({ budgetLimits, categories, onUpdateLimits, current
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Spent: ${spent.toFixed(2)}</span>
-                    <span>Remaining: ${Math.max(0, budget.limit - spent).toFixed(2)}</span>
+                    <span>Spent: ₹{spent.toLocaleString('en-IN')}</span>
+                    <span>Remaining: ₹{Math.max(0, budget.limit - spent).toLocaleString('en-IN')}</span>
                   </div>
                   <Progress 
                     value={Math.min(percentage, 100)} 
