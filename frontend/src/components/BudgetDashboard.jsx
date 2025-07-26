@@ -19,8 +19,8 @@ const BudgetDashboard = () => {
   const [categories, setCategories] = useState([]);
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [showSMSDemo, setShowSMSDemo] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(6); // July = 6 (0-indexed)
+  const [selectedYear, setSelectedYear] = useState(2025);
   const [monthlySummary, setMonthlySummary] = useState({ income: 0, expense: 0, balance: 0 });
   const [categoryTotals, setCategoryTotals] = useState({});
   const [loading, setLoading] = useState(true);
