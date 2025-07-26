@@ -90,6 +90,9 @@ const BudgetDashboard = () => {
   };
 
   const handleManualClassificationComplete = async () => {
+    // Show loading state
+    setLoading(true);
+    
     // Force a complete refresh of all data
     setRefreshKey(prev => prev + 1);
     await loadData();
