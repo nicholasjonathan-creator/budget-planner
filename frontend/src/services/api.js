@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -13,9 +14,15 @@ class ApiService {
       },
     });
 
-    // Add request interceptor for debugging
+    // Add request interceptor for authentication and debugging
     this.client.interceptors.request.use(
       (config) => {
+        // Add authentication token if available
+        const token = Cookies.get('auth_token');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        
         console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
         return config;
       },
@@ -30,6 +37,16 @@ class ApiService {
       (response) => response,
       (error) => {
         console.error('API Response Error:', error.response?.data || error.message);
+        
+        // Handle 401 errors (unauthorized) - potentially redirect to login
+        if (error.response?.status === 401) {
+          // Clear invalid auth data
+          Cookies.remove('auth_token');
+          Cookies.remove('auth_user');
+          // Optionally redirect to login page
+          // window.location.href = '/';
+        }
+        
         return Promise.reject(error);
       }
     );
