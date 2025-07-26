@@ -240,24 +240,30 @@ class SMSTransactionParser:
             # Try Scapia/Federal Bank specific patterns
             parsed_data = self._parse_scapia_sms(sms_text)
             if parsed_data:
-                return Transaction(
-                    type=parsed_data['type'],
-                    category_id=self._auto_categorize(parsed_data['payee'], parsed_data['payee']),
-                    amount=parsed_data['amount'],
-                    description=self._generate_description(parsed_data['payee'], sms_text),
-                    date=self._parse_date(parsed_data.get('date', datetime.now().strftime('%d/%m/%y'))),
-                    source=TransactionSource.SMS,
-                    merchant=parsed_data['payee'],
-                    account_number=parsed_data.get('account', 'Scapia Card'),
-                    balance=parsed_data.get('balance'),
-                    raw_data={
-                        'sms_text': sms_text,
-                        'phone_number': phone_number,
-                        'parsed_at': datetime.now().isoformat(),
-                        'bank': 'Federal Bank (Scapia)',
-                        'parsing_method': 'scapia_specific'
-                    }
-                )
+                try:
+                    parsed_date = self._parse_date(parsed_data.get('date', datetime.now().strftime('%d/%m/%y')))
+                    return Transaction(
+                        type=parsed_data['type'],
+                        category_id=self._auto_categorize(parsed_data['payee'], parsed_data['payee']),
+                        amount=parsed_data['amount'],
+                        description=self._generate_description(parsed_data['payee'], sms_text),
+                        date=parsed_date,
+                        source=TransactionSource.SMS,
+                        merchant=parsed_data['payee'],
+                        account_number=parsed_data.get('account', 'Scapia Card'),
+                        balance=parsed_data.get('balance'),
+                        raw_data={
+                            'sms_text': sms_text,
+                            'phone_number': phone_number,
+                            'parsed_at': datetime.now().isoformat(),
+                            'bank': 'Federal Bank (Scapia)',
+                            'parsing_method': 'scapia_specific'
+                        }
+                    )
+                except ValueError as e:
+                    # Date validation failed - return None to trigger manual classification
+                    print(f"Scapia SMS date validation failed: {str(e)}")
+                    return None
             
             # Fallback to generic patterns
             transaction_type, amount = self._extract_amount_and_type(sms_lower)
