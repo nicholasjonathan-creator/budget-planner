@@ -478,10 +478,10 @@ async def get_categories():
 # ==================== SMS ENDPOINTS ====================
 
 @api_router.post("/sms/receive")
-async def receive_sms(phone_number: str = Body(...), message: str = Body(...)):
+async def receive_sms(phone_number: str = Body(...), message: str = Body(...), current_user: User = Depends(get_current_active_user)):
     """Receive and process SMS transaction"""
     try:
-        result = await sms_service.receive_sms(phone_number, message)
+        result = await sms_service.receive_sms(phone_number, message, current_user.id)
         return result
     except Exception as e:
         logger.error(f"Error receiving SMS: {e}")
