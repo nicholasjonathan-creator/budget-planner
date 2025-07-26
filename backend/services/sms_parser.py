@@ -235,6 +235,11 @@ class SMSTransactionParser:
                 company_part = ach_match.group(1)
                 if company_part and len(company_part) > 2:
                     payee = company_part
+            else:
+                # Fallback: extract the last alphabetic part before numbers
+                ach_fallback = re.search(r'([a-zA-Z]+)-?\d+$', payee, re.IGNORECASE)
+                if ach_fallback:
+                    payee = ach_fallback.group(1)
         
         # Handle account transfers (extract account number)
         if 'a/c' in payee.lower() and 'x' in payee.lower():
