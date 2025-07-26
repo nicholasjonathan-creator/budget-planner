@@ -6,24 +6,24 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Textarea } from './ui/textarea';
 import { X } from 'lucide-react';
-import { mockCategories } from './mock/mockData';
 
-const TransactionForm = ({ onSubmit, onCancel }) => {
+const TransactionForm = ({ categories, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
     type: 'expense',
-    categoryId: '',
+    category_id: '',
     amount: '',
     description: ''
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.categoryId || !formData.amount) return;
+    if (!formData.category_id || !formData.amount) return;
     
     onSubmit({
       ...formData,
       amount: parseFloat(formData.amount),
-      categoryId: parseInt(formData.categoryId)
+      category_id: parseInt(formData.category_id),
+      date: new Date().toISOString()
     });
   };
 
@@ -34,7 +34,7 @@ const TransactionForm = ({ onSubmit, onCancel }) => {
     }));
   };
 
-  const categories = formData.type === 'income' ? mockCategories.income : mockCategories.expense;
+  const filteredCategories = categories.filter(cat => cat.type === formData.type);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -55,7 +55,13 @@ const TransactionForm = ({ onSubmit, onCancel }) => {
             {/* Transaction Type */}
             <div className="space-y-2">
               <Label htmlFor="type">Transaction Type</Label>
-              <Select value={formData.type} onValueChange={(value) => handleChange('type', value)}>
+              <Select 
+                value={formData.type} 
+                onValueChange={(value) => {
+                  handleChange('type', value);
+                  handleChange('category_id', ''); // Reset category when type changes
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -69,12 +75,12 @@ const TransactionForm = ({ onSubmit, onCancel }) => {
             {/* Category */}
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select value={formData.categoryId} onValueChange={(value) => handleChange('categoryId', value)}>
+              <Select value={formData.category_id.toString()} onValueChange={(value) => handleChange('category_id', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map(category => (
+                  {filteredCategories.map(category => (
                     <SelectItem key={category.id} value={category.id.toString()}>
                       <div className="flex items-center gap-2">
                         <div 
@@ -129,7 +135,7 @@ const TransactionForm = ({ onSubmit, onCancel }) => {
               <Button 
                 type="submit" 
                 className="flex-1 bg-indigo-600 hover:bg-indigo-700"
-                disabled={!formData.categoryId || !formData.amount}
+                disabled={!formData.category_id || !formData.amount}
               >
                 Add Transaction
               </Button>
