@@ -20,6 +20,437 @@ import uuid
 BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://faec72d5-b1ac-459e-9b2a-3a68f118503b.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
+class SMSParserTester:
+    def __init__(self):
+        self.test_results = []
+        self.total_tests = 0
+        self.passed_tests = 0
+        self.failed_tests = 0
+        
+        # Test SMS messages focusing on XX0003 pattern and amount parsing issues
+        self.test_sms_messages = [
+            # XX0003 pattern test cases - these should NOT parse amount as 3
+            {
+                "sms": "Dear Customer, A/C XX0003 debited with INR 1000.00 on 26-Jul-2025.",
+                "expected_amount": 1000.00,
+                "expected_account": "XX0003",
+                "description": "XX0003 pattern with 1000 amount"
+            },
+            {
+                "sms": "Your A/C XX0003 has been debited by Rs. 500.00 on 26/07/2025.",
+                "expected_amount": 500.00,
+                "expected_account": "XX0003",
+                "description": "XX0003 pattern with 500 amount"
+            },
+            {
+                "sms": "Transaction Alert: Your account XX0003 debited INR 250.00",
+                "expected_amount": 250.00,
+                "expected_account": "XX0003",
+                "description": "XX0003 pattern with 250 amount"
+            },
+            {
+                "sms": "A/C XX0003 debited Rs.1500.50 for payment to merchant on 26-Jul-2025",
+                "expected_amount": 1500.50,
+                "expected_account": "XX0003",
+                "description": "XX0003 pattern with decimal amount"
+            },
+            
+            # Multi-bank format tests
+            {
+                "sms": "Sent Rs.134985.00\nFrom HDFC Bank A/C *2953\nTo FINZOOM INVESTMENT ADVISORS PRIVATE LIMITED\nOn 25/07/25",
+                "expected_amount": 134985.00,
+                "expected_account": "2953",
+                "description": "HDFC multiline UPI format"
+            },
+            {
+                "sms": "UPDATE: INR 1,37,083.00 debited from HDFC Bank XX2953 on 25-JUL-25. Info: IMPS-520611360945-Old Man-HDFC",
+                "expected_amount": 137083.00,
+                "expected_account": "XX2953",
+                "description": "HDFC UPDATE debit with Indian number format"
+            },
+            {
+                "sms": "Spent\nCard no. 1234\nINR 2500.00\n26-07-25 14:30:25\nAmazon\nAvl Lmt INR 50000",
+                "expected_amount": 2500.00,
+                "expected_account": "1234",
+                "description": "Axis Bank card spent multiline"
+            },
+            {
+                "sms": "Hi! Your txn of ₹750.00 at Starbucks on your Scapia Federal Bank credit card was successful",
+                "expected_amount": 750.00,
+                "expected_account": "Scapia Card",
+                "description": "Scapia/Federal Bank transaction"
+            },
+            
+            # Generic fallback pattern tests
+            {
+                "sms": "Your account 9876 debited Rs.300.00 for online purchase",
+                "expected_amount": 300.00,
+                "expected_account": "9876",
+                "description": "Generic debit pattern"
+            },
+            {
+                "sms": "INR 450.75 credited to your account 5432 on 26/07/2025",
+                "expected_amount": 450.75,
+                "expected_account": "5432",
+                "description": "Generic credit pattern"
+            },
+            
+            # Edge cases that should NOT parse amount as 3
+            {
+                "sms": "Account XX0003 transaction of Rs.3000.00 processed successfully",
+                "expected_amount": 3000.00,
+                "expected_account": "XX0003",
+                "description": "XX0003 with 3000 amount (not 3)"
+            },
+            {
+                "sms": "A/C XX0003 debited Rs.30.00 for service charge",
+                "expected_amount": 30.00,
+                "expected_account": "XX0003",
+                "description": "XX0003 with 30 amount (not 3)"
+            }
+        ]
+
+    def test_health_check(self):
+        """Test if the backend is running"""
+        print("🔍 Testing Backend Health...")
+        try:
+            response = requests.get(f"{API_BASE}/health", timeout=10)
+            if response.status_code == 200:
+                print("✅ Backend is healthy")
+                return True
+            else:
+                print(f"❌ Backend health check failed: {response.status_code}")
+                return False
+        except Exception as e:
+            print(f"❌ Backend connection failed: {e}")
+            return False
+
+    def test_sms_parsing_accuracy(self):
+        """Test SMS parsing accuracy with focus on XX0003 pattern and amount parsing"""
+        print("\n🧪 Testing SMS Parser Accuracy (XX0003 Pattern & Amount Parsing)...")
+        print("=" * 80)
+        
+        passed_count = 0
+        failed_count = 0
+        critical_failures = []
+        
+        for i, test_case in enumerate(self.test_sms_messages, 1):
+            self.total_tests += 1
+            print(f"\n--- Test Case {i}: {test_case['description']} ---")
+            print(f"SMS: {test_case['sms']}")
+            
+            try:
+                # Send SMS to parser endpoint
+                response = requests.post(
+                    f"{API_BASE}/sms/receive",
+                    json={
+                        "phone_number": "+918000000000",
+                        "message": test_case['sms']
+                    },
+                    headers={"Content-Type": "application/json"},
+                    timeout=10
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check if parsing was successful
+                    if result.get('success') and result.get('transaction'):
+                        transaction = result['transaction']
+                        parsed_amount = transaction.get('amount', 0)
+                        parsed_account = transaction.get('account_number', '')
+                        
+                        print(f"✅ SMS Parsed Successfully")
+                        print(f"   Expected Amount: ₹{test_case['expected_amount']:,.2f}")
+                        print(f"   Parsed Amount: ₹{parsed_amount:,.2f}")
+                        print(f"   Expected Account: {test_case['expected_account']}")
+                        print(f"   Parsed Account: {parsed_account}")
+                        
+                        # Validate amount parsing (critical check)
+                        amount_correct = abs(parsed_amount - test_case['expected_amount']) < 0.01
+                        
+                        # Validate account extraction
+                        account_correct = (test_case['expected_account'].lower() in parsed_account.lower() or 
+                                         parsed_account.lower() in test_case['expected_account'].lower())
+                        
+                        # Check for critical failure: amount parsed as 3 when it shouldn't be
+                        amount_is_three = abs(parsed_amount - 3.0) < 0.01
+                        expected_not_three = test_case['expected_amount'] != 3.0
+                        
+                        if amount_is_three and expected_not_three:
+                            print(f"❌ CRITICAL: Amount incorrectly parsed as 3 when expected {test_case['expected_amount']}")
+                            critical_failures.append({
+                                'test_case': i,
+                                'description': test_case['description'],
+                                'issue': f"Amount parsed as 3 instead of {test_case['expected_amount']}"
+                            })
+                            failed_count += 1
+                            self.failed_tests += 1
+                        elif amount_correct and account_correct:
+                            print(f"✅ PASS: Amount and account parsed correctly")
+                            passed_count += 1
+                            self.passed_tests += 1
+                        else:
+                            print(f"❌ FAIL: Parsing inaccurate")
+                            if not amount_correct:
+                                print(f"   Amount mismatch: expected {test_case['expected_amount']}, got {parsed_amount}")
+                            if not account_correct:
+                                print(f"   Account mismatch: expected {test_case['expected_account']}, got {parsed_account}")
+                            failed_count += 1
+                            self.failed_tests += 1
+                            
+                    else:
+                        print(f"❌ SMS parsing failed - no transaction created")
+                        failed_count += 1
+                        self.failed_tests += 1
+                        
+                else:
+                    print(f"❌ SMS receive endpoint failed: {response.status_code}")
+                    print(f"   Response: {response.text}")
+                    failed_count += 1
+                    self.failed_tests += 1
+                    
+            except Exception as e:
+                print(f"❌ Error testing SMS parsing: {e}")
+                failed_count += 1
+                self.failed_tests += 1
+        
+        # Summary
+        print(f"\n📊 SMS Parser Test Results:")
+        print(f"   Total Tests: {len(self.test_sms_messages)}")
+        print(f"   Passed: {passed_count} ✅")
+        print(f"   Failed: {failed_count} ❌")
+        
+        if critical_failures:
+            print(f"\n🚨 CRITICAL FAILURES DETECTED:")
+            for failure in critical_failures:
+                print(f"   • Test {failure['test_case']}: {failure['description']} - {failure['issue']}")
+        
+        success_rate = (passed_count / len(self.test_sms_messages)) * 100 if self.test_sms_messages else 0
+        print(f"   Success Rate: {success_rate:.1f}%")
+        
+        return len(critical_failures) == 0 and success_rate >= 80
+
+    def test_multi_bank_support(self):
+        """Test multi-bank SMS format support"""
+        print("\n🧪 Testing Multi-Bank SMS Support...")
+        print("=" * 50)
+        
+        self.total_tests += 1
+        
+        bank_formats = [
+            {
+                "bank": "HDFC",
+                "sms": "Sent Rs.1000.00\nFrom HDFC Bank A/C *1234\nTo Test Merchant\nOn 26/07/25",
+                "expected_bank": "HDFC"
+            },
+            {
+                "bank": "Axis",
+                "sms": "Spent\nCard no. 5678\nINR 500.00\n26-07-25 14:30:25\nTest Store\nAvl Lmt INR 50000",
+                "expected_bank": "Axis Bank"
+            },
+            {
+                "bank": "Scapia/Federal",
+                "sms": "Hi! Your txn of ₹250.00 at Test Cafe on your Scapia Federal Bank credit card was successful",
+                "expected_bank": "Federal Bank (Scapia)"
+            }
+        ]
+        
+        banks_working = 0
+        
+        for bank_test in bank_formats:
+            try:
+                response = requests.post(
+                    f"{API_BASE}/sms/receive",
+                    json={
+                        "phone_number": "+918000000000",
+                        "message": bank_test['sms']
+                    },
+                    headers={"Content-Type": "application/json"},
+                    timeout=10
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    if result.get('success'):
+                        print(f"✅ {bank_test['bank']} format parsed successfully")
+                        banks_working += 1
+                    else:
+                        print(f"❌ {bank_test['bank']} format failed to parse")
+                else:
+                    print(f"❌ {bank_test['bank']} format endpoint error: {response.status_code}")
+                    
+            except Exception as e:
+                print(f"❌ Error testing {bank_test['bank']} format: {e}")
+        
+        if banks_working == len(bank_formats):
+            print(f"✅ All {len(bank_formats)} bank formats working correctly")
+            self.passed_tests += 1
+            return True
+        else:
+            print(f"❌ Only {banks_working}/{len(bank_formats)} bank formats working")
+            self.failed_tests += 1
+            return False
+
+    def test_fallback_patterns(self):
+        """Test fallback pattern mechanisms"""
+        print("\n🧪 Testing Fallback Pattern Mechanisms...")
+        print("=" * 50)
+        
+        self.total_tests += 1
+        
+        # Generic SMS that should trigger fallback patterns
+        fallback_sms = [
+            "Your account 1234 debited Rs.100.00 for transaction",
+            "INR 200.00 credited to account 5678",
+            "Transaction of Rs.300.00 from account 9999 completed"
+        ]
+        
+        fallback_working = 0
+        
+        for sms in fallback_sms:
+            try:
+                response = requests.post(
+                    f"{API_BASE}/sms/receive",
+                    json={
+                        "phone_number": "+918000000000",
+                        "message": sms
+                    },
+                    headers={"Content-Type": "application/json"},
+                    timeout=10
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    if result.get('success'):
+                        print(f"✅ Fallback pattern worked for: {sms[:50]}...")
+                        fallback_working += 1
+                    else:
+                        print(f"❌ Fallback pattern failed for: {sms[:50]}...")
+                else:
+                    print(f"❌ Endpoint error for fallback test: {response.status_code}")
+                    
+            except Exception as e:
+                print(f"❌ Error testing fallback pattern: {e}")
+        
+        if fallback_working >= len(fallback_sms) * 0.8:  # 80% success rate acceptable
+            print(f"✅ Fallback patterns working ({fallback_working}/{len(fallback_sms)} successful)")
+            self.passed_tests += 1
+            return True
+        else:
+            print(f"❌ Fallback patterns not working well ({fallback_working}/{len(fallback_sms)} successful)")
+            self.failed_tests += 1
+            return False
+
+    def test_account_number_extraction(self):
+        """Test account number extraction across different formats"""
+        print("\n🧪 Testing Account Number Extraction...")
+        print("=" * 50)
+        
+        self.total_tests += 1
+        
+        account_formats = [
+            {"sms": "A/C XX0003 debited Rs.100.00", "expected": "XX0003"},
+            {"sms": "Account *1234 transaction Rs.200.00", "expected": "1234"},
+            {"sms": "Card x5678 spent Rs.300.00", "expected": "x5678"},
+            {"sms": "A/c 9999 debited Rs.400.00", "expected": "9999"}
+        ]
+        
+        extraction_working = 0
+        
+        for test in account_formats:
+            try:
+                response = requests.post(
+                    f"{API_BASE}/sms/receive",
+                    json={
+                        "phone_number": "+918000000000",
+                        "message": test['sms']
+                    },
+                    headers={"Content-Type": "application/json"},
+                    timeout=10
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    if result.get('success') and result.get('transaction'):
+                        account = result['transaction'].get('account_number', '')
+                        if test['expected'].lower() in account.lower() or account.lower() in test['expected'].lower():
+                            print(f"✅ Account extracted correctly: {test['expected']} -> {account}")
+                            extraction_working += 1
+                        else:
+                            print(f"❌ Account extraction failed: expected {test['expected']}, got {account}")
+                    else:
+                        print(f"❌ SMS parsing failed for account test")
+                else:
+                    print(f"❌ Endpoint error for account test: {response.status_code}")
+                    
+            except Exception as e:
+                print(f"❌ Error testing account extraction: {e}")
+        
+        if extraction_working >= len(account_formats) * 0.75:  # 75% success rate acceptable
+            print(f"✅ Account extraction working ({extraction_working}/{len(account_formats)} successful)")
+            self.passed_tests += 1
+            return True
+        else:
+            print(f"❌ Account extraction needs improvement ({extraction_working}/{len(account_formats)} successful)")
+            self.failed_tests += 1
+            return False
+
+    def run_all_tests(self):
+        """Run all SMS parser tests"""
+        print("🚀 Starting SMS Parser Testing")
+        print("Focus: XX0003 pattern, amount parsing accuracy, multi-bank support")
+        print("=" * 80)
+        
+        # Test backend health first
+        if not self.test_health_check():
+            print("❌ Backend is not accessible. Aborting tests.")
+            return False
+        
+        # Run all test suites
+        results = []
+        results.append(self.test_sms_parsing_accuracy())
+        results.append(self.test_multi_bank_support())
+        results.append(self.test_fallback_patterns())
+        results.append(self.test_account_number_extraction())
+        
+        # Print final results
+        self.print_final_results()
+        
+        return all(results)
+
+    def print_final_results(self):
+        """Print comprehensive test results"""
+        print("\n" + "=" * 80)
+        print("📊 SMS PARSER TEST RESULTS")
+        print("=" * 80)
+        
+        print(f"Total Tests: {self.total_tests}")
+        print(f"Passed: {self.passed_tests} ✅")
+        print(f"Failed: {self.failed_tests} ❌")
+        
+        if self.total_tests > 0:
+            success_rate = (self.passed_tests / self.total_tests) * 100
+            print(f"Success Rate: {success_rate:.1f}%")
+            
+            if success_rate >= 90:
+                print("🎉 EXCELLENT: SMS Parser is working very well!")
+            elif success_rate >= 75:
+                print("👍 GOOD: SMS Parser is working well with minor issues")
+            elif success_rate >= 50:
+                print("⚠️  MODERATE: SMS Parser has some issues that need attention")
+            else:
+                print("❌ POOR: SMS Parser has significant issues")
+        
+        print("\n📋 Test Summary:")
+        print("  ✅ SMS parsing accuracy (XX0003 pattern & amount validation)")
+        print("  ✅ Multi-bank format support (HDFC, Axis, Scapia/Federal)")
+        print("  ✅ Fallback pattern mechanisms")
+        print("  ✅ Account number extraction across formats")
+        
+        print("=" * 80)
+
+
 class BackendAPITester:
     def __init__(self):
         self.test_results = []
