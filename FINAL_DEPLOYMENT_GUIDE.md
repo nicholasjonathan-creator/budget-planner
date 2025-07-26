@@ -35,7 +35,7 @@ Your Budget Planner is now **100% production-ready** with:
    ```
 
 4. **Set Environment Variables in Railway Dashboard**:
-   - `MONGO_URL`: `mongodb+srv://nicholasjonathan:bJ70UaqPZ5kcou5W@buildadatabase.ahqwxzz.mongodb.net/budget_planner?retryWrites=true&w=majority&appName=Buildadatabase`
+   - `MONGO_URL`: `mongodb+srv://your-username:your-password@your-cluster.mongodb.net/budget_planner?retryWrites=true&w=majority&appName=YourAppName`
    - `JWT_SECRET`: `your-super-secret-jwt-key-for-production-nicholasjonathan-2025`
    - `ENVIRONMENT`: `production`
 
