@@ -12,12 +12,16 @@ class TransactionService:
         self.transactions_collection = db.transactions
         self.budget_limits_collection = db.budget_limits
         
-    async def create_transaction(self, transaction: TransactionCreate) -> Transaction:
+    async def create_transaction(self, transaction: TransactionCreate, user_id: str = None) -> Transaction:
         """Create a new transaction"""
         try:
             transaction_dict = transaction.dict()
             if not transaction_dict.get('date'):
                 transaction_dict['date'] = datetime.now()
+            
+            # Add user_id if provided
+            if user_id:
+                transaction_dict['user_id'] = user_id
             
             result = await self.transactions_collection.insert_one(transaction_dict)
             transaction_dict['id'] = str(result.inserted_id)
