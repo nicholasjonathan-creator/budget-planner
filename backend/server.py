@@ -23,6 +23,8 @@ from services.user_service import UserService
 from services.auth import create_user_token
 from services.email_templates import EmailTemplates
 from services.notification_service import NotificationPreferencesService
+from services.email_scheduler import email_scheduler
+from services.production_email_config import production_email_config
 from dependencies.auth import get_current_user, get_current_active_user, get_admin_user, get_optional_user
 from database import init_db, db
 
