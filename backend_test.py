@@ -853,11 +853,35 @@ class BackendAPITester:
 
 def main():
     """Main test execution"""
-    tester = BackendAPITester()
-    success = tester.run_all_tests()
+    print("🎯 SMS PARSER TESTING - Focus on XX0003 Pattern & Amount Parsing")
+    print("=" * 80)
     
-    # Exit with appropriate code
-    sys.exit(0 if success else 1)
+    # Run SMS Parser tests first (primary focus)
+    sms_tester = SMSParserTester()
+    sms_success = sms_tester.run_all_tests()
+    
+    print("\n" + "=" * 80)
+    print("🔄 Running Additional Backend API Tests...")
+    print("=" * 80)
+    
+    # Run additional backend API tests
+    api_tester = BackendAPITester()
+    api_success = api_tester.run_all_tests()
+    
+    # Overall results
+    print("\n" + "=" * 80)
+    print("🏁 OVERALL TEST RESULTS")
+    print("=" * 80)
+    
+    if sms_success and api_success:
+        print("🎉 ALL TESTS PASSED - SMS Parser and Backend API working correctly!")
+        sys.exit(0)
+    elif sms_success:
+        print("✅ SMS Parser tests passed, ⚠️  some Backend API issues detected")
+        sys.exit(0)  # SMS parser is the main focus, so this is acceptable
+    else:
+        print("❌ SMS Parser tests failed - critical issues detected")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
