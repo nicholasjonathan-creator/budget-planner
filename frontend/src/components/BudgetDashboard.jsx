@@ -295,11 +295,7 @@ const BudgetDashboard = () => {
                   </Badge>
                 </div>
                 <Button
-                  onClick={() => {
-                    // Switch to Manual tab
-                    const manualTab = document.querySelector('[data-value="manual"]');
-                    if (manualTab) manualTab.click();
-                  }}
+                  onClick={() => setActiveTab('manual')}
                   size="sm"
                   className="bg-orange-600 hover:bg-orange-700 text-white"
                 >
