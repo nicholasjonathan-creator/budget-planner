@@ -94,7 +94,7 @@ const TransactionList = ({ transactions, categories }) => {
                       {transaction.balance && (
                         <>
                           <span>•</span>
-                          <span>Balance: ${transaction.balance.toFixed(2)}</span>
+                          <span>Balance: ₹{transaction.balance.toLocaleString('en-IN')}</span>
                         </>
                       )}
                     </div>
