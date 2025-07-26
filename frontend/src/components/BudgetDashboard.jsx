@@ -216,9 +216,12 @@ const BudgetDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-teal-50 to-indigo-100 p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Budget Planner</h1>
-          <p className="text-gray-600">Track your income, expenses, and stay within budget - Built for India 🇮🇳</p>
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Budget Planner</h1>
+            <p className="text-gray-600">Track your income, expenses, and stay within budget - Built for India 🇮🇳</p>
+          </div>
+          <UserProfile />
         </div>
 
         {/* Month/Year Selector */}
