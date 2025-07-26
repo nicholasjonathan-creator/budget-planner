@@ -115,9 +115,8 @@ class BackendAPITester:
             test_transaction = {
                 "amount": 1000.0,
                 "type": "expense",
-                "category": "food",
+                "category_id": 1,  # Use category_id instead of category
                 "merchant": "Test Restaurant",
-                "date": "2025-07-15T10:00:00Z",
                 "description": "Test transaction for update testing"
             }
             
