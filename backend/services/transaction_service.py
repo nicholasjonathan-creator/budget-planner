@@ -34,11 +34,15 @@ class TransactionService:
         try:
             query = {}
             if month is not None and year is not None:
-                start_date = datetime(year, month, 1)
-                if month == 12:
+                # Frontend sends 0-indexed months (0=January, 6=July)
+                # Convert to 1-indexed for datetime (1=January, 7=July)
+                actual_month = month + 1
+                
+                start_date = datetime(year, actual_month, 1)
+                if actual_month == 12:
                     end_date = datetime(year + 1, 1, 1)
                 else:
-                    end_date = datetime(year, month + 1, 1)
+                    end_date = datetime(year, actual_month + 1, 1)
                 
                 query['date'] = {'$gte': start_date, '$lt': end_date}
             
