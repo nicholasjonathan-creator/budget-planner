@@ -221,8 +221,11 @@ class TransactionService:
     async def get_budget_limits(self, month: int, year: int) -> List[BudgetLimit]:
         """Get budget limits for a specific month/year"""
         try:
+            # Frontend sends 0-indexed months, convert to 1-indexed for storage
+            actual_month = month + 1
+            
             cursor = self.budget_limits_collection.find({
-                "month": month,
+                "month": actual_month,
                 "year": year
             })
             
