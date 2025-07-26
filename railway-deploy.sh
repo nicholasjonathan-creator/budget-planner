@@ -60,7 +60,7 @@ echo "3. Deploy: cd backend && railway up"
 echo "4. Set environment variables in Railway dashboard"
 echo ""
 echo "💡 Your MongoDB connection string is ready!"
-echo "🔒 MongoDB URL: mongodb+srv://nicholasjonathan:bJ70UaqPZ5kcou5W@buildadatabase.ahqwxzz.mongodb.net/budget_planner?retryWrites=true&w=majority&appName=Buildadatabase"
+echo "🔒 MongoDB URL: mongodb+srv://your-username:your-password@your-cluster.mongodb.net/budget_planner?retryWrites=true&w=majority&appName=YourAppName"
 EOF
 
 chmod +x /app/railway-deploy.sh
