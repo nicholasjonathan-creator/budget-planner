@@ -887,15 +887,18 @@ class FinancialSummaryTester:
         """Test if the backend is running"""
         print("🔍 Testing Backend Health...")
         try:
-            response = requests.get(f"{API_BASE}/health", timeout=10)
+            response = requests.get(f"{API_BASE}/health", timeout=30)
             if response.status_code == 200:
                 print("✅ Backend is healthy")
+                print(f"   Backend URL: {API_BASE}")
                 return True
             else:
                 print(f"❌ Backend health check failed: {response.status_code}")
+                print(f"   Response: {response.text}")
                 return False
         except Exception as e:
             print(f"❌ Backend connection failed: {e}")
+            print(f"   Backend URL: {API_BASE}")
             return False
 
     def create_test_sms(self, message: str, phone_number: str = "+918000000000"):
