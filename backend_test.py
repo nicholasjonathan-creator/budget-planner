@@ -883,60 +883,126 @@ class SmartDateValidationTester:
         self.failed_tests = 0
         self.created_sms_ids = []  # Track created SMS for cleanup
         
-        # Test SMS messages with different date scenarios
+        # Test SMS messages with different date scenarios - ENHANCED FOR COMPREHENSIVE TESTING
         self.test_sms_messages = [
-            # Future dates (should fail parsing)
+            # Future dates (should fail parsing) - EXPANDED TEST CASES
             {
                 "sms": "Dear Customer, Rs 1000.00 debited from your account XX0003 on 26-Aug-2025.",
                 "expected_to_parse": False,
                 "description": "Future date - August 2025 (should fail)",
-                "test_type": "future_date"
+                "test_type": "future_date",
+                "parsing_method": "generic"
             },
             {
                 "sms": "Sent Rs.500.00\nFrom HDFC Bank A/C *2953\nTo Test Merchant\nOn 15/12/25",
                 "expected_to_parse": False,
-                "description": "Future date - December 2025 (should fail)",
-                "test_type": "future_date"
+                "description": "Future date - December 2025 HDFC format (should fail)",
+                "test_type": "future_date",
+                "parsing_method": "hdfc_specific"
             },
             {
                 "sms": "UPDATE: INR 750.00 debited from HDFC Bank XX2953 on 01-SEP-25. Info: Test transaction",
                 "expected_to_parse": False,
-                "description": "Future date - September 2025 (should fail)",
-                "test_type": "future_date"
+                "description": "Future date - September 2025 HDFC UPDATE format (should fail)",
+                "test_type": "future_date",
+                "parsing_method": "hdfc_specific"
+            },
+            {
+                "sms": "Spent\nCard no. 1234\nINR 300.00\n15-12-25 14:30:25\nTest Store\nAvl Lmt INR 50000",
+                "expected_to_parse": False,
+                "description": "Future date - December 2025 Axis format (should fail)",
+                "test_type": "future_date",
+                "parsing_method": "axis_specific"
+            },
+            {
+                "sms": "Hi! Your txn of ₹400.00 at Future Store on your Scapia Federal Bank credit card was successful",
+                "expected_to_parse": False,
+                "description": "Future date - Scapia format with current date fallback (should fail if date validation applied)",
+                "test_type": "future_date",
+                "parsing_method": "scapia_specific"
             },
             
-            # Dates too far in past (should fail parsing)
+            # Dates too far in past (should fail parsing) - EXPANDED TEST CASES
             {
                 "sms": "Dear Customer, Rs 2000.00 debited from your account XX0003 on 26-Jul-2023.",
                 "expected_to_parse": False,
                 "description": "Date too far in past - July 2023 (should fail)",
-                "test_type": "past_date"
+                "test_type": "past_date",
+                "parsing_method": "generic"
             },
             {
-                "sms": "Sent Rs.1500.00\nFrom HDFC Bank A/C *2953\nTo Old Transaction\nOn 15/01/24",
+                "sms": "Sent Rs.1500.00\nFrom HDFC Bank A/C *2953\nTo Old Transaction\nOn 15/01/23",
                 "expected_to_parse": False,
-                "description": "Date too far in past - January 2024 (should fail)",
-                "test_type": "past_date"
+                "description": "Date too far in past - January 2023 HDFC format (should fail)",
+                "test_type": "past_date",
+                "parsing_method": "hdfc_specific"
+            },
+            {
+                "sms": "UPDATE: INR 1200.00 debited from HDFC Bank XX2953 on 15-JAN-23. Info: Old transaction",
+                "expected_to_parse": False,
+                "description": "Date too far in past - January 2023 HDFC UPDATE format (should fail)",
+                "test_type": "past_date",
+                "parsing_method": "hdfc_specific"
+            },
+            {
+                "sms": "Spent\nCard no. 5678\nINR 800.00\n15-01-23 14:30:25\nOld Store\nAvl Lmt INR 50000",
+                "expected_to_parse": False,
+                "description": "Date too far in past - January 2023 Axis format (should fail)",
+                "test_type": "past_date",
+                "parsing_method": "axis_specific"
             },
             
-            # Valid current dates (should parse successfully)
+            # Valid current dates (should parse successfully) - EXPANDED TEST CASES
             {
                 "sms": "Dear Customer, Rs 800.00 debited from your account XX0003 on 26-Jul-2025.",
                 "expected_to_parse": True,
                 "description": "Valid current date - July 2025 (should parse)",
-                "test_type": "valid_date"
+                "test_type": "valid_date",
+                "parsing_method": "generic"
             },
             {
                 "sms": "Sent Rs.1200.00\nFrom HDFC Bank A/C *2953\nTo Valid Merchant\nOn 25/07/25",
                 "expected_to_parse": True,
-                "description": "Valid current date - July 2025 DD/MM/YY (should parse)",
-                "test_type": "valid_date"
+                "description": "Valid current date - July 2025 HDFC DD/MM/YY (should parse)",
+                "test_type": "valid_date",
+                "parsing_method": "hdfc_specific"
             },
             {
                 "sms": "UPDATE: INR 950.00 debited from HDFC Bank XX2953 on 25-JUL-25. Info: Valid transaction",
                 "expected_to_parse": True,
-                "description": "Valid current date - July 2025 DD-MMM-YY (should parse)",
-                "test_type": "valid_date"
+                "description": "Valid current date - July 2025 HDFC DD-MMM-YY (should parse)",
+                "test_type": "valid_date",
+                "parsing_method": "hdfc_specific"
+            },
+            {
+                "sms": "Spent\nCard no. 9999\nINR 600.00\n25-07-25 14:30:25\nValid Store\nAvl Lmt INR 50000",
+                "expected_to_parse": True,
+                "description": "Valid current date - July 2025 Axis format (should parse)",
+                "test_type": "valid_date",
+                "parsing_method": "axis_specific"
+            },
+            {
+                "sms": "Hi! Your txn of ₹350.00 at Current Store on your Scapia Federal Bank credit card was successful",
+                "expected_to_parse": True,
+                "description": "Valid current date - Scapia format with current date (should parse)",
+                "test_type": "valid_date",
+                "parsing_method": "scapia_specific"
+            },
+            
+            # Edge cases for comprehensive testing
+            {
+                "sms": "IMPS INR 1000.00\nsent from HDFC Bank A/c XX2953 on 15-08-25\nTo A/c xxxxxxxxxxx1254",
+                "expected_to_parse": False,
+                "description": "Future date - August 2025 HDFC IMPS format (should fail)",
+                "test_type": "future_date",
+                "parsing_method": "hdfc_specific"
+            },
+            {
+                "sms": "Spent Rs.500.00 From HDFC Bank Card x7722 At Test Store On 2025-08-15:00:18:09",
+                "expected_to_parse": False,
+                "description": "Future date - August 2025 HDFC card format (should fail)",
+                "test_type": "future_date",
+                "parsing_method": "hdfc_specific"
             }
         ]
 
