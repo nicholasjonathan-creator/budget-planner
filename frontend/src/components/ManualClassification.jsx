@@ -54,12 +54,32 @@ const ManualClassification = ({ onClassificationComplete }) => {
 
   const handleClassifyClick = (sms) => {
     setClassifying(sms.id);
+    
+    // Auto-detect currency from SMS text
+    const detectedCurrency = detectCurrencyFromSMS(sms.message);
+    
     setClassificationData({
       sms_id: sms.id,
       transaction_type: '',
       amount: '',
-      description: ''
+      description: '',
+      currency: detectedCurrency
     });
+  };
+
+  const detectCurrencyFromSMS = (message) => {
+    // Auto-detect currency from SMS content
+    if (message.includes('USD') || message.includes('$')) return 'USD';
+    if (message.includes('EUR') || message.includes('€')) return 'EUR';
+    if (message.includes('GBP') || message.includes('£')) return 'GBP';
+    if (message.includes('PHP')) return 'PHP';
+    if (message.includes('JPY') || message.includes('¥')) return 'JPY';
+    if (message.includes('AUD')) return 'AUD';
+    if (message.includes('CAD')) return 'CAD';
+    if (message.includes('CHF')) return 'CHF';
+    if (message.includes('CNY')) return 'CNY';
+    if (message.includes('SGD')) return 'SGD';
+    return 'INR'; // Default to INR
   };
 
   const handleInputChange = (field, value) => {
