@@ -34,7 +34,7 @@ git push origin main
    **Environment Variables:**
    Add these exact variables in Render dashboard:
    ```
-   MONGO_URL = mongodb+srv://nicholasjonathan:bJ70UaqPZ5kcou5W@buildadatabase.ahqwxzz.mongodb.net/budget_planner?retryWrites=true&w=majority&appName=Buildadatabase
+   MONGO_URL = mongodb+srv://your-username:your-password@your-cluster.mongodb.net/budget_planner?retryWrites=true&w=majority&appName=YourAppName
    
    SENDGRID_API_KEY = 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
    
