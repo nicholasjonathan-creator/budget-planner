@@ -20,6 +20,7 @@ import ProductionEmailManagement from './ProductionEmailManagement';
 import { useAuth } from '../contexts/AuthContext';
 
 const BudgetDashboard = () => {
+  const { user } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [budgetLimits, setBudgetLimits] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -36,6 +37,9 @@ const BudgetDashboard = () => {
   const [multiCurrencyTransactions, setMultiCurrencyTransactions] = useState([]); // Track non-INR transactions
   const [activeTab, setActiveTab] = useState('overview'); // Tab state management
   const { toast } = useToast();
+
+  // Check if user is admin
+  const isAdmin = user && user.role === 'admin';
 
   useEffect(() => {
     loadData();
