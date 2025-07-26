@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Improve SMS parser accuracy for real-world HDFC bank SMS examples that are currently failing to parse correctly. The user provided 10 real HDFC SMS examples in various formats (multiline, different date formats, etc.) that need to be parsed to extract amount, currency, date, payee, bank, account number, and transaction type."
+user_problem_statement: "Fix financial summary refresh issue where Total Income, Total Expenses, and Balance cards on BudgetDashboard do not automatically update after manual SMS classification. Additionally, implement enhanced features: 1) Dynamic budget counters that update as transactions are tagged, 2) Separate 'Manual Validation Needed' section in UI for unclassified SMS, 3) Enhanced drill-down feature for income/expense totals with detailed SMS transaction breakdown, 4) Smart date validation to detect illogical SMS dates and route them to manual validation, 5) Overall error-free functionality."
 
 backend:
   - task: "Fix HDFC SMS parser for multiline format"
