@@ -181,7 +181,7 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <p className="font-medium">
-                            {transaction.source === 'sms' || transaction.source === 'sms_manual' ? 
+                            {hasSMSData ? 
                               (transaction.merchant || `${transaction.type === 'income' ? 'Credit' : 'Debit'} Transaction`) 
                               : transaction.description
                             }
