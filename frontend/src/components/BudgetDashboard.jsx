@@ -306,7 +306,24 @@ const BudgetDashboard = () => {
           
           <TabsContent value="overview" className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">Recent Transactions</h2>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Recent Transactions</h2>
+                {transactionFilter !== 'all' && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Badge variant="outline" className="capitalize">
+                      {transactionFilter} transactions
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleShowAllTransactions}
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      Show all
+                    </Button>
+                  </div>
+                )}
+              </div>
               <Button 
                 onClick={() => setShowTransactionForm(true)}
                 className="bg-indigo-600 hover:bg-indigo-700"
@@ -316,7 +333,7 @@ const BudgetDashboard = () => {
               </Button>
             </div>
             <TransactionList 
-              transactions={transactions.slice(0, 5)} 
+              transactions={getFilteredTransactions().slice(0, 5)} 
               categories={categories} 
               onTransactionUpdate={loadData}
             />
@@ -324,7 +341,24 @@ const BudgetDashboard = () => {
           
           <TabsContent value="transactions">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">All Transactions</h2>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">All Transactions</h2>
+                {transactionFilter !== 'all' && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Badge variant="outline" className="capitalize">
+                      {transactionFilter} transactions
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleShowAllTransactions}
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      Show all
+                    </Button>
+                  </div>
+                )}
+              </div>
               <Button 
                 onClick={() => setShowTransactionForm(true)}
                 className="bg-indigo-600 hover:bg-indigo-700"
@@ -334,7 +368,7 @@ const BudgetDashboard = () => {
               </Button>
             </div>
             <TransactionList 
-              transactions={transactions} 
+              transactions={getFilteredTransactions()} 
               categories={categories} 
               onTransactionUpdate={loadData}
             />
