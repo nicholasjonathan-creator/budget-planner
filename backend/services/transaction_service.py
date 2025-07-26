@@ -146,7 +146,7 @@ class TransactionService:
             logger.error(f"Error getting category totals: {e}")
             return {}
     
-    async def get_monthly_summary(self, month: int, year: int) -> dict:
+    async def get_monthly_summary(self, month: int, year: int, user_id: str = None) -> dict:
         """Get monthly summary of income, expenses, and balance"""
         try:
             # Frontend sends 0-indexed months, convert to 1-indexed
@@ -158,11 +158,17 @@ class TransactionService:
             else:
                 end_date = datetime(year, actual_month + 1, 1)
             
+            match_query = {
+                "date": {"$gte": start_date, "$lt": end_date}
+            }
+            
+            # Filter by user_id if provided
+            if user_id:
+                match_query["user_id"] = user_id
+            
             pipeline = [
                 {
-                    "$match": {
-                        "date": {"$gte": start_date, "$lt": end_date}
-                    }
+                    "$match": match_query
                 },
                 {
                     "$group": {
