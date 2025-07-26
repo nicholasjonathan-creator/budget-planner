@@ -24,7 +24,7 @@ class NotificationPreferencesService:
             prefs_doc = prefs_dict
             prefs_doc["_id"] = result.inserted_id
         else:
-            prefs_doc["id"] = str(prefs_doc["_id"])
+            prefs_doc["_id"] = str(prefs_doc["_id"])
         
         return UserNotificationPreferences(**prefs_doc)
     
