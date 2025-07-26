@@ -103,7 +103,7 @@ const BudgetChart = ({ transactions, budgetLimits, categories }) => {
           <p className="font-medium">{label}</p>
           {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color }}>
-              {entry.name}: ${entry.value.toFixed(2)}
+              {entry.name}: ₹{entry.value.toLocaleString('en-IN')}
             </p>
           ))}
         </div>
