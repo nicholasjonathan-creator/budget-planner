@@ -95,11 +95,33 @@ class SMSTransactionParser:
         ]
 
     def parse_sms(self, sms_text: str, phone_number: str) -> Optional[Transaction]:
-        """Parse SMS text and extract transaction details"""
+        """Parse SMS text and extract transaction details - Enhanced for real HDFC formats"""
         try:
             sms_lower = sms_text.lower()
             
-            # Determine transaction type and extract amount
+            # First try HDFC specific patterns
+            parsed_data = self._parse_hdfc_sms(sms_text)
+            if parsed_data:
+                return Transaction(
+                    type=parsed_data['type'],
+                    category_id=self._auto_categorize(parsed_data['payee'], parsed_data['payee']),
+                    amount=parsed_data['amount'],
+                    description=self._generate_description(parsed_data['payee'], sms_text),
+                    date=self._parse_date(parsed_data['date']),
+                    source=TransactionSource.SMS,
+                    merchant=parsed_data['payee'],
+                    account_number=parsed_data['account'],
+                    balance=parsed_data.get('balance'),
+                    raw_data={
+                        'sms_text': sms_text,
+                        'phone_number': phone_number,
+                        'parsed_at': datetime.now().isoformat(),
+                        'bank': 'HDFC',
+                        'parsing_method': 'hdfc_specific'
+                    }
+                )
+            
+            # Fallback to generic patterns
             transaction_type, amount = self._extract_amount_and_type(sms_lower)
             if not amount:
                 return None
@@ -132,13 +154,93 @@ class SMSTransactionParser:
                 raw_data={
                     'sms_text': sms_text,
                     'phone_number': phone_number,
-                    'parsed_at': datetime.now().isoformat()
+                    'parsed_at': datetime.now().isoformat(),
+                    'parsing_method': 'generic'
                 }
             )
             
         except Exception as e:
             print(f"Error parsing SMS: {e}")
             return None
+
+    def _parse_hdfc_sms(self, sms_text: str) -> Optional[dict]:
+        """Parse HDFC specific SMS formats"""
+        for pattern_name, pattern_info in self.hdfc_patterns.items():
+            match = re.search(pattern_info['regex'], sms_text, re.IGNORECASE)
+            if match:
+                amount_str = match.group(pattern_info['amount_group']).replace(',', '')
+                amount = float(amount_str)
+                
+                account = match.group(pattern_info['account_group'])
+                date_str = match.group(pattern_info['date_group'])
+                
+                # Extract payee
+                payee = self._clean_payee_name(match.group(pattern_info['payee_group']))
+                
+                # Extract balance if available
+                balance = self._extract_balance(sms_text)
+                
+                return {
+                    'amount': amount,
+                    'account': account,
+                    'date': date_str,
+                    'payee': payee,
+                    'type': TransactionType.EXPENSE if pattern_info['type'] == 'expense' else TransactionType.INCOME,
+                    'balance': balance,
+                    'pattern_matched': pattern_name
+                }
+        
+        return None
+
+    def _clean_payee_name(self, payee_raw: str) -> str:
+        """Clean and format payee name"""
+        # Clean up common patterns
+        payee = payee_raw.strip()
+        
+        # Handle specific patterns
+        if 'imps-' in payee.lower():
+            # Extract from IMPS pattern: "IMPS-520611360945-Old Man-HDFC-xxxxxxxxxx5124-Rent"
+            parts = payee.split('-')
+            if len(parts) >= 3:
+                payee = parts[2]  # Get the name part
+        
+        # Handle ACH patterns
+        if 'ach d-' in payee.lower():
+            # Extract from ACH pattern: "ACH D- TP ACH INDIANESIGN-1862188817"
+            parts = payee.split('-')
+            if len(parts) >= 2:
+                payee = parts[-1]  # Get the last part
+        
+        # Clean up extra spaces and dots
+        payee = re.sub(r'\s+', ' ', payee)
+        payee = re.sub(r'\.+', '.', payee)
+        
+        return payee.strip()
+
+    def _parse_date(self, date_str: str) -> datetime:
+        """Parse various date formats from HDFC SMS"""
+        try:
+            # Format: DD/MM/YY
+            if '/' in date_str and len(date_str) == 8:
+                return datetime.strptime(date_str, '%d/%m/%y')
+            
+            # Format: DD-MMM-YY
+            elif '-' in date_str and len(date_str) == 9:
+                return datetime.strptime(date_str, '%d-%b-%y')
+            
+            # Format: YYYY-MM-DD:HH:MM:SS
+            elif ':' in date_str:
+                return datetime.strptime(date_str, '%Y-%m-%d:%H:%M:%S')
+            
+            # Format: DD-MM-YY
+            elif '-' in date_str and len(date_str) == 8:
+                return datetime.strptime(date_str, '%d-%m-%y')
+            
+        except ValueError:
+            pass
+        
+        # Default to current time if parsing fails
+        return datetime.now()
 
     def _extract_amount_and_type(self, sms_text: str) -> tuple:
         """Extract transaction amount and determine type - Enhanced for HDFC formats"""
