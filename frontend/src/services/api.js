@@ -127,6 +127,21 @@ class ApiService {
     const response = await this.client.post('/sms/simulate', { bank_type: bankType });
     return response.data;
   }
+
+  async getFailedSMS() {
+    const response = await this.client.get('/sms/failed');
+    return response.data;
+  }
+
+  async manualClassifySMS(smsId, transactionType, amount, description) {
+    const response = await this.client.post('/sms/manual-classify', {
+      sms_id: smsId,
+      transaction_type: transactionType,
+      amount: amount,
+      description: description
+    });
+    return response.data;
+  }
 }
 
 export default new ApiService();
