@@ -1914,24 +1914,73 @@ class FinancialSummaryTester:
 
 def main():
     """Main test execution"""
-    print("🎯 FINANCIAL SUMMARY REFRESH TESTING")
-    print("Focus: Manual SMS classification and dashboard summary updates")
+    print("🎯 COMPREHENSIVE BACKEND TESTING")
+    print("Focus: Smart Date Validation, Financial Summary Refresh, SMS Parsing, API Endpoints")
     print("=" * 80)
     
-    # Run Financial Summary tests (primary focus based on review request)
+    # Run Smart Date Validation Tests (NEW - Primary Focus)
+    print("\n" + "🔥" * 20 + " SMART DATE VALIDATION TESTS " + "🔥" * 20)
+    date_validation_tester = SmartDateValidationTester()
+    date_validation_success = date_validation_tester.run_all_tests()
+    
+    # Run Financial Summary Tests
+    print("\n" + "🔥" * 20 + " FINANCIAL SUMMARY TESTS " + "🔥" * 20)
     summary_tester = FinancialSummaryTester()
     summary_success = summary_tester.run_all_tests()
     
-    # Overall results
+    # Run SMS Parser Tests
+    print("\n" + "🔥" * 20 + " SMS PARSER TESTS " + "🔥" * 20)
+    sms_tester = SMSParserTester()
+    sms_parser_success = sms_tester.run_all_tests()
+    
+    # Run Backend API Tests
+    print("\n" + "🔥" * 20 + " BACKEND API TESTS " + "🔥" * 20)
+    api_tester = BackendAPITester()
+    api_success = api_tester.run_all_tests()
+    
+    # Overall Results
     print("\n" + "=" * 80)
-    print("🏁 OVERALL TEST RESULTS")
+    print("🏆 OVERALL TEST RESULTS")
     print("=" * 80)
     
-    if summary_success:
-        print("🎉 ALL TESTS PASSED - Financial summary refresh working correctly!")
+    total_tests = (date_validation_tester.total_tests + summary_tester.total_tests + 
+                   sms_tester.total_tests + api_tester.total_tests)
+    total_passed = (date_validation_tester.passed_tests + summary_tester.passed_tests + 
+                    sms_tester.passed_tests + api_tester.passed_tests)
+    total_failed = (date_validation_tester.failed_tests + summary_tester.failed_tests + 
+                    sms_tester.failed_tests + api_tester.failed_tests)
+    
+    print(f"Total Tests Across All Suites: {total_tests}")
+    print(f"Total Passed: {total_passed} ✅")
+    print(f"Total Failed: {total_failed} ❌")
+    
+    if total_tests > 0:
+        overall_success_rate = (total_passed / total_tests) * 100
+        print(f"Overall Success Rate: {overall_success_rate:.1f}%")
+        
+        if overall_success_rate >= 90:
+            print("🎉 EXCELLENT: Backend system is working very well!")
+        elif overall_success_rate >= 75:
+            print("👍 GOOD: Backend system is working well with minor issues")
+        elif overall_success_rate >= 50:
+            print("⚠️  MODERATE: Backend system has some issues that need attention")
+        else:
+            print("❌ POOR: Backend system has significant issues")
+    
+    print("\n📋 Test Suite Summary:")
+    print(f"  Smart Date Validation Tests: {'✅ PASS' if date_validation_success else '❌ FAIL'}")
+    print(f"  Financial Summary Tests: {'✅ PASS' if summary_success else '❌ FAIL'}")
+    print(f"  SMS Parser Tests: {'✅ PASS' if sms_parser_success else '❌ FAIL'}")
+    print(f"  Backend API Tests: {'✅ PASS' if api_success else '❌ FAIL'}")
+    
+    print("=" * 80)
+    
+    # Exit with appropriate code
+    if date_validation_success and summary_success and sms_parser_success and api_success:
+        print("🎉 ALL TESTS PASSED!")
         sys.exit(0)
     else:
-        print("❌ Financial summary refresh tests failed - issues detected")
+        print("❌ SOME TESTS FAILED!")
         sys.exit(1)
 
 if __name__ == "__main__":
