@@ -192,16 +192,16 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
                             </Badge>
                           </div>
                           {hasSMSData && showDetailedView && (
-                            <CollapsibleTrigger
+                            <button
                               onClick={() => toggleTransactionDetails(transaction.id)}
-                              className="ml-auto p-1 hover:bg-gray-200 rounded"
+                              className="ml-auto p-2 hover:bg-gray-200 rounded-full border border-gray-300 bg-white"
                             >
                               {isExpanded ? (
-                                <ChevronUp className="h-4 w-4 text-gray-500" />
+                                <ChevronUp className="h-4 w-4 text-blue-600" />
                               ) : (
-                                <ChevronDown className="h-4 w-4 text-gray-500" />
+                                <ChevronDown className="h-4 w-4 text-blue-600" />
                               )}
-                            </CollapsibleTrigger>
+                            </button>
                           )}
                         </div>
                         {renderTransactionDetails(transaction)}
