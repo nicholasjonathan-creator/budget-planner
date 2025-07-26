@@ -50,9 +50,13 @@ const BudgetLimitsManager = ({ budgetLimits, categories, onUpdateLimits, current
   };
 
   const calculateSpent = (categoryId) => {
-    return currentTransactions
+    // Calculate real-time spent amount from current transactions
+    const spent = currentTransactions
       .filter(t => t.category_id === categoryId && t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
+    
+    // Return the calculated amount, which updates dynamically as transactions change
+    return spent;
   };
 
   const getBudgetForCategory = (categoryId) => {
