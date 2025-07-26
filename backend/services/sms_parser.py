@@ -488,6 +488,41 @@ class SMSTransactionParser:
         
         return None
 
+    def _parse_icici_sms(self, sms_text: str) -> Optional[dict]:
+        """Parse ICICI Bank specific SMS formats"""
+        for pattern_name, pattern_info in self.icici_patterns.items():
+            match = re.search(pattern_info['regex'], sms_text, re.IGNORECASE)
+            if match:
+                amount_str = match.group(pattern_info['amount_group']).replace(',', '')
+                amount = float(amount_str)
+                
+                account = match.group(pattern_info['account_group'])
+                date_str = match.group(pattern_info['date_group'])
+                
+                # Extract merchant
+                merchant = self._clean_payee_name(match.group(pattern_info['merchant_group']))
+                
+                # Extract currency if available (for foreign currency transactions)
+                currency = 'INR'  # Default
+                if 'currency_group' in pattern_info and pattern_info['currency_group']:
+                    currency = match.group(pattern_info['currency_group'])
+                
+                # Extract balance from "Avl Limit" part
+                balance = self._extract_balance(sms_text)
+                
+                return {
+                    'amount': amount,
+                    'account': account,
+                    'date': date_str,
+                    'payee': merchant,
+                    'type': TransactionType.EXPENSE if pattern_info['type'] == 'expense' else TransactionType.INCOME,
+                    'balance': balance,
+                    'currency': currency,
+                    'pattern_matched': pattern_name
+                }
+        
+        return None
+
     def _clean_payee_name(self, payee_raw: str) -> str:
         """Clean and format payee name"""
         # Clean up common patterns
