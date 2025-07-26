@@ -229,10 +229,10 @@ async def get_transaction(transaction_id: str, current_user: User = Depends(get_
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.put("/transactions/{transaction_id}", response_model=Transaction)
-async def update_transaction(transaction_id: str, updates: dict = Body(...)):
+async def update_transaction(transaction_id: str, updates: dict = Body(...), current_user: User = Depends(get_current_active_user)):
     """Update a transaction"""
     try:
-        result = await transaction_service.update_transaction(transaction_id, updates)
+        result = await transaction_service.update_transaction(transaction_id, updates, current_user.id)
         if not result:
             raise HTTPException(status_code=404, detail="Transaction not found")
         return result
@@ -243,10 +243,10 @@ async def update_transaction(transaction_id: str, updates: dict = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.delete("/transactions/{transaction_id}")
-async def delete_transaction(transaction_id: str):
+async def delete_transaction(transaction_id: str, current_user: User = Depends(get_current_active_user)):
     """Delete a transaction"""
     try:
-        success = await transaction_service.delete_transaction(transaction_id)
+        success = await transaction_service.delete_transaction(transaction_id, current_user.id)
         if not success:
             raise HTTPException(status_code=404, detail="Transaction not found")
         return {"message": "Transaction deleted successfully"}
@@ -259,10 +259,10 @@ async def delete_transaction(transaction_id: str):
 # ==================== ANALYTICS ENDPOINTS ====================
 
 @api_router.get("/analytics/monthly-summary")
-async def get_monthly_summary(month: int, year: int):
+async def get_monthly_summary(month: int, year: int, current_user: User = Depends(get_current_active_user)):
     """Get monthly summary of income, expenses, and balance"""
     try:
-        return await transaction_service.get_monthly_summary(month, year)
+        return await transaction_service.get_monthly_summary(month, year, current_user.id)
     except Exception as e:
         logger.error(f"Error getting monthly summary: {e}")
         raise HTTPException(status_code=500, detail=str(e))
