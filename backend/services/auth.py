@@ -60,6 +60,7 @@ def create_user_token(user_id: str, email: str) -> tuple[str, datetime]:
     """Create a token for a specific user"""
     token_data = {
         "sub": email,
+        "email": email,  # Add email field explicitly
         "user_id": user_id,
         "iat": datetime.utcnow()
     }
