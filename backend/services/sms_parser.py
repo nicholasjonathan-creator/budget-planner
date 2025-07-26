@@ -258,6 +258,40 @@ class SMSTransactionParser:
         
         return None
 
+    def _parse_axis_sms(self, sms_text: str) -> Optional[dict]:
+        """Parse Axis Bank specific SMS formats"""
+        for pattern_name, pattern_info in self.axis_patterns.items():
+            match = re.search(pattern_info['regex'], sms_text, re.IGNORECASE)
+            if match:
+                amount_str = match.group(pattern_info['amount_group']).replace(',', '')
+                
+                # Handle USD conversion (rough estimate)
+                if 'usd' in sms_text.lower():
+                    amount = float(amount_str) * 83.0  # Convert USD to INR (rough rate)
+                else:
+                    amount = float(amount_str)
+                
+                account = match.group(pattern_info['account_group'])
+                date_str = match.group(pattern_info['date_group'])
+                
+                # Extract payee
+                payee = self._clean_payee_name(match.group(pattern_info['payee_group']))
+                
+                # Extract balance if available
+                balance = self._extract_balance(sms_text)
+                
+                return {
+                    'amount': amount,
+                    'account': account,
+                    'date': date_str,
+                    'payee': payee,
+                    'type': TransactionType.EXPENSE if pattern_info['type'] == 'expense' else TransactionType.INCOME,
+                    'balance': balance,
+                    'pattern_matched': pattern_name
+                }
+        
+        return None
+
     def _clean_payee_name(self, payee_raw: str) -> str:
         """Clean and format payee name"""
         # Clean up common patterns
