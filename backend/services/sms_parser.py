@@ -133,6 +133,24 @@ class SMSTransactionParser:
             }
         }
         
+        # Fallback patterns for other banks
+        self.bank_patterns = {
+            'debit': [
+                r'(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)\s*(?:debited|spent|paid|sent|withdrawn)',
+                r'(?:debited|spent|paid|sent|withdrawn).*?(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)',
+                r'(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)\s*(?:has\s+been\s+)?(?:debited|spent|paid)',
+                r'(?:debit|spent|paid).*?(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)',
+                r'a/c.*?(?:debited|spent).*?(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)',
+            ],
+            'credit': [
+                r'(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)\s*(?:credited|received|deposited)',
+                r'(?:credited|received|deposited).*?(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)',
+                r'(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)\s*(?:has\s+been\s+)?(?:credited|received)',
+                r'(?:credit|received|deposited).*?(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)',
+                r'a/c.*?(?:credited|received).*?(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)',
+            ]
+        }
+        
         # Merchant extraction patterns
         self.merchant_patterns = [
             r'to\s+([A-Z][A-Za-z\s\.]+?)(?:\s+on|\s+ref|\s*$)',
