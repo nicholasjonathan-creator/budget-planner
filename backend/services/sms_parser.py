@@ -165,6 +165,28 @@ class SMSTransactionParser:
                     }
                 )
             
+            # Try Axis Bank specific patterns
+            parsed_data = self._parse_axis_sms(sms_text)
+            if parsed_data:
+                return Transaction(
+                    type=parsed_data['type'],
+                    category_id=self._auto_categorize(parsed_data['payee'], parsed_data['payee']),
+                    amount=parsed_data['amount'],
+                    description=self._generate_description(parsed_data['payee'], sms_text),
+                    date=self._parse_date(parsed_data['date']),
+                    source=TransactionSource.SMS,
+                    merchant=parsed_data['payee'],
+                    account_number=parsed_data['account'],
+                    balance=parsed_data.get('balance'),
+                    raw_data={
+                        'sms_text': sms_text,
+                        'phone_number': phone_number,
+                        'parsed_at': datetime.now().isoformat(),
+                        'bank': 'Axis Bank',
+                        'parsing_method': 'axis_specific'
+                    }
+                )
+            
             # Fallback to generic patterns
             transaction_type, amount = self._extract_amount_and_type(sms_lower)
             if not amount:
