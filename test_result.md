@@ -240,9 +240,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Smart date validation for SMS parsing"
-  stuck_tasks:
-    - "Smart date validation for SMS parsing"
+    - "Enhanced SMS transaction details API"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
