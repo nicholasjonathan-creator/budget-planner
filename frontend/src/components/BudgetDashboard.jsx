@@ -15,6 +15,7 @@ import SMSDemo from './SMSDemo';
 import ManualClassification from './ManualClassification';
 import CurrencyDisplay from './CurrencyDisplay';
 import UserProfile from './UserProfile';
+import NotificationSettings from './NotificationSettings';
 
 const BudgetDashboard = () => {
   const [transactions, setTransactions] = useState([]);
