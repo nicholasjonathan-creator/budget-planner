@@ -501,6 +501,10 @@ const BudgetDashboard = () => {
             />
           </TabsContent>
           
+          <TabsContent value="timegroups">
+            <TimeBasedTransactionGroups transactions={transactions} />
+          </TabsContent>
+          
           <TabsContent value="manual">
             <ManualClassification 
               key={refreshKey}
