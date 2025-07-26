@@ -1025,24 +1025,35 @@ class SmartDateValidationTester:
             return False
 
     def test_smart_date_validation(self):
-        """Test smart date validation in SMS parsing"""
+        """Test smart date validation in SMS parsing - COMPREHENSIVE ENHANCED VERSION"""
         print("\n🧪 Testing Smart Date Validation in SMS Parsing...")
-        print("=" * 70)
+        print("=" * 80)
         
         self.total_tests += 1
         
         passed_count = 0
         failed_count = 0
         validation_results = {
-            "future_date": {"expected_failures": 0, "actual_failures": 0},
-            "past_date": {"expected_failures": 0, "actual_failures": 0},
-            "valid_date": {"expected_successes": 0, "actual_successes": 0}
+            "future_date": {"expected_failures": 0, "actual_failures": 0, "failed_cases": []},
+            "past_date": {"expected_failures": 0, "actual_failures": 0, "failed_cases": []},
+            "valid_date": {"expected_successes": 0, "actual_successes": 0, "failed_cases": []}
+        }
+        
+        parsing_method_results = {
+            "hdfc_specific": {"total": 0, "passed": 0},
+            "axis_specific": {"total": 0, "passed": 0},
+            "scapia_specific": {"total": 0, "passed": 0},
+            "generic": {"total": 0, "passed": 0}
         }
         
         for i, test_case in enumerate(self.test_sms_messages, 1):
             print(f"\n--- Test Case {i}: {test_case['description']} ---")
-            print(f"SMS: {test_case['sms']}")
+            print(f"SMS: {test_case['sms'][:100]}{'...' if len(test_case['sms']) > 100 else ''}")
             print(f"Expected to parse: {test_case['expected_to_parse']}")
+            print(f"Parsing method: {test_case['parsing_method']}")
+            
+            # Track parsing method stats
+            parsing_method_results[test_case['parsing_method']]["total"] += 1
             
             try:
                 # Send SMS to parser endpoint
@@ -1066,10 +1077,26 @@ class SmartDateValidationTester:
                         validation_results[test_type]["expected_failures"] += 1
                         if not parsing_successful:
                             validation_results[test_type]["actual_failures"] += 1
+                        else:
+                            # This is a critical failure - SMS should have failed but didn't
+                            validation_results[test_type]["failed_cases"].append({
+                                "case": i,
+                                "description": test_case['description'],
+                                "parsing_method": test_case['parsing_method'],
+                                "issue": "SMS parsed successfully when it should have failed date validation"
+                            })
                     elif test_type == "valid_date":
                         validation_results[test_type]["expected_successes"] += 1
                         if parsing_successful:
                             validation_results[test_type]["actual_successes"] += 1
+                        else:
+                            # This is a failure - valid SMS should have parsed
+                            validation_results[test_type]["failed_cases"].append({
+                                "case": i,
+                                "description": test_case['description'],
+                                "parsing_method": test_case['parsing_method'],
+                                "issue": "Valid SMS failed to parse"
+                            })
                     
                     # Check if result matches expectation
                     if parsing_successful == test_case['expected_to_parse']:
@@ -1077,15 +1104,29 @@ class SmartDateValidationTester:
                             print(f"✅ PASS: SMS parsed successfully as expected")
                             if result.get('transaction_id'):
                                 print(f"   Transaction ID: {result['transaction_id']}")
+                                # Verify transaction was created with correct date
+                                try:
+                                    tx_response = requests.get(f"{API_BASE}/transactions/{result['transaction_id']}", timeout=5)
+                                    if tx_response.status_code == 200:
+                                        tx_data = tx_response.json()
+                                        print(f"   Transaction Date: {tx_data.get('date', 'N/A')}")
+                                        print(f"   Amount: ₹{tx_data.get('amount', 0):,.2f}")
+                                except:
+                                    pass
                         else:
                             print(f"✅ PASS: SMS failed parsing as expected (date validation worked)")
                             print(f"   Reason: {result.get('message', 'Unknown')}")
                         passed_count += 1
+                        parsing_method_results[test_case['parsing_method']]["passed"] += 1
                     else:
                         if parsing_successful:
                             print(f"❌ FAIL: SMS parsed when it should have failed (date validation didn't work)")
+                            print(f"   🚨 CRITICAL: Date validation bypass detected!")
+                            if result.get('transaction_id'):
+                                print(f"   Transaction ID: {result['transaction_id']}")
                         else:
                             print(f"❌ FAIL: SMS failed to parse when it should have succeeded")
+                            print(f"   Reason: {result.get('message', 'Unknown')}")
                         failed_count += 1
                         
                 else:
@@ -1116,18 +1157,48 @@ class SmartDateValidationTester:
         print(f"   Past Date Rejection: {validation_results['past_date']['actual_failures']}/{validation_results['past_date']['expected_failures']} ({past_success_rate:.1f}%)")
         print(f"   Valid Date Acceptance: {validation_results['valid_date']['actual_successes']}/{validation_results['valid_date']['expected_successes']} ({valid_success_rate:.1f}%)")
         
+        # Parsing method breakdown
+        print(f"\n📋 Parsing Method Performance:")
+        for method, stats in parsing_method_results.items():
+            if stats["total"] > 0:
+                method_success_rate = (stats["passed"] / stats["total"]) * 100
+                print(f"   {method}: {stats['passed']}/{stats['total']} ({method_success_rate:.1f}%)")
+        
+        # Critical failures analysis
+        print(f"\n🚨 Critical Issues Analysis:")
+        total_critical_failures = 0
+        for test_type, results in validation_results.items():
+            if results["failed_cases"]:
+                print(f"   {test_type.replace('_', ' ').title()} Issues:")
+                for failure in results["failed_cases"]:
+                    print(f"     • Case {failure['case']}: {failure['description']}")
+                    print(f"       Method: {failure['parsing_method']} - {failure['issue']}")
+                    total_critical_failures += 1
+        
+        if total_critical_failures == 0:
+            print("   ✅ No critical date validation issues detected!")
+        else:
+            print(f"   ❌ {total_critical_failures} critical date validation issues found!")
+        
         success_rate = (passed_count / len(self.test_sms_messages)) * 100 if self.test_sms_messages else 0
         print(f"   Overall Success Rate: {success_rate:.1f}%")
         
-        # Determine if smart date validation is working
-        validation_working = (future_success_rate >= 80 and past_success_rate >= 80 and valid_success_rate >= 80)
+        # Enhanced determination criteria
+        validation_working = (
+            future_success_rate >= 90 and 
+            past_success_rate >= 90 and 
+            valid_success_rate >= 90 and
+            total_critical_failures == 0
+        )
         
         if validation_working:
             print("✅ PASS: Smart date validation is working correctly!")
             self.passed_tests += 1
             return True
         else:
-            print("❌ FAIL: Smart date validation has issues")
+            print("❌ FAIL: Smart date validation has significant issues")
+            print(f"   Required: 90% success rate for all categories + 0 critical failures")
+            print(f"   Actual: Future={future_success_rate:.1f}%, Past={past_success_rate:.1f}%, Valid={valid_success_rate:.1f}%, Critical={total_critical_failures}")
             self.failed_tests += 1
             return False
 
