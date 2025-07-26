@@ -24,6 +24,7 @@ const BudgetDashboard = () => {
   const [monthlySummary, setMonthlySummary] = useState({ income: 0, expense: 0, balance: 0 });
   const [categoryTotals, setCategoryTotals] = useState({});
   const [loading, setLoading] = useState(true);
+  const [transactionFilter, setTransactionFilter] = useState('all'); // 'all', 'income', 'expense'
   const { toast } = useToast();
 
   useEffect(() => {
