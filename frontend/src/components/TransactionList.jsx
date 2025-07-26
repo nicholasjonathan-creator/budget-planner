@@ -145,52 +145,29 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            Transactions
-            <Badge variant="secondary">{transactions.length}</Badge>
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            <Button
-              variant={viewMode === 'chronological' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('chronological')}
-              className="flex items-center gap-1"
-            >
-              <Calendar className="h-4 w-4" />
-              Chronological
-            </Button>
-            <Button
-              variant={viewMode === 'timegroups' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('timegroups')}
-              className="flex items-center gap-1"
-            >
-              <Clock className="h-4 w-4" />
-              Time Groups
-            </Button>
-          </div>
-        </div>
+        <CardTitle className="flex items-center gap-2">
+          Transactions
+          <Badge variant="secondary">{transactions.length}</Badge>
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        {viewMode === 'chronological' ? (
-          <div className="space-y-3">
-            {transactions.map(transaction => {
-              const category = getCategoryById(transaction.category_id);
-              const isEditing = editingTransaction === transaction.id;
-              const isUpdating = updatingTransaction === transaction.id;
-              const isExpanded = expandedTransactions.has(transaction.id);
-              const hasSMSData = transaction.source === 'sms' || transaction.source === 'sms_manual';
-              
-              return (
-                <div key={transaction.id}>
-                  <div className="border rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between p-4">
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="flex items-center gap-2">
-                          {transaction.type === 'income' ? (
-                            <TrendingUp className="h-4 w-4 text-green-600" />
-                          ) : (
+        <div className="space-y-3">
+          {transactions.map(transaction => {
+            const category = getCategoryById(transaction.category_id);
+            const isEditing = editingTransaction === transaction.id;
+            const isUpdating = updatingTransaction === transaction.id;
+            const isExpanded = expandedTransactions.has(transaction.id);
+            const hasSMSData = transaction.source === 'sms' || transaction.source === 'sms_manual';
+            
+            return (
+              <div key={transaction.id}>
+                <div className="border rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="flex items-center gap-2">
+                        {transaction.type === 'income' ? (
+                          <TrendingUp className="h-4 w-4 text-green-600" />
+                        ) : (
                           <TrendingDown className="h-4 w-4 text-red-600" />
                         )}
                         <div 
