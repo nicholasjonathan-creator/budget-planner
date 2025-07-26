@@ -52,7 +52,12 @@ const TransactionList = ({ transactions, categories }) => {
         <div className="space-y-3">
           {transactions.map(transaction => {
             const category = getCategoryById(transaction.category_id);
-            const date = new Date(transaction.date).toLocaleDateString();
+            // Format date for India (DD-MM-YYYY)
+            const date = new Date(transaction.date).toLocaleDateString('en-IN', {
+              day: '2-digit',
+              month: '2-digit', 
+              year: 'numeric'
+            });
             
             return (
               <div 
