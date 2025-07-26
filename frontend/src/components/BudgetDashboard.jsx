@@ -16,6 +16,8 @@ import ManualClassification from './ManualClassification';
 import CurrencyDisplay from './CurrencyDisplay';
 import UserProfile from './UserProfile';
 import NotificationSettings from './NotificationSettings';
+import ProductionEmailManagement from './ProductionEmailManagement';
+import { useAuth } from '../contexts/AuthContext';
 
 const BudgetDashboard = () => {
   const [transactions, setTransactions] = useState([]);
