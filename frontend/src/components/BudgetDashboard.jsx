@@ -12,6 +12,7 @@ import BudgetChart from './BudgetChart';
 import TransactionList from './TransactionList';
 import BudgetLimitsManager from './BudgetLimitsManager';
 import SMSDemo from './SMSDemo';
+import ManualClassification from './ManualClassification';
 
 const BudgetDashboard = () => {
   const [transactions, setTransactions] = useState([]);
