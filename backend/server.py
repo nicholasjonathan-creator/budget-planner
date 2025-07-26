@@ -94,6 +94,99 @@ async def get_metrics():
         logger.error(f"Metrics endpoint failed: {e}")
         raise HTTPException(status_code=500, detail="Failed to get metrics")
 
+# ==================== AUTHENTICATION ENDPOINTS ====================
+
+@api_router.post("/auth/register", response_model=Token, status_code=status.HTTP_201_CREATED)
+async def register_user(user_data: UserCreate):
+    """Register a new user"""
+    try:
+        # Create the user
+        user = await UserService.create_user(user_data)
+        
+        # Create access token
+        access_token, expires_at = create_user_token(user.id, user.email)
+        
+        return Token(
+            access_token=access_token,
+            token_type="bearer",
+            expires_at=expires_at,
+            user=user
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Registration failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Registration failed"
+        )
+
+@api_router.post("/auth/login", response_model=Token)
+async def login_user(user_data: UserLogin):
+    """Login a user"""
+    try:
+        # Authenticate user
+        user = await UserService.authenticate_user(user_data.email, user_data.password)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        # Create access token
+        access_token, expires_at = create_user_token(user.id, user.email)
+        
+        # Convert user to response format
+        user_response = UserResponse(
+            id=user.id,
+            email=user.email,
+            username=user.username,
+            role=user.role,
+            is_active=user.is_active,
+            created_at=user.created_at
+        )
+        
+        return Token(
+            access_token=access_token,
+            token_type="bearer",
+            expires_at=expires_at,
+            user=user_response
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Login failed"
+        )
+
+@api_router.get("/auth/me", response_model=UserResponse)
+async def get_current_user_info(current_user: User = Depends(get_current_active_user)):
+    """Get current user information"""
+    return UserResponse(
+        id=current_user.id,
+        email=current_user.email,
+        username=current_user.username,
+        role=current_user.role,
+        is_active=current_user.is_active,
+        created_at=current_user.created_at
+    )
+
+@api_router.post("/auth/logout")
+async def logout_user(current_user: User = Depends(get_current_active_user)):
+    """Logout user (client should delete the token)"""
+    return {"message": "Successfully logged out"}
+
+@api_router.get("/auth/users", response_model=List[UserResponse])
+async def get_all_users(admin_user: User = Depends(get_admin_user)):
+    """Get all users (admin only)"""
+    return await UserService.get_all_users()
+
 # ==================== TRANSACTION ENDPOINTS ====================
 
 @api_router.post("/transactions", response_model=Transaction)
