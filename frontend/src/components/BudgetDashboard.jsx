@@ -387,11 +387,15 @@ const BudgetDashboard = () => {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-7' : 'grid-cols-6'} mb-6`}>
+          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-8' : 'grid-cols-7'} mb-6`}>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
             <TabsTrigger value="budget">Budget Limits</TabsTrigger>
             <TabsTrigger value="charts">Charts</TabsTrigger>
+            <TabsTrigger value="timegroups">
+              <Clock className="h-4 w-4 mr-2" />
+              Time Groups
+            </TabsTrigger>
             <TabsTrigger value="manual">
               <Settings className="h-4 w-4 mr-2" />
               Manual
