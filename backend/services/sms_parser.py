@@ -313,6 +313,9 @@ class SMSTransactionParser:
             # Auto-categorize
             category_id = self._auto_categorize(merchant, description)
             
+            # Extract currency from SMS
+            currency = self._extract_currency(sms_text)
+            
             return Transaction(
                 type=transaction_type,
                 category_id=category_id,
@@ -323,11 +326,13 @@ class SMSTransactionParser:
                 merchant=merchant,
                 account_number=account_number,
                 balance=balance,
+                currency=currency,  # Add currency field
                 raw_data={
                     'sms_text': sms_text,
                     'phone_number': phone_number,
                     'parsed_at': datetime.now().isoformat(),
-                    'parsing_method': 'generic'
+                    'parsing_method': 'generic',
+                    'currency': currency
                 }
             )
             
