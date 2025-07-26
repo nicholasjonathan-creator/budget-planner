@@ -226,12 +226,14 @@ class SMSTransactionParser:
             if len(parts) >= 3:
                 payee = parts[2]  # Get the name part
         
-        # Handle ACH patterns
+        # Handle ACH patterns: "ACH D- TP ACH INDIANESIGN-1862188817"
         if 'ach d-' in payee.lower():
-            # Extract from ACH pattern: "ACH D- TP ACH INDIANESIGN-1862188817"
-            parts = payee.split('-')
-            if len(parts) >= 2:
-                payee = parts[-1]  # Get the last part
+            # Extract company name from ACH pattern
+            ach_match = re.search(r'ach\s+d-\s*.*?([a-zA-Z]+)-?\d*', payee, re.IGNORECASE)
+            if ach_match:
+                company_part = ach_match.group(1)
+                if company_part and len(company_part) > 2:
+                    payee = company_part
         
         # Handle account transfers (extract account number)
         if 'a/c' in payee.lower() and 'x' in payee.lower():
