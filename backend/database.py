@@ -10,7 +10,7 @@ load_dotenv(ROOT_DIR / '.env')
 # MongoDB connection
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 client = AsyncIOMotorClient(mongo_url)
-db = client.budget_planner
+db = client[os.environ.get("DB_NAME", "budget_planner")]
 
 # Collections
 transactions_collection = db.transactions
