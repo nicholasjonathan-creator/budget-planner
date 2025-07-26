@@ -186,6 +186,9 @@ class SMSTransactionParser:
             if parsed_data:
                 try:
                     parsed_date = self._parse_date(parsed_data['date'])
+                    # Extract currency from SMS
+                    currency = self._extract_currency(sms_text)
+                    
                     return Transaction(
                         type=parsed_data['type'],
                         category_id=self._auto_categorize(parsed_data['payee'], parsed_data['payee']),
@@ -196,12 +199,14 @@ class SMSTransactionParser:
                         merchant=parsed_data['payee'],
                         account_number=parsed_data['account'],
                         balance=parsed_data.get('balance'),
+                        currency=currency,  # Add currency field
                         raw_data={
                             'sms_text': sms_text,
                             'phone_number': phone_number,
                             'parsed_at': datetime.now().isoformat(),
                             'bank': 'HDFC',
-                            'parsing_method': 'hdfc_specific'
+                            'parsing_method': 'hdfc_specific',
+                            'currency': currency
                         }
                     )
                 except ValueError as e:
