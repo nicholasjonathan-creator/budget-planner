@@ -158,7 +158,8 @@ const ManualClassification = ({ onClassificationComplete }) => {
       sms_id: '',
       transaction_type: '',
       amount: '',
-      description: ''
+      description: '',
+      currency: 'INR'
     });
   };
 
