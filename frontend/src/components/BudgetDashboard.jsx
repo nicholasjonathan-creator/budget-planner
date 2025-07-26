@@ -209,7 +209,7 @@ const BudgetDashboard = () => {
                     </div>
                     <div className="text-right">
                       <span className={`font-bold ${alert.isOverBudget ? 'text-red-600' : 'text-amber-600'}`}>
-                        ${alert.spent || 0} / ${alert.limit}
+                        ₹{alert.spent || 0} / ₹{alert.limit}
                       </span>
                       <div className={`text-sm ${alert.isOverBudget ? 'text-red-600' : 'text-amber-600'}`}>
                         {alert.isOverBudget ? 'Over budget!' : 'Near limit'}
