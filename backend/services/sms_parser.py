@@ -523,6 +523,35 @@ class SMSTransactionParser:
         # This line should never be reached, but just in case
         # return datetime.now()
 
+    def _extract_currency(self, sms_text: str) -> str:
+        """Extract currency from SMS text"""
+        sms_upper = sms_text.upper()
+        
+        # Check for specific currency codes at the beginning or with amounts
+        if re.search(r'\bUSD\b|\$', sms_upper):
+            return 'USD'
+        elif re.search(r'\bEUR\b|€', sms_upper):
+            return 'EUR'
+        elif re.search(r'\bGBP\b|£', sms_upper):
+            return 'GBP'
+        elif re.search(r'\bPHP\b', sms_upper):
+            return 'PHP'
+        elif re.search(r'\bJPY\b|¥', sms_upper):
+            return 'JPY'
+        elif re.search(r'\bAUD\b', sms_upper):
+            return 'AUD'
+        elif re.search(r'\bCAD\b', sms_upper):
+            return 'CAD'
+        elif re.search(r'\bCHF\b', sms_upper):
+            return 'CHF'
+        elif re.search(r'\bCNY\b', sms_upper):
+            return 'CNY'
+        elif re.search(r'\bSGD\b', sms_upper):
+            return 'SGD'
+        
+        # Default to INR for Indian banks
+        return 'INR'
+
     def _extract_date_from_sms(self, sms_text: str) -> Optional[str]:
         """Extract date string from generic SMS text for validation"""
         try:
