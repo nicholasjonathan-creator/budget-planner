@@ -21,6 +21,7 @@ class Category(BaseModel):
 
 class Transaction(BaseModel):
     id: Optional[str] = None
+    user_id: Optional[str] = None  # Associate transaction with user
     type: TransactionType
     category_id: int
     amount: float
