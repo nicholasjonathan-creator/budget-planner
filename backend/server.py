@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Body
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Body, status
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
@@ -15,8 +15,12 @@ from models.transaction import (
     Transaction, TransactionCreate, BudgetLimit, BudgetLimitCreate, 
     Category, TransactionType, SMSTransaction
 )
+from models.user import User, UserCreate, UserLogin, UserResponse, Token
 from services.transaction_service import TransactionService
 from services.sms_service import SMSService
+from services.user_service import UserService
+from services.auth import create_user_token
+from dependencies.auth import get_current_user, get_current_active_user, get_admin_user, get_optional_user
 from database import init_db, db
 
 ROOT_DIR = Path(__file__).parent
