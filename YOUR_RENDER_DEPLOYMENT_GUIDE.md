@@ -38,7 +38,7 @@ git push origin main
    
    SENDGRID_API_KEY = SG.your-sendgrid-api-key-here
    
-   JWT_SECRET = your-super-secret-jwt-key-for-production-nicholasjonathan-2025
+   JWT_SECRET = your-jwt-secret-key-here
    
    SENDER_EMAIL = noreply@budgetplanner.app
    
