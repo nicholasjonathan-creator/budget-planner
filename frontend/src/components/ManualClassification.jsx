@@ -122,7 +122,8 @@ const ManualClassification = ({ onClassificationComplete }) => {
           sms_id: '',
           transaction_type: '',
           amount: '',
-          description: ''
+          description: '',
+          currency: 'INR'
         });
         
         // Refresh the failed SMS list to get updated count
