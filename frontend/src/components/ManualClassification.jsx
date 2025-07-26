@@ -13,6 +13,7 @@ const ManualClassification = ({ onClassificationComplete }) => {
   const [failedSMS, setFailedSMS] = useState([]);
   const [loading, setLoading] = useState(true);
   const [classifying, setClassifying] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [classificationData, setClassificationData] = useState({
     sms_id: '',
     transaction_type: '',
