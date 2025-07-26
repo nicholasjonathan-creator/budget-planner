@@ -395,6 +395,12 @@ const BudgetDashboard = () => {
               categories={categories}
             />
           </TabsContent>
+          
+          <TabsContent value="manual">
+            <ManualClassification 
+              onClassificationComplete={loadData}
+            />
+          </TabsContent>
         </Tabs>
 
         {/* Transaction Form Modal */}
