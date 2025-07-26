@@ -105,7 +105,8 @@ const ManualClassification = ({ onClassificationComplete }) => {
         classificationData.sms_id,
         classificationData.transaction_type,
         parseFloat(classificationData.amount),
-        classificationData.description
+        classificationData.description,
+        classificationData.currency
       );
 
       if (response.success) {
