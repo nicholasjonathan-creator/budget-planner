@@ -279,6 +279,19 @@ class SMSTransactionParser:
             # Extract balance
             balance = self._extract_balance(sms_lower)
             
+            # Extract date from SMS text and apply validation - CRITICAL FIX
+            extracted_date = self._extract_date_from_sms(sms_text)
+            if extracted_date:
+                try:
+                    parsed_date = self._parse_date(extracted_date)
+                except ValueError as e:
+                    # Date validation failed - return None to trigger manual classification
+                    print(f"Generic SMS date validation failed: {str(e)}")
+                    return None
+            else:
+                # If no date found in SMS, use current date (safer fallback)
+                parsed_date = datetime.now()
+            
             # Generate description
             description = self._generate_description(merchant, sms_text)
             
@@ -290,7 +303,7 @@ class SMSTransactionParser:
                 category_id=category_id,
                 amount=amount,
                 description=description,
-                date=datetime.now(),
+                date=parsed_date,
                 source=TransactionSource.SMS,
                 merchant=merchant,
                 account_number=account_number,
