@@ -39,7 +39,13 @@ async def test_sms_service_direct():
             if result.get('success') and result.get('transaction_id'):
                 # Fetch the created transaction from database
                 from database import db
-                transaction_doc = await db.transactions.find_one({"_id": result['transaction_id']})
+                from bson import ObjectId
+                try:
+                    transaction_doc = await db.transactions.find_one({"_id": ObjectId(result['transaction_id'])})
+                except:
+                    # Try with string ID as well
+                    transaction_doc = await db.transactions.find_one({"_id": result['transaction_id']})
+                
                 if transaction_doc:
                     print(f"✅ Transaction created in database:")
                     print(f"   Amount: ₹{transaction_doc.get('amount', 0):,.2f}")
