@@ -26,6 +26,7 @@ const BudgetDashboard = () => {
   const [categoryTotals, setCategoryTotals] = useState({});
   const [loading, setLoading] = useState(true);
   const [transactionFilter, setTransactionFilter] = useState('all'); // 'all', 'income', 'expense'
+  const [refreshKey, setRefreshKey] = useState(0); // Force refresh key
   const { toast } = useToast();
 
   useEffect(() => {
