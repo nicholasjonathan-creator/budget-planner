@@ -29,7 +29,7 @@
    - Start command: `uvicorn server:app --host 0.0.0.0 --port $PORT`
 
 6. **Add Environment Variables**:
-   - `MONGO_URL`: `mongodb+srv://nicholasjonathan:bJ70UaqPZ5kcou5W@buildadatabase.ahqwxzz.mongodb.net/budget_planner?retryWrites=true&w=majority&appName=Buildadatabase`
+   - `MONGO_URL`: `mongodb+srv://your-username:your-password@your-cluster.mongodb.net/budget_planner?retryWrites=true&w=majority&appName=YourAppName`
    - `JWT_SECRET`: `your-super-secret-jwt-key-for-production-nicholasjonathan-2025`
    - `ENVIRONMENT`: `production`
 
