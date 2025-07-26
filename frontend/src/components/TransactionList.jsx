@@ -214,7 +214,7 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
                         <div className={`font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
                           {transaction.type === 'income' ? '+' : '-'}₹{transaction.amount.toLocaleString('en-IN')}
                         </div>
-                        {transaction.source === 'sms' && transaction.account_number && (
+                        {hasSMSData && transaction.account_number && (
                           <div className="text-xs text-gray-500">A/C: {transaction.account_number}</div>
                         )}
                       </div>
