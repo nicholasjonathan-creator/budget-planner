@@ -115,6 +115,24 @@ class SMSTransactionParser:
             }
         }
         
+        # Scapia/Federal Bank SMS patterns
+        self.scapia_patterns = {
+            # Pattern 1: "Hi! Your txn of ₹amount at MERCHANT on your Scapia Federal ... credit card was successful"
+            'credit_card_success': {
+                'regex': r'hi!\s*your\s+txn\s+of\s+₹([\d,]+(?:\.\d{2})?)\s+at\s+(.+?)\s+on\s+your\s+scapia\s+federal\s+.*?\s+credit\s+card\s+was\s+successful',
+                'amount_group': 1,
+                'payee_group': 2,
+                'type': 'expense'
+            },
+            # Pattern 2: "Hi! Your txn for ₹amount at MERCHANT on your Scapia Federal ... credit card has been reversed"
+            'credit_card_reversal': {
+                'regex': r'hi!\s*your\s+txn\s+for\s+₹([\d,]+(?:\.\d{2})?)\s+at\s+(.+?)\s+on\s+your\s+scapia\s+federal\s+.*?\s+credit\s+card\s+has\s+been\s+reversed',
+                'amount_group': 1,
+                'payee_group': 2,
+                'type': 'income'  # Reversal is income
+            }
+        }
+        
         # Merchant extraction patterns
         self.merchant_patterns = [
             r'to\s+([A-Z][A-Za-z\s\.]+?)(?:\s+on|\s+ref|\s*$)',
