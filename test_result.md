@@ -101,3 +101,61 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Improve SMS parser accuracy for real-world HDFC bank SMS examples that are currently failing to parse correctly. The user provided 10 real HDFC SMS examples in various formats (multiline, different date formats, etc.) that need to be parsed to extract amount, currency, date, payee, bank, account number, and transaction type."
+
+backend:
+  - task: "Fix HDFC SMS parser for multiline format"
+    implemented: false
+    working: false
+    file: "backend/services/sms_parser.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Current parser fails on multiline HDFC SMS formats. Need to update regex patterns to handle multiline SMS and various account number formats (*2953, XX2953, x2953, x7722)"
+
+  - task: "Test SMS parser with real HDFC examples"
+    implemented: false
+    working: false
+    file: "backend/services/sms_parser.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Need to test parser with 10 real HDFC SMS examples provided by user"
+
+frontend:
+  - task: "SMS Demo functionality"
+    implemented: true
+    working: true
+    file: "frontend/src/components/SMSDemo.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "SMS Demo component exists and should work with improved parser"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Fix HDFC SMS parser for multiline format"
+    - "Test SMS parser with real HDFC examples"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Starting to fix HDFC SMS parser. User provided 10 real HDFC SMS examples that show multiline format and various patterns not handled by current regex. Will update patterns to handle these formats and test thoroughly."
