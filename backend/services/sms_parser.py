@@ -133,12 +133,37 @@ class SMSTransactionParser:
             }
         }
         
-        # Fallback patterns for other banks
+        # ICICI Bank SMS patterns
+        self.icici_patterns = {
+            # Pattern 1: "PHP 254.00 spent using ICICI Bank Card XX0003 on 18-May-25 on LAWSON NET QUAD"
+            'card_spent_foreign': {
+                'regex': r'([A-Z]{3})\s+([\d,]+(?:\.\d{2})?)\s+spent\s+using\s+icici\s+bank\s+card\s+([x\d]+)\s+on\s+(\d{2}-[A-Za-z]{3}-\d{2})\s+on\s+(.+?)\.?\s*avl',
+                'currency_group': 1,
+                'amount_group': 2,
+                'account_group': 3,
+                'date_group': 4,
+                'merchant_group': 5,
+                'type': 'expense'
+            },
+            # Pattern 2: "Rs 1000.00 spent using ICICI Bank Card"
+            'card_spent_inr': {
+                'regex': r'(?:rs|inr)\.?\s+([\d,]+(?:\.\d{2})?)\s+spent\s+using\s+icici\s+bank\s+card\s+([x\d]+)\s+on\s+(\d{2}-[A-Za-z]{3}-\d{2})\s+(?:on|at)\s+(.+?)\.?\s*avl',
+                'amount_group': 1,
+                'account_group': 2,
+                'date_group': 3,
+                'merchant_group': 4,
+                'type': 'expense'
+            }
+        }
+        
+        # Fallback patterns for other banks - ENHANCED to avoid "Avl Limit" amounts
         self.bank_patterns = {
             'debit': [
-                r'(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)\s*(?:debited|spent|paid|sent|withdrawn)',
+                # Enhanced patterns that exclude "Avl Limit" amounts
+                r'(?:php|usd|eur|gbp)\s+([\d,]+(?:\.\d{2})?)\s+spent',  # Foreign currency spent
+                r'(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)\s*(?:debited|spent|paid|sent|withdrawn)(?!.*avl\s+limit)',
                 r'(?:debited|spent|paid|sent|withdrawn).*?(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)',
-                r'(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)\s*(?:has\s+been\s+)?(?:debited|spent|paid)',
+                r'(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)\s*(?:has\s+been\s+)?(?:debited|spent|paid)(?!.*avl\s+limit)',
                 r'(?:debit|spent|paid).*?(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)',
                 r'a/c.*?(?:debited|spent).*?(?:rs|inr|₹)\.?\s*([\d,]+(?:\.\d{2})?)',
             ],
