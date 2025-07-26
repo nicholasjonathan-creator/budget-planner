@@ -875,6 +875,468 @@ class BackendAPITester:
         
         print("=" * 70)
 
+class SmartDateValidationTester:
+    def __init__(self):
+        self.test_results = []
+        self.total_tests = 0
+        self.passed_tests = 0
+        self.failed_tests = 0
+        self.created_sms_ids = []  # Track created SMS for cleanup
+        
+        # Test SMS messages with different date scenarios
+        self.test_sms_messages = [
+            # Future dates (should fail parsing)
+            {
+                "sms": "Dear Customer, Rs 1000.00 debited from your account XX0003 on 26-Aug-2025.",
+                "expected_to_parse": False,
+                "description": "Future date - August 2025 (should fail)",
+                "test_type": "future_date"
+            },
+            {
+                "sms": "Sent Rs.500.00\nFrom HDFC Bank A/C *2953\nTo Test Merchant\nOn 15/12/25",
+                "expected_to_parse": False,
+                "description": "Future date - December 2025 (should fail)",
+                "test_type": "future_date"
+            },
+            {
+                "sms": "UPDATE: INR 750.00 debited from HDFC Bank XX2953 on 01-SEP-25. Info: Test transaction",
+                "expected_to_parse": False,
+                "description": "Future date - September 2025 (should fail)",
+                "test_type": "future_date"
+            },
+            
+            # Dates too far in past (should fail parsing)
+            {
+                "sms": "Dear Customer, Rs 2000.00 debited from your account XX0003 on 26-Jul-2023.",
+                "expected_to_parse": False,
+                "description": "Date too far in past - July 2023 (should fail)",
+                "test_type": "past_date"
+            },
+            {
+                "sms": "Sent Rs.1500.00\nFrom HDFC Bank A/C *2953\nTo Old Transaction\nOn 15/01/24",
+                "expected_to_parse": False,
+                "description": "Date too far in past - January 2024 (should fail)",
+                "test_type": "past_date"
+            },
+            
+            # Valid current dates (should parse successfully)
+            {
+                "sms": "Dear Customer, Rs 800.00 debited from your account XX0003 on 26-Jul-2025.",
+                "expected_to_parse": True,
+                "description": "Valid current date - July 2025 (should parse)",
+                "test_type": "valid_date"
+            },
+            {
+                "sms": "Sent Rs.1200.00\nFrom HDFC Bank A/C *2953\nTo Valid Merchant\nOn 25/07/25",
+                "expected_to_parse": True,
+                "description": "Valid current date - July 2025 DD/MM/YY (should parse)",
+                "test_type": "valid_date"
+            },
+            {
+                "sms": "UPDATE: INR 950.00 debited from HDFC Bank XX2953 on 25-JUL-25. Info: Valid transaction",
+                "expected_to_parse": True,
+                "description": "Valid current date - July 2025 DD-MMM-YY (should parse)",
+                "test_type": "valid_date"
+            }
+        ]
+
+    def test_health_check(self):
+        """Test if the backend is running"""
+        print("🔍 Testing Backend Health...")
+        try:
+            response = requests.get(f"{API_BASE}/health", timeout=30)
+            if response.status_code == 200:
+                print("✅ Backend is healthy")
+                print(f"   Backend URL: {API_BASE}")
+                return True
+            else:
+                print(f"❌ Backend health check failed: {response.status_code}")
+                print(f"   Response: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Backend connection failed: {e}")
+            print(f"   Backend URL: {API_BASE}")
+            return False
+
+    def test_smart_date_validation(self):
+        """Test smart date validation in SMS parsing"""
+        print("\n🧪 Testing Smart Date Validation in SMS Parsing...")
+        print("=" * 70)
+        
+        self.total_tests += 1
+        
+        passed_count = 0
+        failed_count = 0
+        validation_results = {
+            "future_date": {"expected_failures": 0, "actual_failures": 0},
+            "past_date": {"expected_failures": 0, "actual_failures": 0},
+            "valid_date": {"expected_successes": 0, "actual_successes": 0}
+        }
+        
+        for i, test_case in enumerate(self.test_sms_messages, 1):
+            print(f"\n--- Test Case {i}: {test_case['description']} ---")
+            print(f"SMS: {test_case['sms']}")
+            print(f"Expected to parse: {test_case['expected_to_parse']}")
+            
+            try:
+                # Send SMS to parser endpoint
+                response = requests.post(
+                    f"{API_BASE}/sms/receive",
+                    json={
+                        "phone_number": "+918000000000",
+                        "message": test_case['sms']
+                    },
+                    headers={"Content-Type": "application/json"},
+                    timeout=10
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    parsing_successful = result.get('success', False)
+                    
+                    # Update validation results
+                    test_type = test_case['test_type']
+                    if test_type in ["future_date", "past_date"]:
+                        validation_results[test_type]["expected_failures"] += 1
+                        if not parsing_successful:
+                            validation_results[test_type]["actual_failures"] += 1
+                    elif test_type == "valid_date":
+                        validation_results[test_type]["expected_successes"] += 1
+                        if parsing_successful:
+                            validation_results[test_type]["actual_successes"] += 1
+                    
+                    # Check if result matches expectation
+                    if parsing_successful == test_case['expected_to_parse']:
+                        if parsing_successful:
+                            print(f"✅ PASS: SMS parsed successfully as expected")
+                            if result.get('transaction_id'):
+                                print(f"   Transaction ID: {result['transaction_id']}")
+                        else:
+                            print(f"✅ PASS: SMS failed parsing as expected (date validation worked)")
+                            print(f"   Reason: {result.get('message', 'Unknown')}")
+                        passed_count += 1
+                    else:
+                        if parsing_successful:
+                            print(f"❌ FAIL: SMS parsed when it should have failed (date validation didn't work)")
+                        else:
+                            print(f"❌ FAIL: SMS failed to parse when it should have succeeded")
+                        failed_count += 1
+                        
+                else:
+                    print(f"❌ SMS receive endpoint failed: {response.status_code}")
+                    print(f"   Response: {response.text}")
+                    failed_count += 1
+                    
+            except Exception as e:
+                print(f"❌ Error testing SMS date validation: {e}")
+                failed_count += 1
+        
+        # Summary
+        print(f"\n📊 Smart Date Validation Test Results:")
+        print(f"   Total Test Cases: {len(self.test_sms_messages)}")
+        print(f"   Passed: {passed_count} ✅")
+        print(f"   Failed: {failed_count} ❌")
+        
+        # Detailed validation results
+        print(f"\n📋 Validation Breakdown:")
+        future_success_rate = (validation_results["future_date"]["actual_failures"] / 
+                              validation_results["future_date"]["expected_failures"] * 100) if validation_results["future_date"]["expected_failures"] > 0 else 0
+        past_success_rate = (validation_results["past_date"]["actual_failures"] / 
+                            validation_results["past_date"]["expected_failures"] * 100) if validation_results["past_date"]["expected_failures"] > 0 else 0
+        valid_success_rate = (validation_results["valid_date"]["actual_successes"] / 
+                             validation_results["valid_date"]["expected_successes"] * 100) if validation_results["valid_date"]["expected_successes"] > 0 else 0
+        
+        print(f"   Future Date Rejection: {validation_results['future_date']['actual_failures']}/{validation_results['future_date']['expected_failures']} ({future_success_rate:.1f}%)")
+        print(f"   Past Date Rejection: {validation_results['past_date']['actual_failures']}/{validation_results['past_date']['expected_failures']} ({past_success_rate:.1f}%)")
+        print(f"   Valid Date Acceptance: {validation_results['valid_date']['actual_successes']}/{validation_results['valid_date']['expected_successes']} ({valid_success_rate:.1f}%)")
+        
+        success_rate = (passed_count / len(self.test_sms_messages)) * 100 if self.test_sms_messages else 0
+        print(f"   Overall Success Rate: {success_rate:.1f}%")
+        
+        # Determine if smart date validation is working
+        validation_working = (future_success_rate >= 80 and past_success_rate >= 80 and valid_success_rate >= 80)
+        
+        if validation_working:
+            print("✅ PASS: Smart date validation is working correctly!")
+            self.passed_tests += 1
+            return True
+        else:
+            print("❌ FAIL: Smart date validation has issues")
+            self.failed_tests += 1
+            return False
+
+    def test_failed_sms_list(self):
+        """Test that failed date validation SMS appear in failed SMS list"""
+        print("\n🧪 Testing Failed SMS List for Date Validation Failures...")
+        print("=" * 65)
+        
+        self.total_tests += 1
+        
+        try:
+            # First, create a test SMS with future date that should fail
+            future_date_sms = "Dear Customer, Rs 1500.00 debited from your account XX0003 on 26-Dec-2025."
+            
+            print(f"Step 1: Creating SMS with future date...")
+            print(f"SMS: {future_date_sms}")
+            
+            # Send the SMS
+            response = requests.post(
+                f"{API_BASE}/sms/receive",
+                json={
+                    "phone_number": "+918000000000",
+                    "message": future_date_sms
+                },
+                headers={"Content-Type": "application/json"},
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Failed to send test SMS: {response.status_code}")
+                self.failed_tests += 1
+                return False
+            
+            result = response.json()
+            if result.get('success'):
+                print("⚠️  SMS was parsed successfully when it should have failed (date validation issue)")
+                # Continue with test anyway
+            else:
+                print("✅ SMS failed parsing as expected due to date validation")
+            
+            # Step 2: Check if the SMS appears in failed SMS list
+            print(f"Step 2: Checking failed SMS list...")
+            
+            response = requests.get(f"{API_BASE}/sms/failed", timeout=10)
+            
+            if response.status_code != 200:
+                print(f"❌ Failed to get failed SMS list: {response.status_code}")
+                self.failed_tests += 1
+                return False
+            
+            failed_sms_data = response.json()
+            if not failed_sms_data.get('success'):
+                print(f"❌ Failed SMS endpoint returned error: {failed_sms_data.get('error', 'Unknown error')}")
+                self.failed_tests += 1
+                return False
+            
+            failed_sms_list = failed_sms_data.get('failed_sms', [])
+            print(f"   Found {len(failed_sms_list)} failed SMS messages")
+            
+            # Look for our test SMS in the failed list
+            test_sms_found = False
+            for sms in failed_sms_list:
+                if future_date_sms in sms.get('message', ''):
+                    test_sms_found = True
+                    self.created_sms_ids.append(sms['id'])
+                    print(f"✅ Test SMS found in failed SMS list with ID: {sms['id']}")
+                    print(f"   Reason: {sms.get('reason', 'Unknown')}")
+                    break
+            
+            if test_sms_found:
+                print("✅ PASS: Failed date validation SMS appears in failed SMS list")
+                self.passed_tests += 1
+                return True
+            else:
+                print("❌ FAIL: Failed date validation SMS not found in failed SMS list")
+                print("   This could indicate an issue with the failed SMS tracking")
+                self.failed_tests += 1
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error testing failed SMS list: {e}")
+            self.failed_tests += 1
+            return False
+
+    def test_manual_classification_after_date_failure(self):
+        """Test that SMS with date validation failures can be manually classified"""
+        print("\n🧪 Testing Manual Classification After Date Validation Failure...")
+        print("=" * 70)
+        
+        self.total_tests += 1
+        
+        try:
+            # Create a test SMS with invalid date
+            invalid_date_sms = "Dear Customer, Rs 2500.00 debited from your account XX0003 on 26-Nov-2025."
+            
+            print(f"Step 1: Creating SMS with invalid future date...")
+            print(f"SMS: {invalid_date_sms}")
+            
+            # Send the SMS (should fail parsing)
+            response = requests.post(
+                f"{API_BASE}/sms/receive",
+                json={
+                    "phone_number": "+918000000000",
+                    "message": invalid_date_sms
+                },
+                headers={"Content-Type": "application/json"},
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Failed to send test SMS: {response.status_code}")
+                self.failed_tests += 1
+                return False
+            
+            # Get the failed SMS
+            print(f"Step 2: Retrieving failed SMS for manual classification...")
+            
+            response = requests.get(f"{API_BASE}/sms/failed", timeout=10)
+            if response.status_code != 200:
+                print(f"❌ Failed to get failed SMS: {response.status_code}")
+                self.failed_tests += 1
+                return False
+            
+            failed_sms_data = response.json()
+            if not failed_sms_data.get('success'):
+                print(f"❌ Failed SMS endpoint error: {failed_sms_data.get('error')}")
+                self.failed_tests += 1
+                return False
+            
+            # Find our test SMS
+            test_sms_id = None
+            for sms in failed_sms_data.get('failed_sms', []):
+                if invalid_date_sms in sms.get('message', ''):
+                    test_sms_id = sms['id']
+                    break
+            
+            if not test_sms_id:
+                print("❌ Could not find test SMS in failed SMS list")
+                self.failed_tests += 1
+                return False
+            
+            print(f"✅ Found test SMS with ID: {test_sms_id}")
+            self.created_sms_ids.append(test_sms_id)
+            
+            # Step 3: Manually classify the SMS
+            print(f"Step 3: Manually classifying the SMS...")
+            
+            classification_data = {
+                "sms_id": test_sms_id,
+                "transaction_type": "debit",
+                "amount": 2500.00,
+                "description": "Manual classification after date validation failure"
+            }
+            
+            response = requests.post(
+                f"{API_BASE}/sms/manual-classify",
+                json=classification_data,
+                headers={"Content-Type": "application/json"},
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Manual classification failed: {response.status_code}")
+                print(f"   Response: {response.text}")
+                self.failed_tests += 1
+                return False
+            
+            classification_result = response.json()
+            if not classification_result.get('success'):
+                print(f"❌ Manual classification was not successful: {classification_result.get('error')}")
+                self.failed_tests += 1
+                return False
+            
+            transaction_id = classification_result.get('transaction_id')
+            print(f"✅ Manual classification successful!")
+            print(f"   Transaction ID: {transaction_id}")
+            print(f"   Amount: ₹{classification_data['amount']:,.2f}")
+            print(f"   Type: {classification_data['transaction_type']}")
+            
+            # Step 4: Verify the transaction was created
+            print(f"Step 4: Verifying transaction creation...")
+            
+            if transaction_id:
+                response = requests.get(f"{API_BASE}/transactions/{transaction_id}", timeout=10)
+                if response.status_code == 200:
+                    transaction = response.json()
+                    print(f"✅ Transaction verified:")
+                    print(f"   Amount: ₹{transaction.get('amount', 0):,.2f}")
+                    print(f"   Description: {transaction.get('description', 'N/A')}")
+                    print(f"   Source: {transaction.get('source', 'N/A')}")
+                    
+                    if transaction.get('source') == 'sms_manual':
+                        print("✅ Transaction correctly marked as manually classified SMS")
+                    
+                    print("✅ PASS: Manual classification works after date validation failure")
+                    self.passed_tests += 1
+                    return True
+                else:
+                    print(f"❌ Could not verify transaction: {response.status_code}")
+                    self.failed_tests += 1
+                    return False
+            else:
+                print("❌ No transaction ID returned from manual classification")
+                self.failed_tests += 1
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error testing manual classification after date failure: {e}")
+            self.failed_tests += 1
+            return False
+
+    def cleanup_test_data(self):
+        """Clean up any test data created during testing"""
+        print("\n🧹 Cleaning up test data...")
+        
+        if self.created_sms_ids:
+            print(f"   Created {len(self.created_sms_ids)} test SMS records")
+            print("   Note: SMS records remain in database (no cleanup API available)")
+
+    def run_all_tests(self):
+        """Run all smart date validation tests"""
+        print("🚀 Starting Smart Date Validation Testing")
+        print("Focus: Date validation logic in SMS parsing")
+        print("=" * 80)
+        
+        # Test backend health first
+        if not self.test_health_check():
+            print("❌ Backend is not accessible. Aborting tests.")
+            return False
+        
+        # Run all test suites
+        results = []
+        results.append(self.test_smart_date_validation())
+        results.append(self.test_failed_sms_list())
+        results.append(self.test_manual_classification_after_date_failure())
+        
+        # Cleanup
+        self.cleanup_test_data()
+        
+        # Print final results
+        self.print_final_results()
+        
+        return all(results)
+
+    def print_final_results(self):
+        """Print comprehensive test results"""
+        print("\n" + "=" * 80)
+        print("📊 SMART DATE VALIDATION TEST RESULTS")
+        print("=" * 80)
+        
+        print(f"Total Tests: {self.total_tests}")
+        print(f"Passed: {self.passed_tests} ✅")
+        print(f"Failed: {self.failed_tests} ❌")
+        
+        if self.total_tests > 0:
+            success_rate = (self.passed_tests / self.total_tests) * 100
+            print(f"Success Rate: {success_rate:.1f}%")
+            
+            if success_rate >= 90:
+                print("🎉 EXCELLENT: Smart date validation is working perfectly!")
+            elif success_rate >= 75:
+                print("👍 GOOD: Smart date validation is working well with minor issues")
+            elif success_rate >= 50:
+                print("⚠️  MODERATE: Smart date validation has some issues that need attention")
+            else:
+                print("❌ POOR: Smart date validation has significant issues")
+        
+        print("\n📋 Test Summary:")
+        print("  ✅ Smart date validation logic (future/past date detection)")
+        print("  ✅ Failed SMS list integration")
+        print("  ✅ Manual classification after date validation failure")
+        
+        print("=" * 80)
+
+
 class FinancialSummaryTester:
     def __init__(self):
         self.test_results = []
