@@ -244,7 +244,10 @@ const BudgetDashboard = () => {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
+          <Card 
+            className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200 cursor-pointer hover:shadow-lg transition-shadow duration-200"
+            onClick={handleIncomeClick}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-emerald-800">Total Income</CardTitle>
               <TrendingUp className="h-4 w-4 text-emerald-600" />
@@ -252,12 +255,15 @@ const BudgetDashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold text-emerald-900">₹{monthlySummary.income.toLocaleString('en-IN')}</div>
               <p className="text-xs text-emerald-600">
-                {monthNames[selectedMonth]} {selectedYear}
+                {monthNames[selectedMonth]} {selectedYear} • Click to view details
               </p>
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+          <Card 
+            className="bg-gradient-to-br from-red-50 to-red-100 border-red-200 cursor-pointer hover:shadow-lg transition-shadow duration-200"
+            onClick={handleExpenseClick}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-red-800">Total Expenses</CardTitle>
               <TrendingDown className="h-4 w-4 text-red-600" />
@@ -265,7 +271,7 @@ const BudgetDashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold text-red-900">₹{monthlySummary.expense.toLocaleString('en-IN')}</div>
               <p className="text-xs text-red-600">
-                {monthNames[selectedMonth]} {selectedYear}
+                {monthNames[selectedMonth]} {selectedYear} • Click to view details
               </p>
             </CardContent>
           </Card>
