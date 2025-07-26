@@ -10,6 +10,7 @@ class TransactionType(str, Enum):
 class TransactionSource(str, Enum):
     MANUAL = "manual"
     SMS = "sms"
+    SMS_MANUAL = "sms_manual"
     EMAIL = "email"
 
 class Category(BaseModel):
