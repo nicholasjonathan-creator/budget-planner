@@ -355,7 +355,7 @@ class SMSTransactionParser:
                     'payee': payee,
                     'type': TransactionType.EXPENSE if pattern_info['type'] == 'expense' else TransactionType.INCOME,
                     'pattern_matched': pattern_name,
-                    'date': datetime.now().strftime('%d/%m/%y'),  # Use DD/MM/YY format
+                    'date': datetime.now().strftime('%d/%m/%y'),  # Use DD/MM/YY format (8 characters)
                     'account': 'Scapia Card'
                 }
         
