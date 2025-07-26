@@ -257,7 +257,7 @@ const BudgetDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className={`text-2xl font-bold ${monthlySummary.balance >= 0 ? 'text-blue-900' : 'text-red-900'}`}>
-                ${monthlySummary.balance.toFixed(2)}
+                ₹{monthlySummary.balance.toLocaleString('en-IN')}
               </div>
               <p className={`text-xs ${monthlySummary.balance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
                 {monthlySummary.balance >= 0 ? 'Surplus' : 'Deficit'}
