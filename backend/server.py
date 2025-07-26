@@ -404,35 +404,39 @@ async def clear_sms_data():
         logger.error(f"Error clearing SMS data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/admin/clear-all-sms")
-async def clear_all_sms():
-    """Clear ALL SMS data including failed SMS for complete reset"""
+@app.post("/api/admin/clear-all-data")
+async def clear_all_data():
+    """Clear ALL data for complete system reset"""
     try:
-        # Clear failed SMS collection completely
+        # Clear all transactions
+        transactions_collection = db.transactions
+        trans_result = await transactions_collection.delete_many({})
+        
+        # Clear all budget limits
+        budget_limits_collection = db.budget_limits
+        budget_result = await budget_limits_collection.delete_many({})
+        
+        # Clear failed SMS collection
         failed_sms_collection = db.failed_sms
         failed_result = await failed_sms_collection.delete_many({})
         
-        # Clear SMS transactions collection (this contains the actual failed SMS)
+        # Clear SMS transactions collection
         sms_transactions_collection = db.sms_transactions
         sms_result = await sms_transactions_collection.delete_many({})
         
-        # Clear all SMS transactions (transactions with source = 'sms' or 'sms_manual')
-        transactions_collection = db.transactions
-        trans_result = await transactions_collection.delete_many({
-            "source": {"$in": ["sms", "sms_manual"]}
-        })
+        # Keep categories but you can clear them too if needed
+        # categories_collection = db.categories
+        # cat_result = await categories_collection.delete_many({})
         
-        # Clear any cached SMS data or processing collections
-        # Add any other SMS-related collections here
-        
-        logger.info("ALL SMS data cleared successfully")
+        logger.info("ALL data cleared successfully")
         return {
             "success": True,
-            "message": "ALL SMS data cleared successfully",
+            "message": "ALL data cleared successfully - system completely reset",
+            "deleted_transactions": trans_result.deleted_count,
+            "deleted_budget_limits": budget_result.deleted_count,
             "deleted_failed_sms": failed_result.deleted_count,
-            "deleted_sms_transactions": sms_result.deleted_count,
-            "deleted_transactions": trans_result.deleted_count
+            "deleted_sms_transactions": sms_result.deleted_count
         }
     except Exception as e:
-        logger.error(f"Error clearing all SMS data: {e}")
+        logger.error(f"Error clearing all data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
