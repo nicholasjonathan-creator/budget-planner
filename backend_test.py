@@ -269,12 +269,14 @@ class BackendAPITester:
                 found_merchants = set()
                 
                 for tx in transactions:
-                    merchant = tx.get('merchant', '').upper()
-                    for expected_merchant in self.expected_hdfc_merchants:
-                        if expected_merchant.upper() in merchant or merchant in expected_merchant.upper():
-                            hdfc_transactions.append(tx)
-                            found_merchants.add(expected_merchant)
-                            break
+                    merchant = tx.get('merchant', '')
+                    if merchant:  # Only process if merchant is not None
+                        merchant_upper = merchant.upper()
+                        for expected_merchant in self.expected_hdfc_merchants:
+                            if expected_merchant.upper() in merchant_upper or merchant_upper in expected_merchant.upper():
+                                hdfc_transactions.append(tx)
+                                found_merchants.add(expected_merchant)
+                                break
                 
                 if hdfc_transactions:
                     print(f"✅ Found {len(hdfc_transactions)} HDFC transactions")
