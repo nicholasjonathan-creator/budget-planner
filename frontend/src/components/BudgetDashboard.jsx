@@ -378,7 +378,7 @@ const BudgetDashboard = () => {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-5 mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
