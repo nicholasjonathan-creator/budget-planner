@@ -36,7 +36,7 @@ class SMSTransactionParser:
             },
             # Pattern 3: "Update! INR X,XX,XXX.XX deposited in HDFC Bank A/c XXXX on DD-MMM-YY for PAYEE"
             'update_credit': {
-                'regex': r'update.*?inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+deposited\s+in\s+hdfc\s+bank\s+a/c\s+([x\d]+)\s+on\s+(\d{2}-[A-Z]{3}-\d{2})\s+for\s+(.+?)\.?avl',
+                'regex': r'update.*?inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+deposited\s+in\s+hdfc\s+bank\s+a/c\s+([x\d]+)\s+on\s+(\d{2}-[A-Z]{3}-\d{2})\s+for\s+(.+?)\.?\s*avl',
                 'amount_group': 1,
                 'account_group': 2,
                 'date_group': 3,
