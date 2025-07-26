@@ -48,7 +48,44 @@ logger = logging.getLogger(__name__)
 # Health check endpoint
 @api_router.get("/")
 async def root():
-    return {"message": "Budget Planner API is running", "version": "1.0.0"}
+    return {"message": "Budget Planner API is running", "version": "1.0.0", "status": "healthy"}
+
+@api_router.get("/health")
+async def health_check():
+    """Health check endpoint for production monitoring"""
+    try:
+        # Check database connection
+        await db.command("ping")
+        return {
+            "status": "healthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "version": "1.0.0",
+            "database": "connected",
+            "environment": os.environ.get("ENVIRONMENT", "development")
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        raise HTTPException(status_code=503, detail="Service unavailable")
+
+@api_router.get("/metrics")
+async def get_metrics():
+    """Basic metrics endpoint for monitoring"""
+    try:
+        # Get basic stats
+        total_transactions = await db.transactions.count_documents({})
+        total_sms = await db.sms_transactions.count_documents({})
+        processed_sms = await db.sms_transactions.count_documents({"processed": True})
+        
+        return {
+            "total_transactions": total_transactions,
+            "total_sms": total_sms,
+            "processed_sms": processed_sms,
+            "success_rate": (processed_sms / total_sms * 100) if total_sms > 0 else 0,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Metrics endpoint failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get metrics")
 
 # ==================== TRANSACTION ENDPOINTS ====================
 
