@@ -124,7 +124,7 @@ backend:
     implemented: true
     working: false
     file: "backend/services/sms_parser.py"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -137,6 +137,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "COMPREHENSIVE TESTING COMPLETED - SMART DATE VALIDATION NOT WORKING PROPERLY: Conducted extensive testing of the smart date validation feature. ❌ CRITICAL ISSUES FOUND: 1) Future date rejection only works 33.3% of the time (1/3 test cases), 2) Past date rejection only works 50% of the time (1/2 test cases), 3) Some SMS with future dates (Aug 2025, Sep 2025) are being parsed successfully when they should fail, 4) Failed SMS with date validation issues are not appearing in the failed SMS list, 5) Manual classification after date validation failure cannot be tested due to SMS not being in failed list. The implementation exists in _parse_date method but is not consistently applied across all SMS parsing patterns. Only some date formats trigger the validation while others bypass it. This is a high-priority issue that needs immediate attention."
+      - working: false
+        agent: "testing"
+        comment: "ENHANCED COMPREHENSIVE TESTING COMPLETED - ROOT CAUSE IDENTIFIED: Conducted extensive testing with 16 test cases covering all parsing methods. ❌ CRITICAL FINDINGS: 1) Future date rejection: 57.1% success rate (4/7 cases), 2) Past date rejection: 50.0% success rate (2/4 cases), 3) 5 critical date validation bypass issues identified. 🔍 ROOT CAUSE ANALYSIS: The main issue is that most SMS are falling back to GENERIC PARSING instead of bank-specific patterns. Generic parsing uses datetime.now() directly (line 293 in sms_parser.py), completely bypassing date validation. Specific issues: a) HDFC UPDATE pattern regex requires lowercase 'info:' but SMS contains 'Info:' (case sensitivity issue), b) Generic parsing doesn't extract dates from SMS text at all, c) Scapia patterns use current date fallback, bypassing validation, d) Failed SMS with date issues don't appear in failed list because they're parsed successfully via generic method. The _parse_date validation logic is correctly implemented but is being bypassed by the generic parsing fallback. This requires fixing the bank pattern matching and implementing date extraction in generic parsing."
 
   - task: "Enhanced SMS transaction details API"
     implemented: false
