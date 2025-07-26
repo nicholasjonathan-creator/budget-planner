@@ -339,6 +339,28 @@ class SMSTransactionParser:
         
         return None
 
+    def _parse_scapia_sms(self, sms_text: str) -> Optional[dict]:
+        """Parse Scapia/Federal Bank specific SMS formats"""
+        for pattern_name, pattern_info in self.scapia_patterns.items():
+            match = re.search(pattern_info['regex'], sms_text, re.IGNORECASE)
+            if match:
+                amount_str = match.group(pattern_info['amount_group']).replace(',', '')
+                amount = float(amount_str)
+                
+                # Extract payee (merchant)
+                payee = self._clean_payee_name(match.group(pattern_info['payee_group']))
+                
+                return {
+                    'amount': amount,
+                    'payee': payee,
+                    'type': TransactionType.EXPENSE if pattern_info['type'] == 'expense' else TransactionType.INCOME,
+                    'pattern_matched': pattern_name,
+                    'date': datetime.now().strftime('%d-%m-%y'),  # Use current date
+                    'account': 'Scapia Card'
+                }
+        
+        return None
+
     def _clean_payee_name(self, payee_raw: str) -> str:
         """Clean and format payee name"""
         # Clean up common patterns
