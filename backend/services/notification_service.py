@@ -19,7 +19,7 @@ class NotificationPreferencesService:
         if not prefs_doc:
             # Create default preferences
             default_prefs = UserNotificationPreferences(user_id=user_id)
-            prefs_dict = default_prefs.dict(by_alias=True, exclude={"_id"})
+            prefs_dict = default_prefs.dict(by_alias=True, exclude={"id"})
             result = await notification_preferences_collection.insert_one(prefs_dict)
             prefs_doc = prefs_dict
             prefs_doc["_id"] = result.inserted_id
