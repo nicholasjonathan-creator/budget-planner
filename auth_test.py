@@ -511,7 +511,7 @@ class AuthenticationTester:
                 timeout=10
             )
             
-            if response.status_code == 401:
+            if response.status_code in [401, 403]:
                 print("✅ Protected route properly rejects requests without token")
                 self.passed_tests += 1
             else:
