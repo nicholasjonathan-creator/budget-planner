@@ -266,6 +266,100 @@ async def simulate_bank_sms(bank_type: str = "hdfc"):
         logger.error(f"Error simulating SMS: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/sms/failed")
+async def get_failed_sms():
+    """Get all failed SMS messages for manual classification"""
+    try:
+        failed_sms = []
+        async for doc in db.sms_transactions.find({"processed": False}):
+            failed_sms.append({
+                "id": str(doc["_id"]),
+                "message": doc["message"],
+                "phone_number": doc.get("phone_number", ""),
+                "timestamp": doc.get("timestamp", ""),
+                "reason": "Could not determine transaction type automatically"
+            })
+        
+        return {"success": True, "failed_sms": failed_sms}
+    except Exception as e:
+        logger.error(f"Error fetching failed SMS: {e}")
+        return {"success": False, "error": str(e)}
+
+@api_router.post("/sms/manual-classify")
+async def manual_classify_sms(request: dict):
+    """Manually classify a failed SMS message"""
+    try:
+        sms_id = request.get("sms_id")
+        transaction_type = request.get("transaction_type")  # 'debit' or 'credit'
+        amount = request.get("amount")  # User-provided amount
+        description = request.get("description", "")
+        
+        if not sms_id or not transaction_type or not amount:
+            return {"success": False, "error": "Missing required fields"}
+        
+        # Get the original SMS
+        sms_doc = await db.sms_transactions.find_one({"_id": ObjectId(sms_id)})
+        if not sms_doc:
+            return {"success": False, "error": "SMS not found"}
+        
+        # Extract account number from SMS if possible
+        sms_text = sms_doc.get("message", "")
+        account_number = "Unknown"
+        
+        # Try to extract account number using regex
+        account_patterns = [
+            r'account\s*([a-zA-Z]*\d+)',
+            r'a/c\s*([a-zA-Z]*\d+)',
+            r'card\s*([a-zA-Z]*\d+)',
+        ]
+        
+        for pattern in account_patterns:
+            match = re.search(pattern, sms_text, re.IGNORECASE)
+            if match:
+                account_number = match.group(1)
+                break
+        
+        # Create transaction
+        transaction_data = {
+            "id": str(uuid.uuid4()),
+            "type": "expense" if transaction_type == "debit" else "income",
+            "category_id": 12,  # Other/Miscellaneous category
+            "amount": float(amount),
+            "description": description or f"Manual classification - {transaction_type}",
+            "date": datetime.now(),
+            "source": "sms_manual",
+            "merchant": "Manual Entry",
+            "account_number": account_number,
+            "raw_data": {
+                "sms_text": sms_text,
+                "phone_number": sms_doc.get("phone_number", ""),
+                "manual_classification": True,
+                "classified_as": transaction_type,
+                "parsed_at": datetime.now().isoformat()
+            }
+        }
+        
+        # Insert transaction
+        result = await db.transactions.insert_one(transaction_data)
+        
+        # Mark SMS as processed
+        await db.sms_transactions.update_one(
+            {"_id": ObjectId(sms_id)},
+            {"$set": {"processed": True, "manual_classification": True}}
+        )
+        
+        logger.info(f"Manual classification completed for SMS {sms_id}")
+        
+        return {
+            "success": True,
+            "message": "Transaction classified successfully",
+            "transaction_id": str(result.inserted_id)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in manual classification: {e}")
+        return {"success": False, "error": str(e)}
+
 # Include the router in the main app
 app.include_router(api_router)
 
