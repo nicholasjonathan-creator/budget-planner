@@ -293,6 +293,7 @@ async def manual_classify_sms(request: dict):
         transaction_type = request.get("transaction_type")  # 'debit' or 'credit'
         amount = request.get("amount")  # User-provided amount
         description = request.get("description", "")
+        currency = request.get("currency", "INR")  # Default to INR
         
         if not sms_id or not transaction_type or not amount:
             return {"success": False, "error": "Missing required fields"}
@@ -330,11 +331,13 @@ async def manual_classify_sms(request: dict):
             "source": "sms_manual",
             "merchant": "Manual Entry",
             "account_number": account_number,
+            "currency": currency,  # Add currency field
             "raw_data": {
                 "sms_text": sms_text,
                 "phone_number": sms_doc.get("phone_number", ""),
                 "manual_classification": True,
                 "classified_as": transaction_type,
+                "currency": currency,
                 "parsed_at": datetime.now().isoformat()
             }
         }
@@ -348,7 +351,7 @@ async def manual_classify_sms(request: dict):
             {"$set": {"processed": True, "manual_classification": True}}
         )
         
-        logger.info(f"Manual classification completed for SMS {sms_id}")
+        logger.info(f"Manual classification completed for SMS {sms_id} with currency {currency}")
         
         return {
             "success": True,
