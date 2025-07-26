@@ -325,7 +325,7 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
                     </div>
                   )}
                 </div>
-              </Collapsible>
+              </div>
             );
           })}
         </div>
