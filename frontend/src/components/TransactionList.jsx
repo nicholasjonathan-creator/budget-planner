@@ -8,9 +8,10 @@ import { TrendingUp, TrendingDown, MessageSquare, Edit, Tag, Calendar, Building,
 import ApiService from '../services/api';
 import { useToast } from '../hooks/use-toast';
 
-const TransactionList = ({ transactions, categories, onTransactionUpdate }) => {
+const TransactionList = ({ transactions, categories, onTransactionUpdate, showDetailedView = false }) => {
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [updatingTransaction, setUpdatingTransaction] = useState(null);
+  const [expandedTransactions, setExpandedTransactions] = useState(new Set());
   const { toast } = useToast();
 
   const getCategoryById = (categoryId) => {
