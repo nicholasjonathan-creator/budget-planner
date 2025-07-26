@@ -79,6 +79,7 @@ const ManualClassification = ({ onClassificationComplete }) => {
     }
 
     try {
+      setSubmitting(true);
       const response = await ApiService.manualClassifySMS(
         classificationData.sms_id,
         classificationData.transaction_type,
@@ -89,7 +90,7 @@ const ManualClassification = ({ onClassificationComplete }) => {
       if (response.success) {
         toast({
           title: "Success",
-          description: "SMS classified successfully!",
+          description: "SMS classified successfully! Dashboard is updating...",
         });
         
         // Remove the classified SMS from the list
@@ -107,7 +108,7 @@ const ManualClassification = ({ onClassificationComplete }) => {
         
         // Notify parent component to refresh dashboard data
         if (onClassificationComplete) {
-          onClassificationComplete();
+          await onClassificationComplete();
         }
       } else {
         toast({
@@ -123,6 +124,8 @@ const ManualClassification = ({ onClassificationComplete }) => {
         description: "Failed to classify SMS",
         variant: "destructive",
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
