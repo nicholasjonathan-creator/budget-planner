@@ -267,7 +267,6 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
                     <CollapsibleContent isOpen={isExpanded}>
                       <div className="px-4 pb-4 border-t bg-gray-50">
                         <div className="pt-3 space-y-3">
-                          {/* SMS Source Information */}
                           <div className="flex items-start gap-3">
                             <Smartphone className="h-4 w-4 text-blue-600 mt-1 flex-shrink-0" />
                             <div className="flex-1">
