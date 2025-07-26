@@ -300,10 +300,12 @@ class BackendAPITester:
                     found_key_merchants = []
                     
                     for tx in hdfc_transactions:
-                        merchant = tx.get('merchant', '').upper()
-                        for key in key_merchants:
-                            if key.upper() in merchant:
-                                found_key_merchants.append(key)
+                        merchant = tx.get('merchant', '')
+                        if merchant:  # Only process if merchant is not None
+                            merchant_upper = merchant.upper()
+                            for key in key_merchants:
+                                if key.upper() in merchant_upper:
+                                    found_key_merchants.append(key)
                     
                     if found_key_merchants:
                         print(f"\n✅ Found key merchants from review: {', '.join(set(found_key_merchants))}")
