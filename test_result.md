@@ -234,10 +234,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Implement dynamic budget counters"
-    - "Add smart date validation for SMS parsing"
-    - "Create prominent Manual Validation Needed section in UI"
-  stuck_tasks: []
+    - "Smart date validation for SMS parsing"
+  stuck_tasks:
+    - "Smart date validation for SMS parsing"
   test_all: false
   test_priority: "high_first"
 
