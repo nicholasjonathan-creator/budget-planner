@@ -286,7 +286,11 @@ const BudgetDashboard = () => {
                 Add Transaction
               </Button>
             </div>
-            <TransactionList transactions={transactions.slice(0, 5)} categories={categories} />
+            <TransactionList 
+              transactions={transactions.slice(0, 5)} 
+              categories={categories} 
+              onTransactionUpdate={loadData}
+            />
           </TabsContent>
           
           <TabsContent value="transactions">
