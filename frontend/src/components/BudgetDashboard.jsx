@@ -68,6 +68,25 @@ const BudgetDashboard = () => {
     }
   };
 
+  const getFilteredTransactions = () => {
+    if (transactionFilter === 'all') {
+      return transactions;
+    }
+    return transactions.filter(transaction => transaction.type === transactionFilter);
+  };
+
+  const handleIncomeClick = () => {
+    setTransactionFilter('income');
+  };
+
+  const handleExpenseClick = () => {
+    setTransactionFilter('expense');
+  };
+
+  const handleShowAllTransactions = () => {
+    setTransactionFilter('all');
+  };
+
   const handleAddTransaction = async (newTransaction) => {
     try {
       await ApiService.createTransaction(newTransaction);
