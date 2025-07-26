@@ -215,6 +215,10 @@ class SMSTransactionParser:
         # Clean up common patterns
         payee = payee_raw.strip()
         
+        # Remove newlines and extra spaces
+        payee = re.sub(r'\s*\n\s*', ' ', payee)
+        payee = re.sub(r'\s+', ' ', payee)
+        
         # Handle specific patterns
         if 'imps-' in payee.lower():
             # Extract from IMPS pattern: "IMPS-520611360945-Old Man-HDFC-xxxxxxxxxx5124-Rent"
@@ -228,6 +232,13 @@ class SMSTransactionParser:
             parts = payee.split('-')
             if len(parts) >= 2:
                 payee = parts[-1]  # Get the last part
+        
+        # Handle account transfers (extract account number)
+        if 'a/c' in payee.lower() and 'x' in payee.lower():
+            # For account transfers, use "Account Transfer" as payee
+            account_match = re.search(r'(x+\d+)', payee, re.IGNORECASE)
+            if account_match:
+                payee = f"Account Transfer - {account_match.group(1)}"
         
         # Clean up extra spaces and dots
         payee = re.sub(r'\s+', ' ', payee)
