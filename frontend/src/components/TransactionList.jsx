@@ -263,23 +263,22 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
                   </div>
 
                   {/* Detailed SMS Information - Expandable */}
-                  {hasSMSData && showDetailedView && (
-                    <CollapsibleContent isOpen={isExpanded}>
-                      <div className="px-4 pb-4 border-t bg-gray-50">
-                        <div className="pt-3 space-y-3">
-                          <div className="flex items-start gap-3">
-                            <Smartphone className="h-4 w-4 text-blue-600 mt-1 flex-shrink-0" />
-                            <div className="flex-1">
-                              <h4 className="text-sm font-semibold text-gray-700 mb-2">SMS Transaction Details</h4>
-                              
-                              {transaction.raw_data?.sms_text && (
-                                <div className="bg-white p-3 rounded border text-sm">
-                                  <strong className="text-gray-600">Original SMS:</strong>
-                                  <p className="mt-1 text-gray-800 whitespace-pre-wrap font-mono text-xs">
-                                    {transaction.raw_data.sms_text}
-                                  </p>
-                                </div>
-                              )}
+                  {hasSMSData && showDetailedView && isExpanded && (
+                    <div className="px-4 pb-4 border-t bg-gray-50">
+                      <div className="pt-3 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <Smartphone className="h-4 w-4 text-blue-600 mt-1 flex-shrink-0" />
+                          <div className="flex-1">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-2">SMS Transaction Details</h4>
+                            
+                            {transaction.raw_data?.sms_text && (
+                              <div className="bg-white p-3 rounded border text-sm">
+                                <strong className="text-gray-600">Original SMS:</strong>
+                                <p className="mt-1 text-gray-800 whitespace-pre-wrap font-mono text-xs">
+                                  {transaction.raw_data.sms_text}
+                                </p>
+                              </div>
+                            )}
                               
                               <div className="mt-3 grid grid-cols-2 gap-4 text-xs">
                                 {transaction.raw_data?.phone_number && (
