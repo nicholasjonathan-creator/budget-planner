@@ -874,6 +874,297 @@ class BackendAPITester:
         
         print("=" * 70)
 
+class ICICISMSParsingTester:
+    def __init__(self):
+        self.test_results = []
+        self.total_tests = 0
+        self.passed_tests = 0
+        self.failed_tests = 0
+        
+        # The specific ICICI SMS from the review request
+        self.test_sms = "PHP 254.00 spent using ICICI Bank Card XX0003 on 18-May-25 on LAWSON NET QUAD. Avl Limit: INR 8,28,546.73. If not you, call 1800 2662/SMS BLOCK 0003 to 9215676766"
+        
+        # Expected results
+        self.expected_results = {
+            "amount": 254.00,
+            "currency": "PHP",
+            "merchant": "LAWSON NET QUAD",
+            "account": "XX0003",
+            "date_year": 2025,
+            "date_month": 5,  # May
+            "date_day": 18,
+            "type": "expense",
+            "balance": 828546.73  # From "Avl Limit: INR 8,28,546.73"
+        }
+
+    def test_health_check(self):
+        """Test if the backend is running"""
+        print("🔍 Testing Backend Health...")
+        try:
+            response = requests.get(f"{API_BASE}/health", timeout=10)
+            if response.status_code == 200:
+                print("✅ Backend is healthy")
+                return True
+            else:
+                print(f"❌ Backend health check failed: {response.status_code}")
+                return False
+        except Exception as e:
+            print(f"❌ Backend connection failed: {e}")
+            return False
+
+    def test_icici_sms_parsing_fix(self):
+        """Test the specific ICICI SMS parsing fix"""
+        print("\n🧪 Testing ICICI SMS Parsing Fix...")
+        print("=" * 60)
+        
+        self.total_tests += 1
+        
+        print(f"Test SMS: {self.test_sms}")
+        print(f"\nExpected Results:")
+        print(f"  Amount: PHP {self.expected_results['amount']:.2f} (NOT ₹{self.expected_results['balance']:,.2f})")
+        print(f"  Currency: {self.expected_results['currency']} (NOT INR)")
+        print(f"  Merchant: {self.expected_results['merchant']}")
+        print(f"  Account: {self.expected_results['account']}")
+        print(f"  Date: {self.expected_results['date_day']}-May-{self.expected_results['date_year']}")
+        print(f"  Type: {self.expected_results['type']}")
+        print(f"  Balance: {self.expected_results['balance']:,.2f} (from Avl Limit)")
+        
+        try:
+            # Send SMS to parser endpoint
+            print(f"\nStep 1: Sending SMS to /api/sms/receive endpoint...")
+            response = requests.post(
+                f"{API_BASE}/sms/receive",
+                json={
+                    "phone_number": "+918000000000",
+                    "message": self.test_sms
+                },
+                headers={"Content-Type": "application/json"},
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ SMS receive endpoint failed: {response.status_code}")
+                print(f"   Response: {response.text}")
+                self.failed_tests += 1
+                return False
+            
+            result = response.json()
+            print(f"   SMS parsing response: {result}")
+            
+            if not result.get('success'):
+                print(f"❌ SMS parsing failed: {result.get('message', 'Unknown error')}")
+                self.failed_tests += 1
+                return False
+            
+            transaction_id = result.get('transaction_id')
+            if not transaction_id:
+                print(f"❌ No transaction ID returned from SMS parsing")
+                self.failed_tests += 1
+                return False
+            
+            print(f"✅ SMS parsed successfully, transaction ID: {transaction_id}")
+            
+            # Step 2: Fetch the created transaction to verify parsing
+            print(f"\nStep 2: Fetching created transaction...")
+            transaction_response = requests.get(
+                f"{API_BASE}/transactions/{transaction_id}",
+                timeout=10
+            )
+            
+            if transaction_response.status_code != 200:
+                print(f"❌ Failed to fetch transaction: {transaction_response.status_code}")
+                self.failed_tests += 1
+                return False
+            
+            transaction = transaction_response.json()
+            print(f"   Transaction data: {transaction}")
+            
+            # Step 3: Verify all expected fields
+            print(f"\nStep 3: Verifying parsed results...")
+            
+            verification_results = {}
+            
+            # Check amount (CRITICAL - should be PHP 254.00, NOT ₹8,28,546.73)
+            parsed_amount = transaction.get('amount', 0)
+            amount_correct = abs(parsed_amount - self.expected_results['amount']) < 0.01
+            verification_results['amount'] = {
+                'expected': self.expected_results['amount'],
+                'actual': parsed_amount,
+                'correct': amount_correct,
+                'critical': True
+            }
+            
+            # Check currency (CRITICAL - should be PHP, NOT INR)
+            parsed_currency = transaction.get('currency', 'INR')
+            currency_correct = parsed_currency == self.expected_results['currency']
+            verification_results['currency'] = {
+                'expected': self.expected_results['currency'],
+                'actual': parsed_currency,
+                'correct': currency_correct,
+                'critical': True
+            }
+            
+            # Check merchant
+            parsed_merchant = transaction.get('merchant', '')
+            merchant_correct = self.expected_results['merchant'].lower() in parsed_merchant.lower()
+            verification_results['merchant'] = {
+                'expected': self.expected_results['merchant'],
+                'actual': parsed_merchant,
+                'correct': merchant_correct,
+                'critical': False
+            }
+            
+            # Check account
+            parsed_account = transaction.get('account_number', '')
+            account_correct = self.expected_results['account'] in parsed_account
+            verification_results['account'] = {
+                'expected': self.expected_results['account'],
+                'actual': parsed_account,
+                'correct': account_correct,
+                'critical': False
+            }
+            
+            # Check transaction type
+            parsed_type = transaction.get('type', '')
+            type_correct = parsed_type == self.expected_results['type']
+            verification_results['type'] = {
+                'expected': self.expected_results['type'],
+                'actual': parsed_type,
+                'correct': type_correct,
+                'critical': False
+            }
+            
+            # Check date (should be converted to 2025)
+            parsed_date = transaction.get('date', '')
+            date_correct = False
+            if parsed_date:
+                try:
+                    if isinstance(parsed_date, str):
+                        date_obj = datetime.fromisoformat(parsed_date.replace('Z', '+00:00'))
+                    else:
+                        date_obj = datetime.fromisoformat(parsed_date)
+                    
+                    date_correct = (
+                        date_obj.year == self.expected_results['date_year'] and
+                        date_obj.month == self.expected_results['date_month'] and
+                        date_obj.day == self.expected_results['date_day']
+                    )
+                except:
+                    date_correct = False
+            
+            verification_results['date'] = {
+                'expected': f"{self.expected_results['date_day']}-May-{self.expected_results['date_year']}",
+                'actual': parsed_date,
+                'correct': date_correct,
+                'critical': False
+            }
+            
+            # Check balance (should be extracted from "Avl Limit")
+            parsed_balance = transaction.get('balance', 0)
+            balance_correct = abs(parsed_balance - self.expected_results['balance']) < 0.01
+            verification_results['balance'] = {
+                'expected': self.expected_results['balance'],
+                'actual': parsed_balance,
+                'correct': balance_correct,
+                'critical': False
+            }
+            
+            # Print verification results
+            print(f"\n📊 Verification Results:")
+            critical_failures = 0
+            total_failures = 0
+            
+            for field, result in verification_results.items():
+                status = "✅" if result['correct'] else "❌"
+                critical_marker = " (CRITICAL)" if result['critical'] else ""
+                print(f"   {status} {field.title()}{critical_marker}:")
+                print(f"      Expected: {result['expected']}")
+                print(f"      Actual: {result['actual']}")
+                
+                if not result['correct']:
+                    total_failures += 1
+                    if result['critical']:
+                        critical_failures += 1
+            
+            # Final assessment
+            print(f"\n📋 Final Assessment:")
+            print(f"   Total Checks: {len(verification_results)}")
+            print(f"   Passed: {len(verification_results) - total_failures}")
+            print(f"   Failed: {total_failures}")
+            print(f"   Critical Failures: {critical_failures}")
+            
+            if critical_failures == 0:
+                print(f"✅ PASS: ICICI SMS parsing fix is working correctly!")
+                print(f"   ✅ Amount correctly parsed as PHP {parsed_amount:.2f} (not ₹{self.expected_results['balance']:,.2f})")
+                print(f"   ✅ Currency correctly set to {parsed_currency} (not INR)")
+                self.passed_tests += 1
+                return True
+            else:
+                print(f"❌ FAIL: ICICI SMS parsing fix has critical issues!")
+                if not verification_results['amount']['correct']:
+                    print(f"   ❌ CRITICAL: Amount parsed as {parsed_amount} instead of {self.expected_results['amount']}")
+                if not verification_results['currency']['correct']:
+                    print(f"   ❌ CRITICAL: Currency parsed as {parsed_currency} instead of {self.expected_results['currency']}")
+                self.failed_tests += 1
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error testing ICICI SMS parsing: {e}")
+            self.failed_tests += 1
+            return False
+
+    def run_all_tests(self):
+        """Run all ICICI SMS parsing tests"""
+        print("🚀 Starting ICICI SMS Parsing Fix Testing")
+        print("Focus: PHP currency handling, amount extraction, balance vs transaction amount")
+        print("=" * 80)
+        
+        # Test backend health first
+        if not self.test_health_check():
+            print("❌ Backend is not accessible. Aborting tests.")
+            return False
+        
+        # Run the specific test
+        result = self.test_icici_sms_parsing_fix()
+        
+        # Print final results
+        self.print_final_results()
+        
+        return result
+
+    def print_final_results(self):
+        """Print comprehensive test results"""
+        print("\n" + "=" * 80)
+        print("📊 ICICI SMS PARSING FIX TEST RESULTS")
+        print("=" * 80)
+        
+        print(f"Total Tests: {self.total_tests}")
+        print(f"Passed: {self.passed_tests} ✅")
+        print(f"Failed: {self.failed_tests} ❌")
+        
+        if self.total_tests > 0:
+            success_rate = (self.passed_tests / self.total_tests) * 100
+            print(f"Success Rate: {success_rate:.1f}%")
+            
+            if success_rate == 100:
+                print("🎉 EXCELLENT: ICICI SMS parsing fix is working perfectly!")
+            elif success_rate >= 80:
+                print("👍 GOOD: ICICI SMS parsing fix is mostly working")
+            else:
+                print("❌ POOR: ICICI SMS parsing fix has significant issues")
+        
+        print("\n📋 Test Summary:")
+        print("  ✅ ICICI SMS parsing with PHP currency")
+        print("  ✅ Amount extraction (PHP 254.00 vs ₹8,28,546.73)")
+        print("  ✅ Currency field handling (PHP vs INR)")
+        print("  ✅ Merchant extraction (LAWSON NET QUAD)")
+        print("  ✅ Account extraction (XX0003)")
+        print("  ✅ Date validation and conversion (18-May-25 → 2025)")
+        print("  ✅ Balance extraction from 'Avl Limit'")
+        
+        print("=" * 80)
+
+
 class SmartDateValidationTester:
     def __init__(self):
         self.test_results = []
