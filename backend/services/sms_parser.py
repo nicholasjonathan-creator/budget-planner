@@ -99,10 +99,10 @@ class SMSTransactionParser:
         
         # Balance extraction
         self.balance_patterns = [
-            r'avl\s+bal:\s*inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)',
-            r'avl\s+bal\s+inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)',
-            r'bal\s+rs\.(\d+(?:,\d{3})*(?:\.\d{2})?)',
-            r'balance.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)'
+            r'avl\s+bal:\s*inr\s+([\d,]+(?:\.\d{2})?)',
+            r'avl\s+bal\s+inr\s+([\d,]+(?:\.\d{2})?)',
+            r'bal\s+rs\.([\d,]+(?:\.\d{2})?)',
+            r'balance.*?(?:rs|inr|₹)?\s*([\d,]+(?:\.\d{2})?)'
         ]
         
         # Account number extraction
