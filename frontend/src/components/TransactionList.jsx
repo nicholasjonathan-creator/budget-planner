@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { TrendingUp, TrendingDown, MessageSquare, Edit, Tag, Calendar, Building, ChevronDown, ChevronUp, Info, Smartphone, Clock, Sunrise, Sun, Sunset, Moon } from 'lucide-react';
+import { TrendingUp, TrendingDown, MessageSquare, Edit, Tag, Calendar, Building, ChevronDown, ChevronUp, Info, Smartphone } from 'lucide-react';
 import ApiService from '../services/api';
 import { useToast } from '../hooks/use-toast';
 
@@ -11,107 +11,7 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [updatingTransaction, setUpdatingTransaction] = useState(null);
   const [expandedTransactions, setExpandedTransactions] = useState(new Set());
-  const [viewMode, setViewMode] = useState('chronological'); // 'chronological' or 'timegroups'
-  const [expandedTimeGroups, setExpandedTimeGroups] = useState(new Set());
   const { toast } = useToast();
-
-  // Time periods definition
-  const timePeriods = {
-    morning: {
-      label: 'Morning',
-      timeRange: '6:00 AM - 11:59 AM',
-      icon: Sunrise,
-      color: 'from-orange-100 to-yellow-100',
-      borderColor: 'border-orange-200',
-      textColor: 'text-orange-800',
-      iconColor: 'text-orange-600'
-    },
-    afternoon: {
-      label: 'Afternoon',
-      timeRange: '12:00 PM - 2:59 PM',
-      icon: Sun,
-      color: 'from-yellow-100 to-amber-100',
-      borderColor: 'border-yellow-200',
-      textColor: 'text-yellow-800',
-      iconColor: 'text-yellow-600'
-    },
-    evening: {
-      label: 'Evening',
-      timeRange: '3:00 PM - 8:59 PM',
-      icon: Sunset,
-      color: 'from-orange-100 to-red-100',
-      borderColor: 'border-orange-200',
-      textColor: 'text-orange-800',
-      iconColor: 'text-orange-600'
-    },
-    night: {
-      label: 'Night',
-      timeRange: '9:00 PM - 5:59 AM',
-      icon: Moon,
-      color: 'from-indigo-100 to-purple-100',
-      borderColor: 'border-indigo-200',
-      textColor: 'text-indigo-800',
-      iconColor: 'text-indigo-600'
-    }
-  };
-
-  // Function to determine which time period a transaction belongs to
-  const getTimePeriod = (date) => {
-    const hour = new Date(date).getHours();
-    
-    if (hour >= 6 && hour < 12) return 'morning';
-    if (hour >= 12 && hour < 15) return 'afternoon';
-    if (hour >= 15 && hour < 21) return 'evening';
-    return 'night'; // 21-23 and 0-5
-  };
-
-  // Group transactions by time period
-  const groupedTransactions = React.useMemo(() => {
-    const groups = {
-      morning: [],
-      afternoon: [],
-      evening: [],
-      night: []
-    };
-
-    transactions.forEach(transaction => {
-      const period = getTimePeriod(transaction.date);
-      groups[period].push(transaction);
-    });
-
-    return groups;
-  }, [transactions]);
-
-  // Calculate totals for each period
-  const periodTotals = React.useMemo(() => {
-    const totals = {};
-    Object.keys(groupedTransactions).forEach(period => {
-      const income = groupedTransactions[period]
-        .filter(t => t.type === 'income')
-        .reduce((sum, t) => sum + t.amount, 0);
-      const expense = groupedTransactions[period]
-        .filter(t => t.type === 'expense')
-        .reduce((sum, t) => sum + t.amount, 0);
-      
-      totals[period] = {
-        income,
-        expense,
-        balance: income - expense,
-        count: groupedTransactions[period].length
-      };
-    });
-    return totals;
-  }, [groupedTransactions]);
-
-  const toggleTimeGroup = (period) => {
-    const newExpanded = new Set(expandedTimeGroups);
-    if (newExpanded.has(period)) {
-      newExpanded.delete(period);
-    } else {
-      newExpanded.add(period);
-    }
-    setExpandedTimeGroups(newExpanded);
-  };
 
   const getCategoryById = (categoryId) => {
     return categories.find(cat => cat.id === categoryId);
