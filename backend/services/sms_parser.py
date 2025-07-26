@@ -5,49 +5,70 @@ from models.transaction import Transaction, TransactionType, TransactionSource
 
 class SMSTransactionParser:
     def __init__(self):
-        # Common bank SMS patterns
+        # Enhanced bank SMS patterns for real HDFC formats
         self.bank_patterns = {
             'debit': [
-                r'debited.*?(?:rs|inr|₹)?\s*(\d+(?:\.\d{2})?)',
-                r'spent.*?(?:rs|inr|₹)?\s*(\d+(?:\.\d{2})?)',
-                r'paid.*?(?:rs|inr|₹)?\s*(\d+(?:\.\d{2})?)',
-                r'withdrawn.*?(?:rs|inr|₹)?\s*(\d+(?:\.\d{2})?)',
-                r'debit.*?(?:rs|inr|₹)?\s*(\d+(?:\.\d{2})?)',
-                r'purchase.*?(?:rs|inr|₹)?\s*(\d+(?:\.\d{2})?)',
-                r'amt.*?(?:rs|inr|₹)?\s*(\d+(?:\.\d{2})?)',
-                r'(?:rs|inr|₹)\s*(\d+(?:\.\d{2})?)\s*(?:debited|spent|paid)'
+                # HDFC UPI Sent patterns
+                r'sent\s+rs\.?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+                r'spent\s+rs\.?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+                # HDFC IMPS/UPDATE patterns
+                r'update.*?inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+debited',
+                r'inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+debited',
+                # HDFC IMPS Transfer patterns
+                r'imps\s+inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+sent',
+                # Original patterns (keep for other banks)
+                r'debited.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+                r'spent.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+                r'paid.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+                r'withdrawn.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+                r'debit.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+                r'purchase.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+                r'amt.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+                r'(?:rs|inr|₹)\.?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:debited|spent|paid|sent)'
             ],
             'credit': [
-                r'credited.*?(?:rs|inr|₹)?\s*(\d+(?:\.\d{2})?)',
-                r'received.*?(?:rs|inr|₹)?\s*(\d+(?:\.\d{2})?)',
-                r'deposited.*?(?:rs|inr|₹)?\s*(\d+(?:\.\d{2})?)',
-                r'credit.*?(?:rs|inr|₹)?\s*(\d+(?:\.\d{2})?)',
-                r'salary.*?(?:rs|inr|₹)?\s*(\d+(?:\.\d{2})?)',
-                r'(?:rs|inr|₹)\s*(\d+(?:\.\d{2})?)\s*(?:credited|received|deposited)'
+                # HDFC Deposit patterns
+                r'update.*?inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+deposited',
+                r'inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+deposited',
+                r'deposited.*?inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)',
+                # Original patterns
+                r'credited.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+                r'received.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+                r'deposited.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+                r'credit.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+                r'salary.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+                r'(?:rs|inr|₹)\.?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:credited|received|deposited)'
             ]
         }
         
-        # Merchant extraction patterns
+        # Enhanced merchant extraction patterns for HDFC
         self.merchant_patterns = [
-            r'at\s+([A-Z][A-Za-z\s]+?)(?:\s+on|\s+\d|\s*$)',
-            r'to\s+([A-Z][A-Za-z\s]+?)(?:\s+on|\s+\d|\s*$)',
-            r'via\s+([A-Z][A-Za-z\s]+?)(?:\s+on|\s+\d|\s*$)',
+            # HDFC specific patterns
+            r'to\s+([A-Z][A-Za-z\s\.]+?)(?:\s+on|\s+ref|\s*$)',
+            r'at\s+([A-Z][A-Za-z\s\*]+?)(?:\s+on|\s+\d|\s*$)',
             r'from\s+([A-Z][A-Za-z\s]+?)(?:\s+on|\s+\d|\s*$)',
+            r'info:\s+[^-]+-([A-Za-z\s]+?)-',
+            r'for\s+([A-Z][A-Za-z\s]+?)\.(?:avl|$)',
+            # Original patterns
+            r'via\s+([A-Z][A-Za-z\s]+?)(?:\s+on|\s+\d|\s*$)',
             r'merchant\s+([A-Z][A-Za-z\s]+?)(?:\s+on|\s+\d|\s*$)'
         ]
         
-        # Balance extraction
+        # Enhanced balance extraction for HDFC
         self.balance_patterns = [
-            r'balance.*?(?:rs|inr|₹)?\s*(\d+(?:\.\d{2})?)',
-            r'bal.*?(?:rs|inr|₹)?\s*(\d+(?:\.\d{2})?)',
-            r'available.*?(?:rs|inr|₹)?\s*(\d+(?:\.\d{2})?)'
+            r'avl\s+bal:?\s*(?:inr|rs)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+            r'bal\s+(?:inr|rs)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+            r'balance.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+            r'available.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)'
         ]
         
-        # Account number extraction
+        # Enhanced account number extraction for HDFC
         self.account_patterns = [
-            r'a/c\s*(?:no\.?)?\s*[x*]*(\d{4,})',
+            r'a/c\s*\*?x*(\d{4,})',
+            r'card\s*x(\d{4,})',
+            r'xx(\d{4,})',
             r'account\s*(?:no\.?)?\s*[x*]*(\d{4,})',
-            r'card\s*(?:no\.?)?\s*[x*]*(\d{4,})'
+            r'from\s+hdfc\s+bank\s+a/c\s*\*?x*(\d{4,})'
         ]
 
     def parse_sms(self, sms_text: str, phone_number: str) -> Optional[Transaction]:
