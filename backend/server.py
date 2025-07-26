@@ -191,6 +191,62 @@ async def get_all_users(admin_user: User = Depends(get_admin_user)):
     """Get all users (admin only)"""
     return await UserService.get_all_users()
 
+# ==================== NOTIFICATION ENDPOINTS ====================
+
+@api_router.get("/notifications/preferences", response_model=UserNotificationPreferences)
+async def get_notification_preferences(current_user: User = Depends(get_current_active_user)):
+    """Get current user's notification preferences"""
+    try:
+        return await NotificationPreferencesService.get_user_preferences(current_user.id)
+    except Exception as e:
+        logger.error(f"Error getting notification preferences: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/notifications/preferences", response_model=UserNotificationPreferences)
+async def update_notification_preferences(
+    updates: NotificationPreferencesUpdate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Update current user's notification preferences"""
+    try:
+        return await NotificationPreferencesService.update_user_preferences(current_user.id, updates)
+    except Exception as e:
+        logger.error(f"Error updating notification preferences: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/notifications/test-email")
+async def send_test_email(current_user: User = Depends(get_current_active_user)):
+    """Send a test email to verify email configuration"""
+    try:
+        success = await email_service.send_welcome_email(current_user)
+        if success:
+            return {"message": "Test email sent successfully!", "email": current_user.email}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to send test email")
+    except Exception as e:
+        logger.error(f"Error sending test email: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/notifications/logs")
+async def get_notification_logs(
+    limit: int = 50,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get notification logs for current user"""
+    try:
+        logs = []
+        async for log in db.notification_logs.find(
+            {"user_id": current_user.id}
+        ).sort("sent_at", -1).limit(limit):
+            log["id"] = str(log["_id"])
+            del log["_id"]
+            logs.append(log)
+        
+        return logs
+    except Exception as e:
+        logger.error(f"Error getting notification logs: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ==================== TRANSACTION ENDPOINTS ====================
 
 @api_router.post("/transactions", response_model=Transaction)
