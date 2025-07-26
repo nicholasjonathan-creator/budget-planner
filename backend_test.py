@@ -338,9 +338,10 @@ class SMSParserTester:
                         print(f"✅ Fallback pattern worked for: {sms[:50]}...")
                         fallback_working += 1
                     else:
-                        print(f"❌ Fallback pattern failed for: {sms[:50]}...")
+                        print(f"❌ Fallback pattern failed for: {sms[:50]}... - {result.get('message', 'Unknown error')}")
                 else:
                     print(f"❌ Endpoint error for fallback test: {response.status_code}")
+                    print(f"   Response: {response.text}")
                     
             except Exception as e:
                 print(f"❌ Error testing fallback pattern: {e}")
