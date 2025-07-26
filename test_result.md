@@ -164,7 +164,7 @@ frontend:
         comment: "COMPREHENSIVE TESTING COMPLETED - FINANCIAL SUMMARY REFRESH WORKING PERFECTLY: Conducted end-to-end testing of the financial summary refresh functionality. ✅ CONFIRMED WORKING: 1) Manual SMS classification workflow functions correctly with 16 failed SMS available for testing, 2) Financial summary cards update immediately after manual classification - Expense changed from ₹812,282.73 to ₹813,032.73 (₹750 increase), Balance updated from ₹-759,925.63 to ₹-760,675.63 (₹750 decrease), 3) refreshKey mechanism working perfectly - useEffect triggers on refreshKey change, loadData() refreshes all dashboard data including monthlySummary, 4) API calls sequence confirmed: POST /sms/manual-classify followed by GET requests for all dashboard data, 5) Clickable summary cards drill-down functionality working (expense filter tested), 6) Dashboard refresh mechanism operates without page reload, 7) Toast notification 'Dashboard Updated - Financial data refreshed with new transaction' appears correctly. The fix implemented by main agent (adding refreshKey to useEffect dependency array) has resolved the issue completely. Currency handling note: Found '$' symbol in UI - consider enhancement for non-INR currencies."
 
   - task: "Implement dynamic budget counters"
-    implemented: false
+    implemented: true
     working: false
     file: "frontend/src/components/BudgetLimitsManager.jsx"
     stuck_count: 0
@@ -174,20 +174,11 @@ frontend:
       - working: false
         agent: "main"
         comment: "Budget limits should have dynamic counters that move along as values are tagged to categories. Currently budget limits are static. Need real-time counters showing current spend vs budget limit with visual indicators."
+      - working: false
+        agent: "main"
+        comment: "IMPLEMENTED: Enhanced BudgetLimitsManager with improved dynamic counters - added real-time spent calculation with colored indicators, enhanced progress bar with animated gradient, improved percentage display with color coding (green/amber/red), better spent/remaining layout with visual separation. Component already calculates real-time spent amounts from currentTransactions that update as transactions change."
 
   - task: "Create Manual Validation Needed section"
-    implemented: true
-    working: true
-    file: "frontend/src/components/ManualClassification.jsx"
-    stuck_count: 0
-    priority: "medium"
-    needs_retesting: true
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "ManualClassification component exists under 'Manual' tab, but need to create a separate prominent 'Manual Validation Needed' header/section in the main UI to make unclassified SMS more visible to users."
-
-  - task: "Enhanced drill-down feature for income/expense totals"
     implemented: true
     working: false
     file: "frontend/src/components/BudgetDashboard.jsx"
@@ -197,7 +188,37 @@ frontend:
     status_history:
       - working: true
         agent: "main"
+        comment: "ManualClassification component exists under 'Manual' tab, but need to create a separate prominent 'Manual Validation Needed' header/section in the main UI to make unclassified SMS more visible to users."
+      - working: false
+        agent: "main"
+        comment: "IMPLEMENTED: Added prominent 'Manual Validation Needed' alert section in BudgetDashboard that displays when failedSMSCount > 0. Shows orange alert with count badge, descriptive text explaining the need for review, and a 'Review Now' button that switches to Manual tab. Updates in real-time as manual classifications are completed."
+
+  - task: "Enhanced drill-down feature for income/expense totals"
+    implemented: true
+    working: false
+    file: "frontend/src/components/TransactionList.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
         comment: "Income and expense cards are clickable and filter transactions, but need enhanced drill-down showing detailed SMS transaction breakdown with source SMS text, parsed details, and transaction metadata."
+      - working: false
+        agent: "main"
+        comment: "IMPLEMENTED: Major enhancement to TransactionList with collapsible detailed view for SMS transactions. Added showDetailedView prop, expandable sections showing original SMS text, phone number, bank info, parsing method, processed date. Added visual indicators for SMS Auto vs SMS Manual sources, enhanced transaction details with account info, and special highlighting for manually classified transactions. Dashboard passes showDetailedView=true when filtering by income/expense."
+
+  - task: "Multi-currency display UI for non-INR transactions"
+    implemented: true
+    working: false
+    file: "frontend/src/components/CurrencyDisplay.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "CREATED: New CurrencyDisplay component that detects and displays multi-currency transactions. Shows currency breakdown with exchange rates, visual currency icons (₹,$,€,£), transaction counts per currency, and INR equivalent values. Component integrated into BudgetDashboard to automatically show when non-INR transactions are detected in description/merchant fields or raw_data."
 
 metadata:
   created_by: "main_agent"
