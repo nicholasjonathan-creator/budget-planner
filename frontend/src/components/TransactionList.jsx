@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { TrendingUp, TrendingDown, MessageSquare, Edit } from 'lucide-react';
+import { Button } from './ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { TrendingUp, TrendingDown, MessageSquare, Edit, Tag, Calendar, Building, CreditCard } from 'lucide-react';
+import ApiService from '../services/api';
+import { useToast } from '../hooks/use-toast';
 
-const TransactionList = ({ transactions, categories }) => {
+const TransactionList = ({ transactions, categories, onTransactionUpdate }) => {
+  const [editingTransaction, setEditingTransaction] = useState(null);
+  const [updatingTransaction, setUpdatingTransaction] = useState(null);
+  const { toast } = useToast();
+
   const getCategoryById = (categoryId) => {
     return categories.find(cat => cat.id === categoryId);
   };
@@ -30,6 +38,79 @@ const TransactionList = ({ transactions, categories }) => {
     }
   };
 
+  const handleUpdateTransaction = async (transactionId, updates) => {
+    try {
+      setUpdatingTransaction(transactionId);
+      await ApiService.updateTransaction(transactionId, updates);
+      
+      toast({
+        title: "Success",
+        description: "Transaction updated successfully!",
+      });
+      
+      if (onTransactionUpdate) {
+        onTransactionUpdate();
+      }
+      
+      setEditingTransaction(null);
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update transaction. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingTransaction(null);
+    }
+  };
+
+  const renderTransactionDetails = (transaction) => {
+    const category = getCategoryById(transaction.category_id);
+    const date = new Date(transaction.date).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: '2-digit', 
+      year: 'numeric'
+    });
+    
+    const time = new Date(transaction.date).toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    return (
+      <div className="flex items-center gap-2 text-sm text-gray-500">
+        <span>{category?.name || 'Unknown'}</span>
+        <span>•</span>
+        <div className="flex items-center gap-1">
+          <Calendar className="h-3 w-3" />
+          <span>{date}</span>
+        </div>
+        {transaction.source === 'sms' && (
+          <>
+            <span>•</span>
+            <div className="flex items-center gap-1">
+              <Building className="h-3 w-3" />
+              <span>{transaction.account_number ? `A/C ${transaction.account_number}` : 'Unknown'}</span>
+            </div>
+          </>
+        )}
+        {transaction.merchant && (
+          <>
+            <span>•</span>
+            <span className="font-medium">{transaction.merchant}</span>
+          </>
+        )}
+        {transaction.balance && (
+          <>
+            <span>•</span>
+            <span className="text-green-600">Bal: ₹{transaction.balance.toLocaleString('en-IN')}</span>
+          </>
+        )}
+      </div>
+    );
+  };
+
   if (transactions.length === 0) {
     return (
       <Card>
@@ -52,19 +133,15 @@ const TransactionList = ({ transactions, categories }) => {
         <div className="space-y-3">
           {transactions.map(transaction => {
             const category = getCategoryById(transaction.category_id);
-            // Format date for India (DD-MM-YYYY)
-            const date = new Date(transaction.date).toLocaleDateString('en-IN', {
-              day: '2-digit',
-              month: '2-digit', 
-              year: 'numeric'
-            });
+            const isEditing = editingTransaction === transaction.id;
+            const isUpdating = updatingTransaction === transaction.id;
             
             return (
               <div 
                 key={transaction.id}
-                className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-1">
                   <div className="flex items-center gap-2">
                     {transaction.type === 'income' ? (
                       <TrendingUp className="h-4 w-4 text-green-600" />
@@ -76,9 +153,15 @@ const TransactionList = ({ transactions, categories }) => {
                       style={{ backgroundColor: category?.color || '#gray' }}
                     ></div>
                   </div>
+                  
                   <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{transaction.description}</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-medium">
+                        {transaction.source === 'sms' ? 
+                          (transaction.merchant || `${transaction.type === 'income' ? 'Credit' : 'Debit'} Transaction`) 
+                          : transaction.description
+                        }
+                      </p>
                       <div className="flex items-center gap-1">
                         {getSourceIcon(transaction.source)}
                         <Badge variant="outline" className={`text-xs ${getSourceColor(transaction.source)}`}>
@@ -86,29 +169,66 @@ const TransactionList = ({ transactions, categories }) => {
                         </Badge>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <span>{category?.name || 'Unknown'}</span>
-                      <span>•</span>
-                      <span>{date}</span>
-                      {transaction.merchant && (
-                        <>
-                          <span>•</span>
-                          <span>{transaction.merchant}</span>
-                        </>
-                      )}
-                      {transaction.balance && (
-                        <>
-                          <span>•</span>
-                          <span>Balance: ₹{transaction.balance.toLocaleString('en-IN')}</span>
-                        </>
-                      )}
-                    </div>
+                    
+                    {renderTransactionDetails(transaction)}
+                    
+                    {isEditing && (
+                      <div className="mt-3 flex items-center gap-2">
+                        <Select
+                          value={transaction.category_id.toString()}
+                          onValueChange={(value) => {
+                            handleUpdateTransaction(transaction.id, { category_id: parseInt(value) });
+                          }}
+                        >
+                          <SelectTrigger className="w-48">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map(cat => (
+                              <SelectItem key={cat.id} value={cat.id.toString()}>
+                                <div className="flex items-center gap-2">
+                                  <div 
+                                    className="w-3 h-3 rounded-full"
+                                    style={{ backgroundColor: cat.color }}
+                                  ></div>
+                                  {cat.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => setEditingTransaction(null)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className={`font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                    {transaction.type === 'income' ? '+' : '-'}₹{transaction.amount.toLocaleString('en-IN')}
-                  </p>
+                
+                <div className="flex items-center gap-3">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setEditingTransaction(isEditing ? null : transaction.id)}
+                    disabled={isUpdating}
+                  >
+                    <Tag className="h-4 w-4" />
+                  </Button>
+                  
+                  <div className="text-right">
+                    <p className={`font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                      {transaction.type === 'income' ? '+' : '-'}₹{transaction.amount.toLocaleString('en-IN')}
+                    </p>
+                    {transaction.source === 'sms' && transaction.raw_data?.bank && (
+                      <p className="text-xs text-gray-500">
+                        {transaction.raw_data.bank}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             );
