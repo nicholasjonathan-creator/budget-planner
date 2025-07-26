@@ -327,31 +327,39 @@ class SMSTransactionParser:
         # Default to "Other Expenses"
         return 12
 
-# Test cases for SMS parsing
+# Test with real HDFC SMS messages
 def test_sms_parser():
     parser = SMSTransactionParser()
     
-    test_cases = [
-        "Dear Customer, Rs 250.00 debited from your account ending 1234 at STARBUCKS COFFEE on 25-Jul-25. Available balance: Rs 15750.00",
-        "Your account 1234 has been debited by Rs 120.50 for transaction at DOMINOS PIZZA on 25/07/2025. Balance: Rs 8879.50",
-        "Rs 5000.00 credited to your account 5678 - SALARY PAYMENT on 01-Jul-25. Available balance: Rs 25000.00",
-        "Spent Rs 80.00 at METRO STATION via UPI on 25-Jul-25. A/c balance: Rs 4920.00",
-        "Your card ending 9876 used for Rs 45.00 at UBER TRIP on 25-Jul-25. Available balance: Rs 3455.00"
+    real_hdfc_messages = [
+        "Sent Rs.134985.00 From HDFC Bank A/C *2953 To FINZOOM INVESTMENT ADVISORS PRIVATE LIMITED On 25/07/25 Ref 520648518501 Not You? Call 18002586161/SMS BLOCK UPI to 7308080808",
+        "Sent Rs.5000.00 From HDFC Bank A/C *2953 To MELODY HENRIETTA NICHOLAS On 25/07/25 Ref 108669255361 Not You? Call 18002586161/SMS BLOCK UPI to 7308080808",
+        "UPDATE: INR 1,37,083.00 debited from HDFC Bank XX2953 on 25-JUL-25. Info: IMPS-520611360945-Old Man-HDFC-xxxxxxxxxx5124-Rent. Avl bal:INR 3,75,261.90",
+        "Update! INR 4,95,865.00 deposited in HDFC Bank A/c XX2953 on 25-JUL-25 for WFISPL CREDIT.Avl bal INR 5,12,344.90. Cheque deposits in A/C are subject to clearing",
+        "IMPS INR 5,000.00 sent from HDFC Bank A/c XX2953 on 25-07-25 To A/c xxxxxxxxxxx1254 Ref-520611366849 Not you?Call 18002586161/SMS BLOCK OB to 7308080808",
+        "Spent Rs.15065.08 From HDFC Bank Card x7722 At RAZ*Allard Educational On 2025-07-15:00:18:09 Bal Rs.25407.31 Not You? Call 18002586161/SMS BLOCK DC 7722 to 7308080808",
+        "UPDATE: INR 5,000.00 debited from HDFC Bank XX2953 on 01-JUL-25. Info: ACH D- TP ACH INDIANESIGN-1862188817. Avl bal:INR 2,40,315.16",
+        "Sent Rs.549.00 From HDFC Bank A/C x2953 To Blinkit On 29/06/25 Ref 107215970082 Not You? Call 18002586161/SMS BLOCK UPI to 7308080808"
     ]
     
-    for i, sms in enumerate(test_cases, 1):
+    print("Testing HDFC SMS Parser with Real Messages")
+    print("=" * 50)
+    
+    for i, sms in enumerate(real_hdfc_messages, 1):
         print(f"\n--- Test Case {i} ---")
-        print(f"SMS: {sms}")
-        transaction = parser.parse_sms(sms, "+1234567890")
+        print(f"SMS: {sms[:80]}...")
+        transaction = parser.parse_sms(sms, "+918000000000")
         if transaction:
-            print(f"Type: {transaction.type}")
-            print(f"Amount: {transaction.amount}")
-            print(f"Merchant: {transaction.merchant}")
-            print(f"Category ID: {transaction.category_id}")
-            print(f"Description: {transaction.description}")
-            print(f"Balance: {transaction.balance}")
+            print(f"✅ SUCCESS")
+            print(f"   Amount: ₹{transaction.amount:,.2f}")
+            print(f"   Type: {transaction.type}")
+            print(f"   Payee: {transaction.merchant}")
+            print(f"   Account: {transaction.account_number}")
+            print(f"   Date: {transaction.date}")
+            print(f"   Category: {transaction.category_id}")
+            print(f"   Balance: ₹{transaction.balance:,.2f}" if transaction.balance else "N/A")
         else:
-            print("Failed to parse")
+            print(f"❌ FAILED TO PARSE")
 
 if __name__ == "__main__":
     test_sms_parser()
