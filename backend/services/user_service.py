@@ -73,6 +73,7 @@ class UserService:
             return None
         
         user_doc["id"] = str(user_doc["_id"])
+        user_doc.pop("_id", None)  # Remove _id to avoid conflicts
         return User(**user_doc)
     
     @staticmethod
