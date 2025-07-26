@@ -118,19 +118,21 @@ class SMSTransactionParser:
             return None
 
     def _extract_amount_and_type(self, sms_text: str) -> tuple:
-        """Extract transaction amount and determine type"""
+        """Extract transaction amount and determine type - Enhanced for HDFC formats"""
         # Try debit patterns first
         for pattern in self.bank_patterns['debit']:
             match = re.search(pattern, sms_text, re.IGNORECASE)
             if match:
-                amount = float(match.group(1).replace(',', ''))
+                amount_str = match.group(1).replace(',', '')  # Remove commas
+                amount = float(amount_str)
                 return TransactionType.EXPENSE, amount
         
         # Try credit patterns
         for pattern in self.bank_patterns['credit']:
             match = re.search(pattern, sms_text, re.IGNORECASE)
             if match:
-                amount = float(match.group(1).replace(',', ''))
+                amount_str = match.group(1).replace(',', '')  # Remove commas
+                amount = float(amount_str)
                 return TransactionType.INCOME, amount
                 
         return None, None
