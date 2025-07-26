@@ -59,17 +59,28 @@ async def create_indexes():
         await transactions_collection.create_index("date")
         await transactions_collection.create_index("category_id")
         await transactions_collection.create_index("type")
+        await transactions_collection.create_index("user_id")  # For user isolation
         await transactions_collection.create_index([("date", -1), ("type", 1)])
+        await transactions_collection.create_index([("user_id", 1), ("date", -1)])
         
         # Budget limits indexes
         await budget_limits_collection.create_index([("month", 1), ("year", 1)])
         await budget_limits_collection.create_index("category_id")
+        await budget_limits_collection.create_index("user_id")  # For user isolation
         await budget_limits_collection.create_index([("category_id", 1), ("month", 1), ("year", 1)], unique=True)
+        await budget_limits_collection.create_index([("user_id", 1), ("category_id", 1), ("month", 1), ("year", 1)], unique=True)
         
         # SMS indexes
         await sms_collection.create_index("timestamp")
         await sms_collection.create_index("processed")
         await sms_collection.create_index("phone_number")
+        await sms_collection.create_index("user_id")  # For user isolation
+        
+        # User indexes
+        await users_collection.create_index("email", unique=True)
+        await users_collection.create_index("username", unique=True)
+        await users_collection.create_index("is_active")
+        await users_collection.create_index("created_at")
         
         print("Database indexes created successfully")
         
