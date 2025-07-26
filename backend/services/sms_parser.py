@@ -27,7 +27,7 @@ class SMSTransactionParser:
             },
             # Pattern 2: "UPDATE: INR X,XX,XXX.XX debited from HDFC Bank XXXX on DD-MMM-YY"
             'update_debit': {
-                'regex': r'update.*?inr\s+([\d,]+(?:\.\d{2})?)\s+debited\s+from\s+hdfc\s+bank\s+([x\d]+)\s+on\s+(\d{2}-[A-Z]{3}-\d{2}).*?info:\s*(.+?)(?:\.|avl)',
+                'regex': r'update.*?inr\s+([\d,]+(?:\.\d{2})?)\s+debited\s+from\s+hdfc\s+bank\s+([x\d]+)\s+on\s+(\d{2}-[A-Z]{3}-\d{2}).*?(?:info|Info):\s*(.+?)(?:\.|avl)',
                 'amount_group': 1,
                 'account_group': 2,
                 'date_group': 3,
