@@ -12,7 +12,7 @@ class SMSService:
         self.parser = SMSTransactionParser()
         self.collection = db.sms_transactions
         
-    async def receive_sms(self, phone_number: str, message: str) -> dict:
+    async def receive_sms(self, phone_number: str, message: str, user_id: str = None) -> dict:
         """Receive and process incoming SMS"""
         try:
             # Store raw SMS
@@ -20,7 +20,8 @@ class SMSService:
                 phone_number=phone_number,
                 message=message,
                 timestamp=datetime.now(),
-                processed=False
+                processed=False,
+                user_id=user_id  # Add user_id to SMS record
             )
             
             # Save to database
@@ -31,8 +32,13 @@ class SMSService:
             transaction = self.parser.parse_sms(message, phone_number)
             
             if transaction:
+                # Add user_id to transaction
+                transaction_dict = transaction.dict()
+                if user_id:
+                    transaction_dict['user_id'] = user_id
+                    
                 # Save transaction to database
-                transaction_result = await db.transactions.insert_one(transaction.dict())
+                transaction_result = await db.transactions.insert_one(transaction_dict)
                 transaction_id = str(transaction_result.inserted_id)
                 
                 # Update SMS record as processed
