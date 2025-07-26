@@ -276,7 +276,10 @@ const BudgetDashboard = () => {
             </CardContent>
           </Card>
           
-          <Card className={`bg-gradient-to-br ${monthlySummary.balance >= 0 ? 'from-blue-50 to-blue-100 border-blue-200' : 'from-red-50 to-red-100 border-red-200'}`}>
+          <Card 
+            className={`bg-gradient-to-br ${monthlySummary.balance >= 0 ? 'from-blue-50 to-blue-100 border-blue-200' : 'from-red-50 to-red-100 border-red-200'} cursor-pointer hover:shadow-lg transition-shadow duration-200`}
+            onClick={handleShowAllTransactions}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className={`text-sm font-medium ${monthlySummary.balance >= 0 ? 'text-blue-800' : 'text-red-800'}`}>Balance</CardTitle>
               <DollarSign className={`h-4 w-4 ${monthlySummary.balance >= 0 ? 'text-blue-600' : 'text-red-600'}`} />
@@ -286,7 +289,7 @@ const BudgetDashboard = () => {
                 ₹{monthlySummary.balance.toLocaleString('en-IN')}
               </div>
               <p className={`text-xs ${monthlySummary.balance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                {monthlySummary.balance >= 0 ? 'Surplus' : 'Deficit'}
+                {monthlySummary.balance >= 0 ? 'Surplus' : 'Deficit'} • Click to view all
               </p>
             </CardContent>
           </Card>
