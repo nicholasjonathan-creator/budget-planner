@@ -1,7 +1,7 @@
 services:
   # Backend Service
   - type: web
-    name: budget-planner-backend
+    name: budget-planner-be--20250726-1342
     env: python
     plan: free
     region: oregon
@@ -28,11 +28,11 @@ services:
       - key: ACCESS_TOKEN_EXPIRE
         value: 1440
       - key: CORS_ORIGINS
-        value: '["https://budget-planner-frontend.onrender.com"]'
+        value: '["https://budget-planner-fe--20250726-1342.onrender.com"]'
 
   # Frontend Service
   - type: web
-    name: budget-planner-frontend
+    name: budget-planner-fe--20250726-1342
     env: static
     plan: free
     region: oregon
@@ -41,7 +41,7 @@ services:
     pullRequestPreviewsEnabled: false
     envVars:
       - key: REACT_APP_BACKEND_URL
-        value: https://budget-planner-backend.onrender.com
+        value: https://budget-planner-be--20250726-1342.onrender.com
       - key: REACT_APP_ENVIRONMENT
         value: production
       - key: GENERATE_SOURCEMAP
@@ -49,7 +49,7 @@ services:
     routes:
       - type: rewrite
         source: /api/*
-        destination: https://budget-planner-backend.onrender.com/api/:splat
+        destination: https://budget-planner-be--20250726-1342.onrender.com/api/:splat
       - type: rewrite
         source: /*
         destination: /index.html

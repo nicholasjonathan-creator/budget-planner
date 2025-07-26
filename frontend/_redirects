@@ -1,5 +1,5 @@
 # API routes to backend
-/api/* https://budget-planner-backend.onrender.com/api/:splat 200!
+/api/* https://budget-planner-be--20250726-1342.onrender.com/api/:splat 200!
 
 # Client-side routing fallback
 /* /index.html 200
