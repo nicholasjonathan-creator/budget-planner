@@ -506,6 +506,12 @@ const BudgetDashboard = () => {
           <TabsContent value="notifications">
             <NotificationSettings />
           </TabsContent>
+          
+          {isAdmin && (
+            <TabsContent value="production">
+              <ProductionEmailManagement />
+            </TabsContent>
+          )}
         </Tabs>
 
         {/* Transaction Form Modal */}
