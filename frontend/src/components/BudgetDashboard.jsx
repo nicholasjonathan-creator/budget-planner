@@ -298,11 +298,15 @@ const BudgetDashboard = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-5 mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
             <TabsTrigger value="budget">Budget Limits</TabsTrigger>
             <TabsTrigger value="charts">Charts</TabsTrigger>
+            <TabsTrigger value="manual">
+              <Settings className="h-4 w-4 mr-2" />
+              Manual
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview" className="space-y-6">
