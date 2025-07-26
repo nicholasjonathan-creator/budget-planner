@@ -100,10 +100,12 @@ const BudgetDashboard = () => {
 
   const handleIncomeClick = () => {
     setTransactionFilter('income');
+    setActiveTab('transactions'); // Switch to Transactions tab to show full list
   };
 
   const handleExpenseClick = () => {
     setTransactionFilter('expense');
+    setActiveTab('transactions'); // Switch to Transactions tab to show full list
   };
 
   const handleShowAllTransactions = () => {
