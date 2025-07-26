@@ -1,0 +1,248 @@
+from typing import List, Optional
+from datetime import datetime
+from models.transaction import Transaction, TransactionCreate, BudgetLimit, BudgetLimitCreate
+from database import db
+from bson import ObjectId
+import logging
+
+logger = logging.getLogger(__name__)
+
+class TransactionService:
+    def __init__(self):
+        self.transactions_collection = db.transactions
+        self.budget_limits_collection = db.budget_limits
+        
+    async def create_transaction(self, transaction: TransactionCreate) -> Transaction:
+        """Create a new transaction"""
+        try:
+            transaction_dict = transaction.dict()
+            if not transaction_dict.get('date'):
+                transaction_dict['date'] = datetime.now()
+            
+            result = await self.transactions_collection.insert_one(transaction_dict)
+            transaction_dict['id'] = str(result.inserted_id)
+            
+            logger.info(f"Transaction created: {transaction_dict['id']}")
+            return Transaction(**transaction_dict)
+            
+        except Exception as e:
+            logger.error(f"Error creating transaction: {e}")
+            raise
+    
+    async def get_transactions(self, month: int = None, year: int = None) -> List[Transaction]:
+        """Get transactions by month/year"""
+        try:
+            query = {}
+            if month is not None and year is not None:
+                start_date = datetime(year, month, 1)
+                if month == 12:
+                    end_date = datetime(year + 1, 1, 1)
+                else:
+                    end_date = datetime(year, month + 1, 1)
+                
+                query['date'] = {'$gte': start_date, '$lt': end_date}
+            
+            cursor = self.transactions_collection.find(query).sort("date", -1)
+            transactions = []
+            
+            async for doc in cursor:
+                doc['id'] = str(doc.pop('_id'))
+                transactions.append(Transaction(**doc))
+            
+            return transactions
+            
+        except Exception as e:
+            logger.error(f"Error getting transactions: {e}")
+            raise
+    
+    async def get_transaction_by_id(self, transaction_id: str) -> Optional[Transaction]:
+        """Get a specific transaction by ID"""
+        try:
+            doc = await self.transactions_collection.find_one({"_id": ObjectId(transaction_id)})
+            if doc:
+                doc['id'] = str(doc.pop('_id'))
+                return Transaction(**doc)
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error getting transaction: {e}")
+            return None
+    
+    async def update_transaction(self, transaction_id: str, updates: dict) -> Optional[Transaction]:
+        """Update a transaction"""
+        try:
+            result = await self.transactions_collection.update_one(
+                {"_id": ObjectId(transaction_id)},
+                {"$set": updates}
+            )
+            
+            if result.modified_count:
+                return await self.get_transaction_by_id(transaction_id)
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error updating transaction: {e}")
+            return None
+    
+    async def delete_transaction(self, transaction_id: str) -> bool:
+        """Delete a transaction"""
+        try:
+            result = await self.transactions_collection.delete_one({"_id": ObjectId(transaction_id)})
+            return result.deleted_count > 0
+            
+        except Exception as e:
+            logger.error(f"Error deleting transaction: {e}")
+            return False
+    
+    async def get_category_totals(self, month: int, year: int) -> dict:
+        """Get transaction totals by category for a specific month/year"""
+        try:
+            start_date = datetime(year, month, 1)
+            if month == 12:
+                end_date = datetime(year + 1, 1, 1)
+            else:
+                end_date = datetime(year, month + 1, 1)
+            
+            pipeline = [
+                {
+                    "$match": {
+                        "date": {"$gte": start_date, "$lt": end_date}
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": {
+                            "category_id": "$category_id",
+                            "type": "$type"
+                        },
+                        "total": {"$sum": "$amount"}
+                    }
+                }
+            ]
+            
+            cursor = self.transactions_collection.aggregate(pipeline)
+            results = {}
+            
+            async for doc in cursor:
+                category_id = doc['_id']['category_id']
+                transaction_type = doc['_id']['type']
+                total = doc['total']
+                
+                if category_id not in results:
+                    results[category_id] = {"income": 0, "expense": 0}
+                
+                results[category_id][transaction_type] = total
+            
+            return results
+            
+        except Exception as e:
+            logger.error(f"Error getting category totals: {e}")
+            return {}
+    
+    async def get_monthly_summary(self, month: int, year: int) -> dict:
+        """Get monthly summary of income, expenses, and balance"""
+        try:
+            start_date = datetime(year, month, 1)
+            if month == 12:
+                end_date = datetime(year + 1, 1, 1)
+            else:
+                end_date = datetime(year, month + 1, 1)
+            
+            pipeline = [
+                {
+                    "$match": {
+                        "date": {"$gte": start_date, "$lt": end_date}
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$type",
+                        "total": {"$sum": "$amount"}
+                    }
+                }
+            ]
+            
+            cursor = self.transactions_collection.aggregate(pipeline)
+            summary = {"income": 0, "expense": 0, "balance": 0}
+            
+            async for doc in cursor:
+                summary[doc['_id']] = doc['total']
+            
+            summary['balance'] = summary['income'] - summary['expense']
+            
+            return summary
+            
+        except Exception as e:
+            logger.error(f"Error getting monthly summary: {e}")
+            return {"income": 0, "expense": 0, "balance": 0}
+    
+    # Budget Limits Management
+    async def create_budget_limit(self, budget_limit: BudgetLimitCreate) -> BudgetLimit:
+        """Create a new budget limit"""
+        try:
+            budget_dict = budget_limit.dict()
+            
+            # Check if limit already exists for this category/month/year
+            existing = await self.budget_limits_collection.find_one({
+                "category_id": budget_dict['category_id'],
+                "month": budget_dict['month'],
+                "year": budget_dict['year']
+            })
+            
+            if existing:
+                # Update existing limit
+                await self.budget_limits_collection.update_one(
+                    {"_id": existing['_id']},
+                    {"$set": {"limit": budget_dict['limit']}}
+                )
+                existing['limit'] = budget_dict['limit']
+                existing['id'] = str(existing.pop('_id'))
+                return BudgetLimit(**existing)
+            else:
+                # Create new limit
+                result = await self.budget_limits_collection.insert_one(budget_dict)
+                budget_dict['id'] = str(result.inserted_id)
+                return BudgetLimit(**budget_dict)
+                
+        except Exception as e:
+            logger.error(f"Error creating budget limit: {e}")
+            raise
+    
+    async def get_budget_limits(self, month: int, year: int) -> List[BudgetLimit]:
+        """Get budget limits for a specific month/year"""
+        try:
+            cursor = self.budget_limits_collection.find({
+                "month": month,
+                "year": year
+            })
+            
+            budget_limits = []
+            async for doc in cursor:
+                doc['id'] = str(doc.pop('_id'))
+                budget_limits.append(BudgetLimit(**doc))
+            
+            return budget_limits
+            
+        except Exception as e:
+            logger.error(f"Error getting budget limits: {e}")
+            return []
+    
+    async def update_budget_spent(self, month: int, year: int):
+        """Update spent amounts for all budget limits"""
+        try:
+            category_totals = await self.get_category_totals(month, year)
+            
+            budget_limits = await self.get_budget_limits(month, year)
+            
+            for budget_limit in budget_limits:
+                spent = category_totals.get(budget_limit.category_id, {}).get('expense', 0)
+                
+                await self.budget_limits_collection.update_one(
+                    {"_id": ObjectId(budget_limit.id)},
+                    {"$set": {"spent": spent}}
+                )
+            
+            logger.info(f"Updated budget spent amounts for {month}/{year}")
+            
+        except Exception as e:
+            logger.error(f"Error updating budget spent: {e}")
