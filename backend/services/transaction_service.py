@@ -101,11 +101,14 @@ class TransactionService:
     async def get_category_totals(self, month: int, year: int) -> dict:
         """Get transaction totals by category for a specific month/year"""
         try:
-            start_date = datetime(year, month, 1)
-            if month == 12:
+            # Frontend sends 0-indexed months, convert to 1-indexed
+            actual_month = month + 1
+            
+            start_date = datetime(year, actual_month, 1)
+            if actual_month == 12:
                 end_date = datetime(year + 1, 1, 1)
             else:
-                end_date = datetime(year, month + 1, 1)
+                end_date = datetime(year, actual_month + 1, 1)
             
             pipeline = [
                 {
