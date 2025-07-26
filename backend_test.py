@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Testing for HDFC SMS Parser
-Tests the improved SMS parser with real-world HDFC bank SMS formats
+Comprehensive Backend API Testing
+Tests the updated backend API endpoints and SMS transactions display functionality
+Focus areas:
+1. Month filtering fix (0-indexed to 1-indexed conversion)
+2. Transaction update endpoint for manual categorization
+3. SMS transaction display with proper formatting
+4. Real HDFC transaction data verification
 """
 
 import requests
@@ -9,6 +14,7 @@ import json
 import sys
 import os
 from datetime import datetime
+import uuid
 
 # Get backend URL from environment
 BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://faec72d5-b1ac-459e-9b2a-3a68f118503b.preview.emergentagent.com')
