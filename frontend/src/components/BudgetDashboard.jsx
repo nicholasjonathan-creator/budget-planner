@@ -411,7 +411,8 @@ const BudgetDashboard = () => {
           
           <TabsContent value="manual">
             <ManualClassification 
-              onClassificationComplete={loadData}
+              key={refreshKey}
+              onClassificationComplete={handleManualClassificationComplete}
             />
           </TabsContent>
         </Tabs>
