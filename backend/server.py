@@ -375,3 +375,31 @@ async def startup_event():
 async def shutdown_event():
     """Cleanup on shutdown"""
     logger.info("Budget Planner API shutting down")
+
+# ==================== ADMIN ENDPOINTS
+@app.post("/api/admin/clear-sms-data")
+async def clear_sms_data():
+    """Clear all SMS-related data for testing purposes"""
+    try:
+        # Clear failed SMS collection
+        failed_sms_collection = db.failed_sms
+        await failed_sms_collection.delete_many({})
+        
+        # Clear all SMS transactions (transactions with source = 'sms' or 'sms_manual')
+        transactions_collection = db.transactions
+        result = await transactions_collection.delete_many({
+            "source": {"$in": ["sms", "sms_manual"]}
+        })
+        
+        # Clear any other SMS-related collections if they exist
+        # You can add more cleanup here if needed
+        
+        logger.info("All SMS data cleared successfully")
+        return {
+            "success": True,
+            "message": "All SMS data cleared successfully",
+            "deleted_transactions": result.deleted_count
+        }
+    except Exception as e:
+        logger.error(f"Error clearing SMS data: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
