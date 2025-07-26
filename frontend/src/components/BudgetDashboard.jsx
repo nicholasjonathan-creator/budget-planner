@@ -316,6 +316,11 @@ const BudgetDashboard = () => {
           </Card>
         )}
 
+        {/* Multi-Currency Display */}
+        {multiCurrencyTransactions.length > 0 && (
+          <CurrencyDisplay currencies={multiCurrencyTransactions} />
+        )}
+
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card 
