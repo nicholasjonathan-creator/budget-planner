@@ -5,70 +5,93 @@ from models.transaction import Transaction, TransactionType, TransactionSource
 
 class SMSTransactionParser:
     def __init__(self):
-        # Enhanced bank SMS patterns for real HDFC formats
+        # Real-world HDFC SMS patterns based on actual messages
+        self.hdfc_patterns = {
+            # Pattern 1: "Sent Rs.X From HDFC Bank A/C *XXXX To PAYEE On DD/MM/YY"
+            'upi_sent': {
+                'regex': r'sent\s+rs\.(\d+(?:,\d{3})*(?:\.\d{2})?)\s+from\s+hdfc\s+bank\s+a/c\s*\*?([x\d]+)\s+to\s+(.+?)\s+on\s+(\d{2}/\d{2}/\d{2})',
+                'amount_group': 1,
+                'account_group': 2,
+                'payee_group': 3,
+                'date_group': 4,
+                'type': 'expense'
+            },
+            # Pattern 2: "UPDATE: INR X,XX,XXX.XX debited from HDFC Bank XXXX on DD-MMM-YY"
+            'update_debit': {
+                'regex': r'update.*?inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+debited\s+from\s+hdfc\s+bank\s+([x\d]+)\s+on\s+(\d{2}-[A-Z]{3}-\d{2}).*?info:\s*(.+?)(?:\.|avl)',
+                'amount_group': 1,
+                'account_group': 2,
+                'date_group': 3,
+                'payee_group': 4,
+                'type': 'expense'
+            },
+            # Pattern 3: "Update! INR X,XX,XXX.XX deposited in HDFC Bank A/c XXXX on DD-MMM-YY for PAYEE"
+            'update_credit': {
+                'regex': r'update.*?inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+deposited\s+in\s+hdfc\s+bank\s+a/c\s+([x\d]+)\s+on\s+(\d{2}-[A-Z]{3}-\d{2})\s+for\s+(.+?)\.?avl',
+                'amount_group': 1,
+                'account_group': 2,
+                'date_group': 3,
+                'payee_group': 4,
+                'type': 'income'
+            },
+            # Pattern 4: "IMPS INR X,XXX.XX sent from HDFC Bank A/c XXXX on DD-MM-YY To A/c XXXXXXXXXX"
+            'imps_sent': {
+                'regex': r'imps\s+inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+sent\s+from\s+hdfc\s+bank\s+a/c\s+([x\d]+)\s+on\s+(\d{2}-\d{2}-\d{2})\s+to\s+a/c\s+([x\d]+)',
+                'amount_group': 1,
+                'account_group': 2,
+                'date_group': 3,
+                'payee_group': 4,
+                'type': 'expense'
+            },
+            # Pattern 5: "Spent Rs.XXXXX.XX From HDFC Bank Card xXXXX At MERCHANT On YYYY-MM-DD:HH:MM:SS"
+            'card_spent': {
+                'regex': r'spent\s+rs\.(\d+(?:,\d{3})*(?:\.\d{2})?)\s+from\s+hdfc\s+bank\s+card\s+([x\d]+)\s+at\s+(.+?)\s+on\s+(\d{4}-\d{2}-\d{2}:\d{2}:\d{2}:\d{2})',
+                'amount_group': 1,
+                'account_group': 2,
+                'payee_group': 3,
+                'date_group': 4,
+                'type': 'expense'
+            }
+        }
+        
+        # Fallback patterns for other banks
         self.bank_patterns = {
             'debit': [
-                # HDFC UPI Sent patterns
-                r'sent\s+rs\.?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-                r'spent\s+rs\.?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-                # HDFC IMPS/UPDATE patterns
-                r'update.*?inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+debited',
-                r'inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+debited',
-                # HDFC IMPS Transfer patterns
-                r'imps\s+inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+sent',
-                # Original patterns (keep for other banks)
                 r'debited.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
                 r'spent.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
                 r'paid.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
                 r'withdrawn.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-                r'debit.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-                r'purchase.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-                r'amt.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
                 r'(?:rs|inr|₹)\.?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:debited|spent|paid|sent)'
             ],
             'credit': [
-                # HDFC Deposit patterns
-                r'update.*?inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+deposited',
-                r'inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+deposited',
-                r'deposited.*?inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)',
-                # Original patterns
                 r'credited.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
                 r'received.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
                 r'deposited.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-                r'credit.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-                r'salary.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
                 r'(?:rs|inr|₹)\.?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:credited|received|deposited)'
             ]
         }
         
-        # Enhanced merchant extraction patterns for HDFC
+        # Merchant extraction patterns
         self.merchant_patterns = [
-            # HDFC specific patterns
             r'to\s+([A-Z][A-Za-z\s\.]+?)(?:\s+on|\s+ref|\s*$)',
             r'at\s+([A-Z][A-Za-z\s\*]+?)(?:\s+on|\s+\d|\s*$)',
-            r'from\s+([A-Z][A-Za-z\s]+?)(?:\s+on|\s+\d|\s*$)',
-            r'info:\s+[^-]+-([A-Za-z\s]+?)-',
             r'for\s+([A-Z][A-Za-z\s]+?)\.(?:avl|$)',
-            # Original patterns
-            r'via\s+([A-Z][A-Za-z\s]+?)(?:\s+on|\s+\d|\s*$)',
-            r'merchant\s+([A-Z][A-Za-z\s]+?)(?:\s+on|\s+\d|\s*$)'
+            r'info:\s*[^-]+-([A-Za-z\s]+?)-',
         ]
         
-        # Enhanced balance extraction for HDFC
+        # Balance extraction
         self.balance_patterns = [
             r'avl\s+bal:?\s*(?:inr|rs)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
             r'bal\s+(?:inr|rs)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-            r'balance.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
-            r'available.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)'
+            r'balance.*?(?:rs|inr|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)'
         ]
         
-        # Enhanced account number extraction for HDFC
+        # Account number extraction
         self.account_patterns = [
-            r'a/c\s*\*?x*(\d{4,})',
-            r'card\s*x(\d{4,})',
+            r'a/c\s*\*?([x\d]+)',
+            r'card\s*([x\d]+)',
             r'xx(\d{4,})',
-            r'account\s*(?:no\.?)?\s*[x*]*(\d{4,})',
-            r'from\s+hdfc\s+bank\s+a/c\s*\*?x*(\d{4,})'
+            r'account.*?([x\d]{4,})'
         ]
 
     def parse_sms(self, sms_text: str, phone_number: str) -> Optional[Transaction]:
