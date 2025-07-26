@@ -9,7 +9,7 @@ class SMSTransactionParser:
         self.hdfc_patterns = {
             # Pattern 1: Multiline "Sent Rs.X\nFrom HDFC Bank A/C *XXXX\nTo PAYEE\nOn DD/MM/YY"
             'upi_sent_multiline': {
-                'regex': r'sent\s+rs\.(\d+(?:,\d{3})*(?:\.\d{2})?)\s*\n?\s*from\s+hdfc\s+bank\s+a/c\s*\*?([x\d]+)\s*\n?\s*to\s+(.+?)\s*\n?\s*on\s+(\d{2}/\d{2}/\d{2})',
+                'regex': r'sent\s+rs\.([\d,]+(?:\.\d{2})?)\s*\n?\s*from\s+hdfc\s+bank\s+a/c\s*\*?([x\d]+)\s*\n?\s*to\s+(.+?)\s*\n?\s*on\s+(\d{2}/\d{2}/\d{2})',
                 'amount_group': 1,
                 'account_group': 2,
                 'payee_group': 3,
@@ -18,7 +18,7 @@ class SMSTransactionParser:
             },
             # Pattern 1b: Single line "Sent Rs.X From HDFC Bank A/C *XXXX To PAYEE On DD/MM/YY"
             'upi_sent': {
-                'regex': r'sent\s+rs\.(\d+(?:,\d{3})*(?:\.\d{2})?)\s+from\s+hdfc\s+bank\s+a/c\s*\*?([x\d]+)\s+to\s+(.+?)\s+on\s+(\d{2}/\d{2}/\d{2})',
+                'regex': r'sent\s+rs\.([\d,]+(?:\.\d{2})?)\s+from\s+hdfc\s+bank\s+a/c\s*\*?([x\d]+)\s+to\s+(.+?)\s+on\s+(\d{2}/\d{2}/\d{2})',
                 'amount_group': 1,
                 'account_group': 2,
                 'payee_group': 3,
@@ -27,7 +27,7 @@ class SMSTransactionParser:
             },
             # Pattern 2: "UPDATE: INR X,XX,XXX.XX debited from HDFC Bank XXXX on DD-MMM-YY"
             'update_debit': {
-                'regex': r'update.*?inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+debited\s+from\s+hdfc\s+bank\s+([x\d]+)\s+on\s+(\d{2}-[A-Z]{3}-\d{2}).*?info:\s*(.+?)(?:\.|avl)',
+                'regex': r'update.*?inr\s+([\d,]+(?:\.\d{2})?)\s+debited\s+from\s+hdfc\s+bank\s+([x\d]+)\s+on\s+(\d{2}-[A-Z]{3}-\d{2}).*?info:\s*(.+?)(?:\.|avl)',
                 'amount_group': 1,
                 'account_group': 2,
                 'date_group': 3,
@@ -36,7 +36,7 @@ class SMSTransactionParser:
             },
             # Pattern 3: "Update! INR X,XX,XXX.XX deposited in HDFC Bank A/c XXXX on DD-MMM-YY for PAYEE"
             'update_credit': {
-                'regex': r'update.*?inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+deposited\s+in\s+hdfc\s+bank\s+a/c\s+([x\d]+)\s+on\s+(\d{2}-[A-Z]{3}-\d{2})\s+for\s+(.+?)\.?\s*avl',
+                'regex': r'update.*?inr\s+([\d,]+(?:\.\d{2})?)\s+deposited\s+in\s+hdfc\s+bank\s+a/c\s+([x\d]+)\s+on\s+(\d{2}-[A-Z]{3}-\d{2})\s+for\s+(.+?)\.?\s*avl',
                 'amount_group': 1,
                 'account_group': 2,
                 'date_group': 3,
@@ -45,7 +45,7 @@ class SMSTransactionParser:
             },
             # Pattern 4: "IMPS INR X\nsent from HDFC Bank A/c XXXX on DD-MM-YY\nTo A/c XXXXXXXX"
             'imps_sent_multiline': {
-                'regex': r'imps\s+inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s*\n?\s*sent\s+from\s+hdfc\s+bank\s+a/c\s+([x\d]+)\s+on\s+(\d{2}-\d{2}-\d{2})\s*\n?\s*to\s+a/c\s+([x\d]+)',
+                'regex': r'imps\s+inr\s+([\d,]+(?:\.\d{2})?)\s*\n?\s*sent\s+from\s+hdfc\s+bank\s+a/c\s+([x\d]+)\s+on\s+(\d{2}-\d{2}-\d{2})\s*\n?\s*to\s+a/c\s+([x\d]+)',
                 'amount_group': 1,
                 'account_group': 2,
                 'date_group': 3,
@@ -54,7 +54,7 @@ class SMSTransactionParser:
             },
             # Pattern 4b: Single line "IMPS INR X sent from HDFC Bank A/c XXXX on DD-MM-YY To A/c XXXXXXXX"
             'imps_sent': {
-                'regex': r'imps\s+inr\s+(\d+(?:,\d{3})*(?:\.\d{2})?)\s+sent\s+from\s+hdfc\s+bank\s+a/c\s+([x\d]+)\s+on\s+(\d{2}-\d{2}-\d{2})\s+to\s+a/c\s+([x\d]+)',
+                'regex': r'imps\s+inr\s+([\d,]+(?:\.\d{2})?)\s+sent\s+from\s+hdfc\s+bank\s+a/c\s+([x\d]+)\s+on\s+(\d{2}-\d{2}-\d{2})\s+to\s+a/c\s+([x\d]+)',
                 'amount_group': 1,
                 'account_group': 2,
                 'date_group': 3,
@@ -63,7 +63,7 @@ class SMSTransactionParser:
             },
             # Pattern 5: "Spent Rs.XXXXX.XX From HDFC Bank Card xXXXX At MERCHANT On YYYY-MM-DD:HH:MM:SS"
             'card_spent': {
-                'regex': r'spent\s+rs\.(\d+(?:,\d{3})*(?:\.\d{2})?)\s+from\s+hdfc\s+bank\s+card\s+([x\d]+)\s+at\s+(.+?)\s+on\s+(\d{4}-\d{2}-\d{2}:\d{2}:\d{2}:\d{2})',
+                'regex': r'spent\s+rs\.([\d,]+(?:\.\d{2})?)\s+from\s+hdfc\s+bank\s+card\s+([x\d]+)\s+at\s+(.+?)\s+on\s+(\d{4}-\d{2}-\d{2}:\d{2}:\d{2}:\d{2})',
                 'amount_group': 1,
                 'account_group': 2,
                 'payee_group': 3,
