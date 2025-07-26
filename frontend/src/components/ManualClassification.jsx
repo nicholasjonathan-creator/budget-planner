@@ -264,14 +264,16 @@ const ManualClassification = ({ onClassificationComplete }) => {
                   <div className="flex gap-2">
                     <Button 
                       onClick={handleSubmitClassification}
+                      disabled={submitting}
                       className="bg-green-600 hover:bg-green-700"
                     >
                       <CheckCircle className="h-4 w-4 mr-2" />
-                      Classify
+                      {submitting ? 'Classifying...' : 'Classify'}
                     </Button>
                     <Button 
                       variant="outline"
                       onClick={handleCancelClassification}
+                      disabled={submitting}
                     >
                       Cancel
                     </Button>
