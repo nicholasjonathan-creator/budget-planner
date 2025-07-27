@@ -44,46 +44,6 @@ const WhatsAppIntegration = () => {
     });
   };
 
-  const handleTestParsing = async () => {
-    if (!testSMS.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter SMS text to test",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      setTestLoading(true);
-      const result = await apiService.testWhatsAppParsing(testSMS);
-      setTestResult(result);
-      
-      if (result.success) {
-        toast({
-          title: "Success!",
-          description: "SMS parsed successfully",
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "Parsing Failed",
-          description: result.error || "Failed to parse SMS",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Error testing SMS parsing:', error);
-      toast({
-        title: "Error",
-        description: "Failed to test SMS parsing",
-        variant: "destructive",
-      });
-    } finally {
-      setTestLoading(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
