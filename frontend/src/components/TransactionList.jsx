@@ -13,6 +13,11 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [updatingTransaction, setUpdatingTransaction] = useState(null);
   const [expandedTransactions, setExpandedTransactions] = useState(new Set());
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const { toast } = useToast();
 
   const getCategoryById = (categoryId) => {
