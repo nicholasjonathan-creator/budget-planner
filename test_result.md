@@ -57,8 +57,7 @@ metadata:
 test_plan:
   current_focus:
     - "Production Backend Testing"
-  stuck_tasks:
-    - "Production Backend Testing"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
