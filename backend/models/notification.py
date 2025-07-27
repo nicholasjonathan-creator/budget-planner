@@ -48,6 +48,13 @@ class UserNotificationPreferences(BaseModel):
     # Account updates
     account_updates_enabled: bool = True
     
+    # Analytics alerts preferences
+    spending_alerts_enabled: bool = True
+    spending_alert_severity_threshold: str = "medium"  # low, medium, high, critical
+    financial_health_reports_enabled: bool = True
+    budget_recommendations_enabled: bool = True
+    weekly_analytics_digest_enabled: bool = True
+    
     # Email preferences
     email_enabled: bool = True
     email_address: Optional[EmailStr] = None  # If different from user's main email
