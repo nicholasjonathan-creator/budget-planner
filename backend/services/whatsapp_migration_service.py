@@ -88,7 +88,7 @@ class WhatsAppMigrationService:
                         </div>
                         
                         <div style="text-align: center; margin: 30px 0;">
-                            <a href="https://fe5a1b17-dacb-468f-a395-f044dbe77291.preview.emergentagent.com" class="cta-button">
+                            <a href="https://8218a3b4-6b13-405a-8693-551f9e56e60c.preview.emergentagent.com" class="cta-button">
                                 🚀 Set Up WhatsApp Integration Now
                             </a>
                         </div>

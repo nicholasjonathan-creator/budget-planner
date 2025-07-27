@@ -13,7 +13,7 @@ from datetime import datetime
 import time
 
 # Get backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://fe5a1b17-dacb-468f-a395-f044dbe77291.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://8218a3b4-6b13-405a-8693-551f9e56e60c.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test user - using existing test user since nicholasjonathan@gmail.com password is unknown

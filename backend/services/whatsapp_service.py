@@ -193,7 +193,7 @@ class WhatsAppSMSProcessor:
 To use WhatsApp SMS forwarding, you need to:
 
 1️⃣ Register at Budget Planner app:
-https://fe5a1b17-dacb-468f-a395-f044dbe77291.preview.emergentagent.com
+https://8218a3b4-6b13-405a-8693-551f9e56e60c.preview.emergentagent.com
 
 2️⃣ Go to WhatsApp tab in your dashboard
 
@@ -234,7 +234,7 @@ Merchant: {merchant}
 Category: {category}
 
 ✅ Added to your Budget Planner dashboard!
-View details: https://fe5a1b17-dacb-468f-a395-f044dbe77291.preview.emergentagent.com"""
+View details: https://8218a3b4-6b13-405a-8693-551f9e56e60c.preview.emergentagent.com"""
 
             message = self.client.messages.create(
                 body=success_message,
@@ -261,7 +261,7 @@ Please ensure:
 
 Try forwarding the complete SMS again, or add it manually in the app.
 
-App: https://fe5a1b17-dacb-468f-a395-f044dbe77291.preview.emergentagent.com"""
+App: https://8218a3b4-6b13-405a-8693-551f9e56e60c.preview.emergentagent.com"""
 
             message = self.client.messages.create(
                 body=error_message,
