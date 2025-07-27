@@ -393,7 +393,7 @@ const BudgetDashboard = () => {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-9' : 'grid-cols-8'} mb-6`}>
+          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-10' : 'grid-cols-9'} mb-6`}>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="analytics">
               <BarChart3 className="h-4 w-4 mr-2" />
