@@ -434,12 +434,122 @@ async def get_monthly_summary(month: int, year: int, current_user: User = Depend
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/analytics/category-totals")
-async def get_category_totals(month: int, year: int):
+async def get_category_totals(month: int, year: int, current_user: User = Depends(get_current_active_user)):
     """Get transaction totals by category"""
     try:
         return await transaction_service.get_category_totals(month, year)
     except Exception as e:
         logger.error(f"Error getting category totals: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== ENHANCED ANALYTICS ENDPOINTS ====================
+
+@api_router.get("/analytics/spending-trends", response_model=List[SpendingTrend])
+async def get_spending_trends(
+    timeframe: AnalyticsTimeframe = AnalyticsTimeframe.MONTHLY,
+    periods: int = 6,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get spending trends analysis over multiple periods"""
+    try:
+        return await analytics_service.get_spending_trends(current_user.id, timeframe, periods)
+    except Exception as e:
+        logger.error(f"Error getting spending trends: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/analytics/financial-health", response_model=FinancialHealthScore)
+async def get_financial_health_score(current_user: User = Depends(get_current_active_user)):
+    """Get comprehensive financial health score and recommendations"""
+    try:
+        return await analytics_service.calculate_financial_health_score(current_user.id)
+    except Exception as e:
+        logger.error(f"Error calculating financial health score: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/analytics/spending-patterns", response_model=List[SpendingPattern])
+async def get_spending_patterns(
+    timeframe: AnalyticsTimeframe = AnalyticsTimeframe.MONTHLY,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get detailed spending patterns by category"""
+    try:
+        return await analytics_service.analyze_spending_patterns(current_user.id, timeframe)
+    except Exception as e:
+        logger.error(f"Error analyzing spending patterns: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/analytics/budget-recommendations", response_model=List[BudgetRecommendation])
+async def get_budget_recommendations(current_user: User = Depends(get_current_active_user)):
+    """Get AI-powered budget recommendations"""
+    try:
+        return await analytics_service.generate_budget_recommendations(current_user.id)
+    except Exception as e:
+        logger.error(f"Error generating budget recommendations: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/analytics/spending-alerts", response_model=List[SpendingAlert])
+async def get_spending_alerts(current_user: User = Depends(get_current_active_user)):
+    """Get spending anomaly alerts"""
+    try:
+        return await analytics_service.detect_spending_anomalies(current_user.id)
+    except Exception as e:
+        logger.error(f"Error detecting spending anomalies: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/analytics/mark-alert-read/{alert_id}")
+async def mark_alert_read(alert_id: str, current_user: User = Depends(get_current_active_user)):
+    """Mark a spending alert as read"""
+    try:
+        result = await db.spending_alerts.update_one(
+            {"_id": ObjectId(alert_id), "user_id": current_user.id},
+            {"$set": {"is_read": True}}
+        )
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Alert not found")
+        return {"message": "Alert marked as read"}
+    except Exception as e:
+        logger.error(f"Error marking alert as read: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/analytics/summary", response_model=AnalyticsSummary)
+async def get_analytics_summary(
+    timeframe: AnalyticsTimeframe = AnalyticsTimeframe.MONTHLY,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get comprehensive analytics summary"""
+    try:
+        # Get individual components
+        spending_trends = await analytics_service.get_spending_trends(current_user.id, timeframe, 3)
+        financial_health = await analytics_service.calculate_financial_health_score(current_user.id)
+        spending_patterns = await analytics_service.analyze_spending_patterns(current_user.id, timeframe)
+        budget_recommendations = await analytics_service.generate_budget_recommendations(current_user.id)
+        alerts = await analytics_service.detect_spending_anomalies(current_user.id)
+        
+        # Get current period summary
+        current_date = datetime.now()
+        if timeframe == AnalyticsTimeframe.MONTHLY:
+            month = current_date.month - 1
+            year = current_date.year
+            monthly_summary = await transaction_service.get_monthly_summary(month, year, current_user.id)
+            period = f"{year}-{month+1:02d}"
+        else:
+            monthly_summary = {"income": 0, "expense": 0, "balance": 0}
+            period = f"Week {current_date.strftime('%U')}-{current_date.year}"
+        
+        return AnalyticsSummary(
+            timeframe=timeframe,
+            period=period,
+            total_income=monthly_summary["income"],
+            total_expenses=monthly_summary["expense"],
+            net_balance=monthly_summary["balance"],
+            spending_trends=spending_trends,
+            financial_health=financial_health,
+            spending_patterns=spending_patterns,
+            budget_recommendations=budget_recommendations,
+            alerts=alerts
+        )
+    except Exception as e:
+        logger.error(f"Error getting analytics summary: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # ==================== BUDGET LIMITS ENDPOINTS ====================
