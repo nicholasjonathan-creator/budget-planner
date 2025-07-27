@@ -405,6 +405,10 @@ const BudgetDashboard = () => {
               <MessageSquare className="h-4 w-4 mr-2" />
               Notifications
             </TabsTrigger>
+            <TabsTrigger value="whatsapp">
+              <MessageCircle className="h-4 w-4 mr-2" />
+              WhatsApp
+            </TabsTrigger>
             {isAdmin && (
               <TabsTrigger value="production">
                 <Shield className="h-4 w-4 mr-2" />
