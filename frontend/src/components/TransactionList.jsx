@@ -277,14 +277,36 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
                       </div>
 
                       {!isEditing ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingTransaction(transaction.id)}
-                          disabled={isUpdating}
-                        >
-                          <Tag className="h-3 w-3" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditTransaction(transaction)}
+                            disabled={isUpdating}
+                            title="Edit transaction"
+                          >
+                            <Edit3 className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteTransaction(transaction)}
+                            disabled={isUpdating}
+                            title="Delete transaction"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingTransaction(transaction.id)}
+                            disabled={isUpdating}
+                            title="Quick category edit"
+                          >
+                            <Tag className="h-3 w-3" />
+                          </Button>
+                        </div>
                       ) : (
                         <div className="flex items-center gap-2">
                           <Select 
