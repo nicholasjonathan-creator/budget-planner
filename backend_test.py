@@ -28,9 +28,9 @@ TEST_USERS = {
         "password": "securepassword123"
     },
     "secondary": {
-        "email": "analyticstest@example.com",
-        "username": "analyticstest",
-        "password": "securepassword123"
+        "email": "testuser@example.com",
+        "username": "testuser",
+        "password": "testpassword123"
     },
     "admin": {
         "email": "superadmin@budgetplanner.app",
