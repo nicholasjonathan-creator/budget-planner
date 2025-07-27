@@ -310,9 +310,10 @@ Budget Planner - Built for India 🇮🇳"""
     async def remove_phone_verification(self, user_id: str) -> Dict[str, Any]:
         """Remove phone verification for user (unlink phone)"""
         try:
+            from bson import ObjectId
             # Update user to remove phone verification
             await self.db.users.update_one(
-                {"_id": user_id},
+                {"_id": ObjectId(user_id)},
                 {
                     "$unset": {
                         "phone_number": "",
