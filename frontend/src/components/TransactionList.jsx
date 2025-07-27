@@ -98,6 +98,57 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
     }
   };
 
+  const handleEditTransaction = (transaction) => {
+    setSelectedTransaction(transaction);
+    setShowEditModal(true);
+  };
+
+  const handleDeleteTransaction = (transaction) => {
+    setTransactionToDelete(transaction);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteTransaction = async () => {
+    if (!transactionToDelete) return;
+
+    try {
+      setDeleting(true);
+      await ApiService.deleteTransaction(transactionToDelete.id);
+      
+      toast({
+        title: "Success",
+        description: "Transaction deleted successfully!",
+      });
+
+      setShowDeleteDialog(false);
+      setTransactionToDelete(null);
+      
+      if (onTransactionUpdate) {
+        await onTransactionUpdate();
+      }
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      toast({
+        title: "Error", 
+        description: "Failed to delete transaction. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleTransactionUpdated = async (updatedTransaction) => {
+    toast({
+      title: "Success",
+      description: "Transaction updated successfully!",
+    });
+
+    if (onTransactionUpdate) {
+      await onTransactionUpdate();
+    }
+  };
+
   const renderTransactionDetails = (transaction) => {
     const category = getCategoryById(transaction.category_id);
     const date = new Date(transaction.date).toLocaleDateString('en-IN', {
