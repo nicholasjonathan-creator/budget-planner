@@ -34,7 +34,6 @@ const AnalyticsDashboard = () => {
   const [error, setError] = useState(null);
   const [activeTimeframe, setActiveTimeframe] = useState('monthly');
   const [alerts, setAlerts] = useState([]);
-  const [sendingEmails, setSendingEmails] = useState(false);
 
   useEffect(() => {
     loadAnalyticsData();
