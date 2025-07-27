@@ -81,11 +81,16 @@ class TransactionService:
             logger.error(f"Error getting transaction: {e}")
             return None
     
-    async def update_transaction(self, transaction_id: str, updates: dict) -> Optional[Transaction]:
-        """Update a transaction"""
+    async def update_transaction(self, transaction_id: str, updates: dict, user_id: str = None) -> Optional[Transaction]:
+        """Update a transaction with user isolation"""
         try:
+            # Build query with user isolation
+            query = {"_id": ObjectId(transaction_id)}
+            if user_id:
+                query["user_id"] = user_id
+            
             result = await self.transactions_collection.update_one(
-                {"_id": ObjectId(transaction_id)},
+                query,
                 {"$set": updates}
             )
             
@@ -97,10 +102,15 @@ class TransactionService:
             logger.error(f"Error updating transaction: {e}")
             return None
     
-    async def delete_transaction(self, transaction_id: str) -> bool:
-        """Delete a transaction"""
+    async def delete_transaction(self, transaction_id: str, user_id: str = None) -> bool:
+        """Delete a transaction with user isolation"""
         try:
-            result = await self.transactions_collection.delete_one({"_id": ObjectId(transaction_id)})
+            # Build query with user isolation
+            query = {"_id": ObjectId(transaction_id)}
+            if user_id:
+                query["user_id"] = user_id
+                
+            result = await self.transactions_collection.delete_one(query)
             return result.deleted_count > 0
             
         except Exception as e:
