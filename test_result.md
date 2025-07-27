@@ -336,12 +336,14 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Transaction API Filtering Issue Investigation"
     - "Deployed Services Integration Verification"
     - "Analytics Email Templates Implementation"
     - "Analytics Email Service Implementation"
     - "Analytics Email API Endpoints"
     - "Enhanced Notification Models"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Transaction API Filtering Issue Investigation"
   test_all: false
   test_priority: "high_first"
 
