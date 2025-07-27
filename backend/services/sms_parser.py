@@ -78,6 +78,16 @@ class SMSTransactionParser:
                 'payee_group': 3,
                 'date_group': None,  # No date in this format, will use current date
                 'type': 'expense'
+            },
+            # Pattern 7: "To PAYEE\nOn DD/MM/YY\nRef XXXXXX\nNot You?\nCall 18002586161SMS BLOCK UPI to 7308080808"
+            'upi_incomplete_format': {
+                'regex': r'to\s+(.+?)\s*\n?\s*on\s+(\d{2}/\d{2}/\d{2})\s*\n?\s*ref\s+(\d+)\s*\n?\s*not\s+you\?\s*\n?\s*call\s+18002586161',
+                'amount_group': None,  # No amount in this format - will need special handling
+                'account_group': None,  # No account in this format
+                'payee_group': 1,
+                'date_group': 2,
+                'ref_group': 3,
+                'type': 'expense'
             }
         }
         
