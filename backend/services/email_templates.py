@@ -3,6 +3,7 @@ from datetime import datetime
 from services.email_service import EmailService
 from models.user import User
 from models.notification import NotificationType
+from models.analytics import SpendingAlert, FinancialHealthScore, BudgetRecommendation
 
 class EmailTemplates(EmailService):
     """Email templates for various notification types"""
