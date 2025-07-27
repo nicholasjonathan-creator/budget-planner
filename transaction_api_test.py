@@ -46,6 +46,56 @@ class TransactionAPITester:
             print(f"❌ Backend connection failed: {e}")
             return False
 
+    def create_test_transactions(self):
+        """Create test transactions that match the issue description"""
+        print("\n🔧 Creating Test Transactions (₹1394.82 and ₹150.00 for July 2025)...")
+        
+        # Transaction 1: ₹1394.82
+        transaction1 = {
+            "type": "expense",
+            "category_id": 1,
+            "amount": 1394.82,
+            "description": "WhatsApp Integration Test Transaction 1",
+            "date": "2025-07-15T10:30:00Z",
+            "merchant": "Test Merchant 1",
+            "currency": "INR"
+        }
+        
+        # Transaction 2: ₹150.00
+        transaction2 = {
+            "type": "expense", 
+            "category_id": 2,
+            "amount": 150.00,
+            "description": "WhatsApp Integration Test Transaction 2",
+            "date": "2025-07-20T14:45:00Z",
+            "merchant": "Test Merchant 2",
+            "currency": "INR"
+        }
+        
+        created_count = 0
+        
+        for i, transaction in enumerate([transaction1, transaction2], 1):
+            try:
+                response = requests.post(
+                    f"{API_BASE}/transactions",
+                    json=transaction,
+                    headers=self.get_auth_headers(),
+                    timeout=10
+                )
+                
+                if response.status_code == 200:
+                    print(f"   ✅ Created transaction {i}: ₹{transaction['amount']}")
+                    created_count += 1
+                else:
+                    print(f"   ❌ Failed to create transaction {i}: {response.status_code}")
+                    print(f"      Response: {response.text}")
+                    
+            except Exception as e:
+                print(f"   ❌ Error creating transaction {i}: {e}")
+        
+        print(f"   Created {created_count}/2 test transactions")
+        return created_count == 2
+
     def authenticate_user(self):
         """Authenticate the specific test user nicholasjonathan@gmail.com"""
         print(f"\n🔐 Authenticating User: {TEST_USER['email']}...")
