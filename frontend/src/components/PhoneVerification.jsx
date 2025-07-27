@@ -46,13 +46,23 @@ const PhoneVerification = () => {
 
     try {
       setLoading(true);
-      await apiService.sendPhoneVerification({ phone_number: phoneNumber });
+      const result = await apiService.sendPhoneVerification({ phone_number: phoneNumber });
       
-      toast({
-        title: "Verification Sent!",
-        description: "Check your WhatsApp for the verification code",
-        variant: "default",
-      });
+      // Handle demo mode
+      if (result.demo_mode) {
+        toast({
+          title: "Demo Mode Active!",
+          description: result.message,
+          variant: "default",
+          duration: 10000, // Show longer for demo
+        });
+      } else {
+        toast({
+          title: "Verification Sent!",
+          description: "Check your WhatsApp for the verification code",
+          variant: "default",
+        });
+      }
       
       setStep('verify');
     } catch (error) {
