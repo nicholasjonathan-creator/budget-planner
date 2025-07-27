@@ -944,6 +944,143 @@ async def whatsapp_webhook(request: Request):
             status_code=200
         )
 
+# Phone Verification Endpoints
+@app.post("/api/phone/send-verification")
+async def send_phone_verification(
+    request: dict = Body(...),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Send OTP verification code to user's phone via WhatsApp
+    """
+    try:
+        phone_number = request.get("phone_number")
+        if not phone_number:
+            raise HTTPException(status_code=400, detail="Phone number is required")
+        
+        result = await phone_verification_service.send_verification_otp(
+            user_id=str(current_user.id),
+            phone_number=phone_number
+        )
+        
+        if result["success"]:
+            return {
+                "success": True,
+                "message": result["message"],
+                "phone_number": result["phone_number"],
+                "expires_in_minutes": result["expires_in_minutes"]
+            }
+        else:
+            raise HTTPException(status_code=400, detail=result["error"])
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Phone verification send error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send verification code")
+
+@app.post("/api/phone/verify-otp")
+async def verify_phone_otp(
+    request: dict = Body(...),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Verify OTP code entered by user
+    """
+    try:
+        otp = request.get("otp")
+        if not otp:
+            raise HTTPException(status_code=400, detail="OTP code is required")
+        
+        result = await phone_verification_service.verify_otp(
+            user_id=str(current_user.id),
+            otp=otp
+        )
+        
+        if result["success"]:
+            return {
+                "success": True,
+                "message": result["message"],
+                "phone_number": result["phone_number"]
+            }
+        else:
+            raise HTTPException(status_code=400, detail=result["error"])
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Phone verification error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to verify phone number")
+
+@app.post("/api/phone/resend-otp")
+async def resend_phone_otp(current_user: User = Depends(get_current_active_user)):
+    """
+    Resend OTP verification code
+    """
+    try:
+        result = await phone_verification_service.resend_otp(str(current_user.id))
+        
+        if result["success"]:
+            return {
+                "success": True,
+                "message": result["message"]
+            }
+        else:
+            raise HTTPException(status_code=400, detail=result["error"])
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Phone OTP resend error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to resend verification code")
+
+@app.delete("/api/phone/unlink")
+async def unlink_phone_number(current_user: User = Depends(get_current_active_user)):
+    """
+    Unlink phone number from user account
+    """
+    try:
+        result = await phone_verification_service.remove_phone_verification(str(current_user.id))
+        
+        if result["success"]:
+            return {
+                "success": True,
+                "message": result["message"]
+            }
+        else:
+            raise HTTPException(status_code=400, detail=result["error"])
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Phone unlink error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to unlink phone number")
+
+@app.get("/api/phone/status")
+async def get_phone_verification_status(current_user: User = Depends(get_current_active_user)):
+    """
+    Get current phone verification status for user
+    """
+    try:
+        # Get user data including phone verification status
+        user_data = await db.users.find_one({"_id": current_user.id})
+        
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return {
+            "phone_number": user_data.get("phone_number"),
+            "phone_verified": user_data.get("phone_verified", False),
+            "phone_verified_at": user_data.get("phone_verified_at"),
+            "can_receive_sms": user_data.get("phone_verified", False)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Phone status error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get phone verification status")
+
 @app.get("/api/whatsapp/status")
 async def whatsapp_status(request: Request, current_user: User = Depends(get_current_active_user)):
     """
