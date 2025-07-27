@@ -18,7 +18,7 @@ from datetime import datetime
 import uuid
 
 # Get backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://bf63eddb-6d17-497b-a642-f45a15b77619.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://0f621684-5333-4b17-9188-b8424f0e0b0c.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class EmailNotificationTester:
