@@ -185,48 +185,6 @@ class WhatsAppSMSProcessor:
             logger.error(f"Error parsing SMS content: {e}")
             return {"success": False, "error": str(e)}
     
-    async def test_sms_parsing_only(self, sms_text: str, user_id: str) -> Dict[str, Any]:
-        """Test SMS parsing without saving to database - for testing purposes only"""
-        try:
-            # Use existing SMS parsing logic
-            transaction = self.sms_parser.parse_sms(
-                sms_text=sms_text,
-                phone_number="test_parsing"  # Special identifier for testing
-            )
-            
-            if transaction:
-                # Convert Transaction object to dict for response (but don't save to database)
-                transaction_dict = transaction.dict()
-                
-                # Create clean response dict without saving to database
-                response_transaction = {
-                    'amount': float(transaction_dict.get('amount', 0)),
-                    'transaction_type': transaction_dict.get('type', 'expense'),
-                    'merchant': transaction_dict.get('merchant', 'Unknown'),
-                    'category': transaction_dict.get('category_id', 'Other'),
-                    'date': transaction_dict.get('date'),
-                    'currency': transaction_dict.get('currency', 'INR'),
-                    'account_number': transaction_dict.get('account_number', ''),
-                    'bank': transaction_dict.get('bank', ''),
-                    'description': transaction_dict.get('description', ''),
-                    'user_id': user_id
-                }
-                
-                return {
-                    "success": True,
-                    "transaction": response_transaction,
-                    "parsing_method": "sms_parser"
-                }
-            else:
-                return {
-                    "success": False,
-                    "error": "Unable to parse bank SMS - format not recognized. This SMS appears to be incomplete or in an unsupported format."
-                }
-        
-        except Exception as e:
-            logger.error(f"Error testing SMS parsing: {e}")
-            return {"success": False, "error": str(e)}
-    
     async def send_welcome_message(self, to_number: str):
         """Send welcome message to unregistered WhatsApp user"""
         try:
