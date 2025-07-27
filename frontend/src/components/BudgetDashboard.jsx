@@ -18,6 +18,7 @@ import UserProfile from './UserProfile';
 import NotificationSettings from './NotificationSettings';
 import ProductionEmailManagement from './ProductionEmailManagement';
 import AnalyticsDashboard from './AnalyticsDashboard';
+import WhatsAppIntegration from './WhatsAppIntegration';
 import { useAuth } from '../contexts/AuthContext';
 
 const BudgetDashboard = () => {
