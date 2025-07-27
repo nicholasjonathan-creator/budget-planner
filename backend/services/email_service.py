@@ -21,6 +21,6 @@ class EmailService:
         """Monthly summary emails disabled"""
         return {"success": False, "message": "Monthly summaries available in dashboard"}
     
-    def send_transaction_confirmation_email(self, *args, **kwargs):
+    async def send_transaction_confirmation_email(self, *args, **kwargs):
         """Transaction confirmation emails disabled"""
         return {"success": False, "message": "Transaction confirmations available in dashboard"}
