@@ -97,6 +97,21 @@ async def create_indexes():
         await notification_logs_collection.create_index("delivery_status")
         await notification_logs_collection.create_index([("user_id", 1), ("sent_at", -1)])
         
+        # Analytics cache indexes
+        await analytics_cache_collection.create_index("user_id")
+        await analytics_cache_collection.create_index("timeframe")
+        await analytics_cache_collection.create_index("generated_at")
+        await analytics_cache_collection.create_index([("user_id", 1), ("timeframe", 1)])
+        
+        # Spending alerts indexes
+        await spending_alerts_collection.create_index("user_id")
+        await spending_alerts_collection.create_index("alert_type")
+        await spending_alerts_collection.create_index("severity")
+        await spending_alerts_collection.create_index("date_detected")
+        await spending_alerts_collection.create_index("is_read")
+        await spending_alerts_collection.create_index([("user_id", 1), ("date_detected", -1)])
+        await spending_alerts_collection.create_index([("user_id", 1), ("is_read", 1)])
+        
         print("Database indexes created successfully")
         
     except Exception as e:
