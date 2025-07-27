@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { TrendingUp, TrendingDown, MessageSquare, Edit, Tag, Calendar, Building, ChevronDown, ChevronUp, Info, Smartphone } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
+import { TrendingUp, TrendingDown, MessageSquare, Edit, Tag, Calendar, Building, ChevronDown, ChevronUp, Info, Smartphone, Trash2, Edit3 } from 'lucide-react';
+import TransactionEditModal from './TransactionEditModal';
 import ApiService from '../services/api';
 import { useToast } from '../hooks/use-toast';
 
