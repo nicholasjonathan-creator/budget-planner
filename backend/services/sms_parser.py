@@ -69,6 +69,15 @@ class SMSTransactionParser:
                 'payee_group': 3,
                 'date_group': 4,
                 'type': 'expense'
+            },
+            # Pattern 6: "Payment Successful!\nRs. XXXXX.XX from A/c XXXX to MERCHANT via HDFC Bank NetBanking."
+            'netbanking_payment': {
+                'regex': r'payment\s+successful!\s*(?:\r?\n|\s+)?rs\.\s*([\d,]+(?:\.\d{2})?)\s+from\s+a/c\s+([x\d]+)\s+to\s+(.+?)\s+via\s+hdfc\s+bank\s+netbanking',
+                'amount_group': 1,
+                'account_group': 2,
+                'payee_group': 3,
+                'date_group': None,  # No date in this format, will use current date
+                'type': 'expense'
             }
         }
         
