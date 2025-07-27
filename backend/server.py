@@ -46,6 +46,7 @@ api_router = APIRouter(prefix="/api")
 transaction_service = TransactionService()
 sms_service = SMSService()
 email_service = EmailTemplates()
+analytics_service = AnalyticsService()
 
 # CORS middleware
 app.add_middleware(
