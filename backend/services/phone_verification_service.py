@@ -190,8 +190,9 @@ Do not share this code with anyone! 🛡️"""
                 )
                 
                 # Update user profile with verified phone number
+                from bson import ObjectId
                 await self.db.users.update_one(
-                    {"_id": user_id},
+                    {"_id": ObjectId(user_id)},
                     {
                         "$set": {
                             "phone_number": verification_record['phone_number'],
