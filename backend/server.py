@@ -30,13 +30,14 @@ from services.email_templates import EmailTemplates
 from services.notification_service import NotificationPreferencesService
 from services.email_scheduler import email_scheduler
 from services.production_email_config import production_email_config
-from services.analytics_service import AnalyticsService
 from services.monitoring_service import monitoring_service
-from services.analytics_email_service import AnalyticsEmailService
+from services.monitoring_scheduler import monitoring_scheduler
 from services.whatsapp_service import whatsapp_processor
 from services.phone_verification_service import phone_verification_service
 from services.whatsapp_migration_service import whatsapp_migration_service
 from services.fallback_phone_service import fallback_phone_service
+from services.analytics_service import AnalyticsService
+from services.analytics_email_service import AnalyticsEmailService
 from dependencies.auth import get_current_user, get_current_active_user, get_admin_user, get_optional_user
 from database import init_db, db
 
