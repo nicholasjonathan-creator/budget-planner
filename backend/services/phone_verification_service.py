@@ -23,10 +23,16 @@ class PhoneVerificationService:
         self.whatsapp_number = os.getenv('TWILIO_WHATSAPP_NUMBER')
         self.otp_expiry_minutes = int(os.getenv('OTP_EXPIRY_MINUTES', 10))
         
-        if not all([self.account_sid, self.auth_token, self.whatsapp_number]):
-            raise ValueError("Missing Twilio configuration for phone verification")
+        # Make Twilio optional - enable fallback mode if credentials not provided
+        self.twilio_enabled = all([self.account_sid, self.auth_token, self.whatsapp_number])
         
-        self.client = Client(self.account_sid, self.auth_token)
+        if self.twilio_enabled:
+            self.client = Client(self.account_sid, self.auth_token)
+            print("📱 Twilio WhatsApp service enabled")
+        else:
+            self.client = None
+            print("📱 Twilio WhatsApp service disabled - running in fallback mode")
+        
         self.db = db
     
     def generate_otp(self, length: int = 6) -> str:
