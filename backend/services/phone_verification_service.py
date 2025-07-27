@@ -110,6 +110,17 @@ class PhoneVerificationService:
             # Insert new OTP record
             await self.db.phone_verifications.insert_one(verification_data)
             
+            # Check if Twilio is enabled
+            if not self.twilio_enabled:
+                logger.info(f"Twilio disabled - OTP for {normalized_phone}: {otp}")
+                return {
+                    "success": True,
+                    "message": "Twilio disabled - check console for OTP",
+                    "phone_number": normalized_phone,
+                    "expires_in_minutes": self.otp_expiry_minutes,
+                    "fallback_otp": otp  # Only for development/testing
+                }
+            
             # Send OTP via WhatsApp
             message_body = f"""🔐 Budget Planner Verification
 
