@@ -217,8 +217,19 @@ const WhatsAppIntegration = () => {
 
       {/* SMS Demo Modal */}
       {showSMSDemo && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={(e) => {
+            // Close modal when clicking the overlay (but not the modal content)
+            if (e.target === e.currentTarget) {
+              setShowSMSDemo(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"
+            onClick={(e) => e.stopPropagation()}
+          >
             <SMSDemo 
               onClose={() => setShowSMSDemo(false)}
               onTransactionAdded={() => {
