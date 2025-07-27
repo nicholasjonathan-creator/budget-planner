@@ -1,13 +1,13 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-// Use backend URL directly from environment variable (already includes /api)
-const API = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001/api';
+// Use backend URL directly from environment variable
+const API = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 class ApiService {
   constructor() {
     this.client = axios.create({
-      baseURL: API,
+      baseURL: `${API}/api`,
       timeout: 15000, // Increased timeout to 15 seconds
       headers: {
         'Content-Type': 'application/json',
