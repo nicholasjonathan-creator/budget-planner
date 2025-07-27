@@ -379,13 +379,9 @@ async def get_production_email_status(admin_user: User = Depends(get_admin_user)
 
 @api_router.post("/notifications/production/start-scheduler")
 async def start_email_scheduler(admin_user: User = Depends(get_admin_user)):
-    """Start the email scheduler (admin only)"""
+    """Start the email scheduler (admin only) - DISABLED"""
     try:
-        if not email_scheduler.is_running:
-            email_scheduler.start()
-            return {"message": "Email scheduler started successfully", "status": "running"}
-        else:
-            return {"message": "Email scheduler is already running", "status": "running"}
+        return {"message": "Email scheduler disabled - no email functionality needed", "status": "disabled"}
     except Exception as e:
         logger.error(f"Error starting email scheduler: {e}")
         raise HTTPException(status_code=500, detail=str(e))
