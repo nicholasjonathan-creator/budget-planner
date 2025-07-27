@@ -650,67 +650,8 @@ async def get_analytics_summary(
         logger.error(f"Error getting analytics summary: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# ==================== ANALYTICS EMAIL ENDPOINTS ====================
-
-@api_router.post("/analytics/send-spending-alerts")
-async def send_spending_alerts(current_user: User = Depends(get_current_active_user)):
-    """Manually trigger spending alerts email"""
-    try:
-        result = await analytics_email_service.process_and_send_spending_alerts(current_user.id)
-        return result
-    except Exception as e:
-        logger.error(f"Error sending spending alerts: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@api_router.post("/analytics/send-financial-health-report")
-async def send_financial_health_report(current_user: User = Depends(get_current_active_user)):
-    """Manually trigger financial health report email"""
-    try:
-        result = await analytics_email_service.send_monthly_financial_health_report(current_user.id)
-        return result
-    except Exception as e:
-        logger.error(f"Error sending financial health report: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@api_router.post("/analytics/send-budget-recommendations")
-async def send_budget_recommendations(current_user: User = Depends(get_current_active_user)):
-    """Manually trigger budget recommendations email"""
-    try:
-        result = await analytics_email_service.send_budget_recommendations(current_user.id)
-        return result
-    except Exception as e:
-        logger.error(f"Error sending budget recommendations: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@api_router.post("/analytics/send-weekly-digest")
-async def send_weekly_digest(current_user: User = Depends(get_current_active_user)):
-    """Manually trigger weekly analytics digest email"""
-    try:
-        result = await analytics_email_service.send_weekly_analytics_digest(current_user.id)
-        return result
-    except Exception as e:
-        logger.error(f"Error sending weekly digest: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@api_router.post("/analytics/send-all-notifications")
-async def send_all_analytics_notifications(current_user: User = Depends(get_current_active_user)):
-    """Manually trigger all analytics notifications"""
-    try:
-        result = await analytics_email_service.trigger_immediate_analytics_alerts(current_user.id)
-        return result
-    except Exception as e:
-        logger.error(f"Error sending all analytics notifications: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@api_router.post("/analytics/process-scheduled-notifications")
-async def process_scheduled_analytics_notifications(current_user: User = Depends(get_current_active_user)):
-    """Process scheduled analytics notifications (for cron jobs)"""
-    try:
-        result = await analytics_email_service.process_all_analytics_notifications(current_user.id)
-        return result
-    except Exception as e:
-        logger.error(f"Error processing scheduled notifications: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+# Analytics email endpoints disabled for production deployment
+# All analytics insights available directly in dashboard
 
 # ==================== BUDGET LIMITS ENDPOINTS ====================
 
