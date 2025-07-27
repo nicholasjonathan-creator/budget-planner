@@ -161,8 +161,58 @@ const WhatsAppIntegration = () => {
         </>
       )}
 
-      {/* SMS Demo */}
-      <SMSDemo />
+      {/* SMS Demo Button */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold text-blue-900">Test SMS Processing</h3>
+            <p className="text-sm text-blue-700">
+              Try the SMS parsing with sample bank messages
+            </p>
+          </div>
+          <button
+            onClick={() => setShowSMSDemo(true)}
+            className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Open SMS Demo
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div className="text-center">
+            <div className="font-semibold text-blue-800">🏦 Multi-Bank</div>
+            <div className="text-blue-600">HDFC, SBI, ICICI, Axis</div>
+          </div>
+          <div className="text-center">
+            <div className="font-semibold text-blue-800">⚡ Real-time</div>
+            <div className="text-blue-600">Instant processing</div>
+          </div>
+          <div className="text-center">
+            <div className="font-semibold text-blue-800">🎯 Accurate</div>
+            <div className="text-blue-600">Smart parsing</div>
+          </div>
+        </div>
+      </div>
+
+      {/* SMS Demo Modal */}
+      {showSMSDemo && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <SMSDemo 
+              onClose={() => setShowSMSDemo(false)}
+              onTransactionAdded={() => {
+                // Optionally refresh data or show success message
+                toast({
+                  title: "Transaction Added",
+                  description: "Test transaction created successfully",
+                  variant: "default",
+                });
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* How it Works */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
