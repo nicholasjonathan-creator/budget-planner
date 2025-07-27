@@ -10,6 +10,11 @@ class NotificationType(str, Enum):
     TRANSACTION_CONFIRMATION = "transaction_confirmation"
     SMS_PROCESSING = "sms_processing"
     ACCOUNT_UPDATES = "account_updates"
+    # Analytics notification types
+    SPENDING_ALERT = "spending_alert"
+    FINANCIAL_HEALTH_REPORT = "financial_health_report"
+    BUDGET_RECOMMENDATIONS = "budget_recommendations"
+    WEEKLY_ANALYTICS_DIGEST = "weekly_analytics_digest"
 
 class NotificationFrequency(str, Enum):
     INSTANT = "instant"
