@@ -904,3 +904,92 @@ async def clear_all_data():
     except Exception as e:
         logger.error(f"Error clearing all data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# WhatsApp Webhook Endpoints
+@app.post("/api/whatsapp/webhook")
+async def whatsapp_webhook(request: Request):
+    """
+    Webhook endpoint for receiving WhatsApp messages from Twilio
+    """
+    try:
+        # Get form data from Twilio webhook
+        form_data = await request.form()
+        webhook_data = dict(form_data)
+        
+        # Validate webhook signature (optional but recommended for production)
+        # signature = request.headers.get('X-Twilio-Signature', '')
+        # url = str(request.url)
+        # if not whatsapp_processor.validate_webhook(url, webhook_data, signature):
+        #     raise HTTPException(status_code=401, detail="Invalid webhook signature")
+        
+        # Process the WhatsApp message
+        result = await whatsapp_processor.process_whatsapp_message(webhook_data)
+        
+        # Return TwiML response
+        twiml_response = await whatsapp_processor.get_webhook_response()
+        
+        return Response(
+            content=twiml_response,
+            media_type="application/xml",
+            status_code=200
+        )
+        
+    except Exception as e:
+        logger.error(f"WhatsApp webhook error: {e}")
+        # Return empty TwiML response even on error
+        return Response(
+            content='<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+            media_type="application/xml",
+            status_code=200
+        )
+
+@app.get("/api/whatsapp/status")
+async def whatsapp_status(request: Request, current_user: User = Depends(get_current_active_user)):
+    """
+    Get WhatsApp integration status and setup instructions
+    """
+    try:
+        return {
+            "whatsapp_number": os.getenv('TWILIO_WHATSAPP_NUMBER'),
+            "sandbox_code": "distance-living",
+            "status": "active",
+            "setup_instructions": [
+                "1. Save +14155238886 to your contacts as 'Budget Planner'",
+                "2. Send 'join distance-living' to +14155238886 on WhatsApp",
+                "3. Wait for confirmation message",
+                "4. Forward your bank SMS messages to this number",
+                "5. Transactions will be processed automatically!"
+            ],
+            "supported_banks": ["HDFC", "ICICI", "SBI", "Axis", "Scapia", "Federal"],
+            "webhook_url": f"{request.base_url}api/whatsapp/webhook"
+        }
+    except Exception as e:
+        logger.error(f"WhatsApp status error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get WhatsApp status")
+
+@app.post("/api/whatsapp/test")
+async def test_whatsapp_parsing(
+    sms_text: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Test SMS parsing without actually sending WhatsApp message
+    """
+    try:
+        # Test the SMS parsing logic
+        result = await whatsapp_processor.parse_sms_content(sms_text, current_user.id)
+        
+        return {
+            "success": result["success"],
+            "transaction": result.get("transaction"),
+            "error": result.get("error"),
+            "parsing_method": result.get("parsing_method")
+        }
+        
+    except Exception as e:
+        logger.error(f"WhatsApp test parsing error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to test SMS parsing")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
