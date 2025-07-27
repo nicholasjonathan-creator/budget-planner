@@ -95,7 +95,16 @@ class TransactionService:
             )
             
             if result.modified_count:
-                return await self.get_transaction_by_id(transaction_id)
+                updated_transaction = await self.get_transaction_by_id(transaction_id)
+                
+                # Update budget spent amounts if transaction was updated
+                if updated_transaction and user_id:
+                    # Convert date to month/year for budget update
+                    month = updated_transaction.date.month - 1  # Convert to 0-indexed
+                    year = updated_transaction.date.year
+                    await self.update_budget_spent(month, year, user_id)
+                
+                return updated_transaction
             return None
             
         except Exception as e:
