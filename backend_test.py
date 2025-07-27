@@ -91,7 +91,7 @@ class Phase4AnalyticsEmailTester:
                 return False
                     
         except Exception as e:
-            print(f"❌ Error authenticating primary user: {e}")
+            print(f"❌ Error authenticating secondary user: {e}")
             return False
         
         # Try to authenticate admin user
