@@ -23,8 +23,8 @@ API_BASE = f"{BACKEND_URL}/api"
 # Test users for authentication
 TEST_USERS = {
     "primary": {
-        "email": "test@example.com",
-        "username": "testuser", 
+        "email": "analyticstest@example.com",
+        "username": "analyticstest", 
         "password": "securepassword123"
     },
     "admin": {
