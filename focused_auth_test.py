@@ -171,6 +171,8 @@ class FocusedAuthTester:
         response, response_time = self.make_request_with_timing("POST", "/auth/register", registration_data, timeout=180)
         
         if response:
+            print(f"   📄 Response content preview: {response.text[:300]}...")
+            
             if response.status_code == 201:
                 try:
                     data = response.json()
