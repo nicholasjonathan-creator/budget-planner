@@ -38,7 +38,23 @@ const SMSDemo = ({ onClose, onTransactionAdded }) => {
 
   useEffect(() => {
     loadSmsStats();
-  }, []);
+    
+    // Handle escape key press to close modal
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [onClose]);
 
   const loadSmsStats = async () => {
     try {
