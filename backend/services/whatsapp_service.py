@@ -95,31 +95,20 @@ class WhatsAppSMSProcessor:
             return {"status": "error", "error": str(e)}
     
     async def find_user_by_phone(self, phone_number: str) -> Optional[Dict[str, Any]]:
-        """Find user by phone number - simplified implementation"""
+        """Find user by verified phone number - SECURE VERSION"""
         try:
-            # Remove WhatsApp prefix and normalize phone number
-            clean_number = phone_number.replace('whatsapp:', '').replace('+', '')
+            # Use phone verification service to find user by verified phone
+            user = await phone_verification_service.get_user_by_verified_phone(phone_number)
             
-            # For now, return a test user - you should implement proper user lookup
-            # In production, you'd have a users collection with phone numbers
-            users_collection = self.db.users
-            user = await users_collection.find_one({"phone_number": clean_number})
-            
-            if not user:
-                # For demo purposes, create a test user mapping
-                # In production, users would register their phone numbers
-                test_user = await users_collection.find_one({"email": "testuser@example.com"})
-                if test_user:
-                    # Update test user with phone number
-                    await users_collection.update_one(
-                        {"_id": test_user["_id"]},
-                        {"$set": {"phone_number": clean_number}}
-                    )
-                    return test_user
-            
-            return user
+            if user:
+                logger.info(f"Found verified user {user.get('email')} for phone {phone_number}")
+                return user
+            else:
+                logger.warning(f"No verified user found for phone {phone_number}")
+                return None
+                
         except Exception as e:
-            logger.error(f"Error finding user by phone: {e}")
+            logger.error(f"Error finding user by verified phone: {e}")
             return None
     
     async def parse_sms_content(self, sms_text: str, user_id: str) -> Dict[str, Any]:
