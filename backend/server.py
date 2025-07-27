@@ -840,12 +840,8 @@ async def startup_event():
         await init_db()
         logger.info("Database initialized successfully")
         
-        # Initialize email scheduler based on environment
-        if os.getenv('ENVIRONMENT') == 'production':
-            await email_scheduler.start()
-            logger.info("Email scheduler started (production environment)")
-        else:
-            logger.info("Email scheduler not started (development environment)")
+        # Email scheduler removed - no email functionality needed
+        logger.info("Email scheduler disabled - no email functionality")
             
         # Start monitoring scheduler
         await monitoring_scheduler.start()
