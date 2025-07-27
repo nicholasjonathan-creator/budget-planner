@@ -30,10 +30,24 @@ next-env.d.ts
 dist/
 dist
 
-# Environment files (comprehensive coverage)
+# Environment files - CRITICAL FOR SECURITY
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+*.env
+!.env.template
 
+# Sensitive files
 *token.json*
 *credentials.json*
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
 
 # Logs and debug files
 npm-debug.log*
@@ -41,28 +55,47 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 dump.rdb
+*.log
 
 # System files
 .DS_Store
-*.pem
+Thumbs.db
 
 # Python
 __pycache__/
-*pyc*
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
 venv/
 .venv/
+env/
+.env
+ENV/
+env.bak/
+venv.bak/
 
 # Development tools
 chainlit.md
 .chainlit
 .ipynb_checkpoints/
 .ac
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Deployment
 .vercel
+.now
+.railway
 
 # Data and databases
-agenthub/agents/youtube/db
+*.db
+*.sqlite
+*.sqlite3
+db.sqlite3
+dump.rdb
+*.dump
 
 # Archive files and large assets
 **/*.zip
@@ -75,25 +108,19 @@ agenthub/agents/youtube/db
 
 # Build caches
 .cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist
 
 # Mobile development
-android-sdk/ frontend/node_modules/.cache/default-development/1.pack
-frontend/node_modules/.cache/default-development/0.pack
+android-sdk/
+*.keystore
+
+# Cache files
+frontend/node_modules/.cache/
+*.cache
 frontend/node_modules/.cache/default-development/1.pack
-frontend/node_modules/.cache/default-development/3.pack
-frontend/node_modules/.cache/default-development/2.pack
-frontend/node_modules/.cache/default-development/6.pack_
-frontend/node_modules/.cache/default-development/6.pack
 frontend/node_modules/.cache/default-development/7.pack
-frontend/node_modules/.cache/default-development/8.pack
+frontend/node_modules/.cache/default-development/0.pack
 frontend/node_modules/.cache/default-development/10.pack
-frontend/node_modules/.cache/default-development/4.pack
-frontend/node_modules/.cache/default-development/2.pack_
-frontend/node_modules/.cache/default-development/3.pack_
-frontend/node_modules/.cache/default-development/5.pack
-frontend/node_modules/.cache/default-development/1.pack_
-frontend/node_modules/.cache/default-development/8.pack_
-frontend/node_modules/.cache/default-development/9.pack
-frontend/node_modules/.cache/default-development/5.pack_
-frontend/node_modules/.cache/default-development/9.pack_
-frontend/node_modules/.cache/default-development/4.pack_
