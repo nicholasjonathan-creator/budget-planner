@@ -135,9 +135,14 @@ class WhatsAppSMSProcessor:
                 transaction_dict['raw_sms'] = sms_text
                 transaction_dict['source'] = "sms"
                 
-                # Convert datetime to string for JSON serialization
+                # Keep datetime as datetime object for database storage
+                # (JSON serialization will be handled by the API layer)
                 if 'date' in transaction_dict and transaction_dict['date']:
-                    transaction_dict['date'] = transaction_dict['date'].isoformat()
+                    # Ensure date is a datetime object, not a string
+                    if isinstance(transaction_dict['date'], str):
+                        from datetime import datetime
+                        transaction_dict['date'] = datetime.fromisoformat(transaction_dict['date'].replace('T', ' ').replace('Z', ''))
+                    # Keep as datetime object for database storage
                 
                 # Convert any ObjectId fields to strings
                 for key, value in transaction_dict.items():
