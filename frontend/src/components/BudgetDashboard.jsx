@@ -225,6 +225,9 @@ const BudgetDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-teal-50 to-indigo-100 p-4">
+      {/* WhatsApp Feature Announcement for existing users */}
+      <WhatsAppFeatureAnnouncement />
+      
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex justify-between items-start">
           <div>
