@@ -164,18 +164,6 @@ const AnalyticsDashboard = () => {
               </Button>
             ))}
           </div>
-          
-          {/* Email Notifications Button */}
-          <Button
-            onClick={handleSendAllNotifications}
-            disabled={sendingEmails}
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <Bell className="h-4 w-4" />
-            {sendingEmails ? 'Sending...' : 'Send Email Alerts'}
-          </Button>
         </div>
       </div>
 
