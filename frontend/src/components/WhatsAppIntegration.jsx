@@ -6,6 +6,7 @@ import PhoneVerification from './PhoneVerification';
 
 const WhatsAppIntegration = () => {
   const [whatsappData, setWhatsappData] = useState(null);
+  const [phoneStatus, setPhoneStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [testSMS, setTestSMS] = useState('');
   const [testResult, setTestResult] = useState(null);
@@ -13,16 +14,20 @@ const WhatsAppIntegration = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    loadWhatsAppStatus();
+    loadData();
   }, []);
 
-  const loadWhatsAppStatus = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const data = await getWhatsAppStatus();
-      setWhatsappData(data);
+      const [whatsappStatus, phoneVerificationStatus] = await Promise.all([
+        apiService.getWhatsAppStatus(),
+        apiService.getPhoneVerificationStatus()
+      ]);
+      setWhatsappData(whatsappStatus);
+      setPhoneStatus(phoneVerificationStatus);
     } catch (error) {
-      console.error('Error loading WhatsApp status:', error);
+      console.error('Error loading data:', error);
       toast({
         title: "Error",
         description: "Failed to load WhatsApp integration status",
