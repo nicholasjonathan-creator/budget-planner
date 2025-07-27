@@ -16,6 +16,26 @@ const WhatsAppIntegration = () => {
     loadData();
   }, []);
 
+  useEffect(() => {
+    // Handle escape key press to close modal
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && showSMSDemo) {
+        setShowSMSDemo(false);
+      }
+    };
+
+    if (showSMSDemo) {
+      document.addEventListener('keydown', handleEscape);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showSMSDemo]);
+
   const loadData = async () => {
     try {
       setLoading(true);
