@@ -202,21 +202,29 @@ class TransactionService:
             return {"income": 0, "expense": 0, "balance": 0}
     
     # Budget Limits Management
-    async def create_budget_limit(self, budget_limit: BudgetLimitCreate) -> BudgetLimit:
+    async def create_budget_limit(self, budget_limit: BudgetLimitCreate, user_id: str = None) -> BudgetLimit:
         """Create or update a budget limit"""
         try:
             budget_dict = budget_limit.dict()
+            
+            # Add user_id if provided
+            if user_id:
+                budget_dict['user_id'] = user_id
             
             # Frontend sends 0-indexed months, but we store 1-indexed
             actual_month = budget_dict['month'] + 1
             budget_dict['month'] = actual_month
             
-            # Check if limit already exists for this category/month/year
-            existing = await self.budget_limits_collection.find_one({
+            # Check if limit already exists for this category/month/year/user
+            query = {
                 "category_id": budget_dict['category_id'],
                 "month": actual_month,
                 "year": budget_dict['year']
-            })
+            }
+            if user_id:
+                query['user_id'] = user_id
+                
+            existing = await self.budget_limits_collection.find_one(query)
             
             if existing:
                 # Update existing limit
@@ -237,16 +245,21 @@ class TransactionService:
             logger.error(f"Error creating budget limit: {e}")
             raise
     
-    async def get_budget_limits(self, month: int, year: int) -> List[BudgetLimit]:
+    async def get_budget_limits(self, month: int, year: int, user_id: str = None) -> List[BudgetLimit]:
         """Get budget limits for a specific month/year"""
         try:
             # Frontend sends 0-indexed months, convert to 1-indexed for storage
             actual_month = month + 1
             
-            cursor = self.budget_limits_collection.find({
+            query = {
                 "month": actual_month,
                 "year": year
-            })
+            }
+            # Filter by user_id if provided
+            if user_id:
+                query['user_id'] = user_id
+            
+            cursor = self.budget_limits_collection.find(query)
             
             budget_limits = []
             async for doc in cursor:
@@ -259,15 +272,15 @@ class TransactionService:
             logger.error(f"Error getting budget limits: {e}")
             return []
     
-    async def update_budget_spent(self, month: int, year: int):
+    async def update_budget_spent(self, month: int, year: int, user_id: str = None):
         """Update spent amounts for all budget limits"""
         try:
             # Frontend sends 0-indexed months, convert to 1-indexed
             actual_month = month + 1
             
-            category_totals = await self.get_category_totals(month, year)
+            category_totals = await self.get_category_totals(month, year, user_id)
             
-            budget_limits = await self.get_budget_limits(month, year)
+            budget_limits = await self.get_budget_limits(month, year, user_id)
             
             for budget_limit in budget_limits:
                 spent = category_totals.get(budget_limit.category_id, {}).get('expense', 0)
@@ -277,7 +290,7 @@ class TransactionService:
                     {"$set": {"spent": spent}}
                 )
             
-            logger.info(f"Updated budget spent amounts for {actual_month}/{year}")
+            logger.info(f"Updated budget spent amounts for {actual_month}/{year} for user {user_id}")
             
         except Exception as e:
             logger.error(f"Error updating budget spent: {e}")
