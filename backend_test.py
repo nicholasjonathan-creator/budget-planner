@@ -126,7 +126,17 @@ class BudgetPlannerTester:
             self.user_id = data.get("user", {}).get("id")
             self.log_test("User Registration", True, f"User registered successfully - ID: {self.user_id}")
         else:
-            self.log_test("User Registration", False, "Registration failed", 
+            error_msg = "Registration failed"
+            if response:
+                try:
+                    error_data = response.json()
+                    error_msg = f"Registration failed: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    error_msg = f"Registration failed with status {response.status_code}"
+            else:
+                error_msg = "Registration failed: No response from server"
+            
+            self.log_test("User Registration", False, error_msg, 
                          {"status_code": response.status_code if response else "No response"})
             return False
         
