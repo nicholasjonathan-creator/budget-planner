@@ -14,7 +14,7 @@ from services.sms_parser import SMSParser
 from services.transaction_service import TransactionService
 from services.email_service import send_transaction_confirmation_email
 from models.user import User
-from database import get_database
+from database import db
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class WhatsAppSMSProcessor:
         self.validator = RequestValidator(self.auth_token)
         self.sms_parser = SMSParser()
         self.transaction_service = TransactionService()
-        self.db = get_database()
+        self.db = db
     
     def validate_webhook(self, url: str, params: Dict[str, Any], signature: str) -> bool:
         """Validate that the webhook request came from Twilio"""
