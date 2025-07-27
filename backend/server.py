@@ -28,7 +28,9 @@ from services.user_service import UserService
 from services.auth import create_user_token
 # Email templates removed - no email functionality needed
 from services.notification_service import NotificationPreferencesService
-from services.email_scheduler import email_scheduler
+# Email scheduler removed - no email functionality needed
+# from services.email_scheduler import email_scheduler
+email_scheduler = None  # Disabled
 from services.production_email_config import production_email_config
 from services.monitoring_service import monitoring_service
 from services.monitoring_scheduler import monitoring_scheduler
