@@ -117,14 +117,18 @@ class FocusedAuthTester:
         response, response_time = self.make_request_with_timing("GET", "/categories")
         
         if response:
+            print(f"   📄 Response content preview: {response.text[:200]}...")
+            
             if response.status_code == 403:
                 try:
                     error_data = response.json()
                     self.log_test("Categories Without Auth", True, 
-                                 f"Correctly requires authentication (403), Response time: {response_time:.2f}s")
+                                 f"Correctly requires authentication (403), Response time: {response_time:.2f}s",
+                                 {"error_details": error_data})
                 except:
                     self.log_test("Categories Without Auth", True, 
-                                 f"Correctly requires authentication (403), Response time: {response_time:.2f}s")
+                                 f"Correctly requires authentication (403), Response time: {response_time:.2f}s",
+                                 {"response_text": response.text[:200]})
             elif response.status_code == 401:
                 self.log_test("Categories Without Auth", True, 
                              f"Correctly requires authentication (401), Response time: {response_time:.2f}s")
