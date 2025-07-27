@@ -160,6 +160,49 @@ class ApiService {
     });
     return response.data;
   }
+
+  // ==================== ANALYTICS API METHODS ====================
+
+  async getSpendingTrends(timeframe = 'monthly', periods = 6) {
+    const response = await this.client.get('/analytics/spending-trends', {
+      params: { timeframe, periods }
+    });
+    return response.data;
+  }
+
+  async getFinancialHealthScore() {
+    const response = await this.client.get('/analytics/financial-health');
+    return response.data;
+  }
+
+  async getSpendingPatterns(timeframe = 'monthly') {
+    const response = await this.client.get('/analytics/spending-patterns', {
+      params: { timeframe }
+    });
+    return response.data;
+  }
+
+  async getBudgetRecommendations() {
+    const response = await this.client.get('/analytics/budget-recommendations');
+    return response.data;
+  }
+
+  async getSpendingAlerts() {
+    const response = await this.client.get('/analytics/spending-alerts');
+    return response.data;
+  }
+
+  async markAlertAsRead(alertId) {
+    const response = await this.client.post(`/analytics/mark-alert-read/${alertId}`);
+    return response.data;
+  }
+
+  async getAnalyticsSummary(timeframe = 'monthly') {
+    const response = await this.client.get('/analytics/summary', {
+      params: { timeframe }
+    });
+    return response.data;
+  }
 }
 
 export default new ApiService();
