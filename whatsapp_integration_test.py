@@ -196,7 +196,8 @@ class WhatsAppIntegrationTester:
             test_sms = SAMPLE_SMS_MESSAGES["hdfc_debit"]
             
             response = requests.post(
-                f"{API_BASE}/whatsapp/test?sms_text={test_sms}",
+                f"{API_BASE}/whatsapp/test",
+                params={"sms_text": test_sms},
                 headers=self.get_auth_headers(),
                 timeout=15
             )
