@@ -174,18 +174,24 @@ class WhatsAppSMSProcessor:
             return {"success": False, "error": str(e)}
     
     async def send_welcome_message(self, to_number: str):
-        """Send welcome message to new WhatsApp user"""
+        """Send welcome message to unregistered WhatsApp user"""
         try:
-            welcome_message = """🏦 Welcome to Budget Planner!
+            welcome_message = """🚫 Phone Number Not Registered
 
-To get started:
-1. Register at our app: https://0f621684-5333-4b17-9188-b8424f0e0b0c.preview.emergentagent.com
-2. Forward your bank SMS messages here
-3. We'll automatically track your transactions!
+To use WhatsApp SMS forwarding, you need to:
 
-Supported banks: HDFC, ICICI, SBI, Axis, Scapia
+1️⃣ Register at Budget Planner app:
+https://0f621684-5333-4b17-9188-b8424f0e0b0c.preview.emergentagent.com
 
-Simply forward any bank SMS to this number and we'll handle the rest! 🚀"""
+2️⃣ Go to WhatsApp tab in your dashboard
+
+3️⃣ Add and verify your phone number
+
+4️⃣ Then forward your bank SMS here!
+
+🔐 This ensures your transactions stay secure and go to the right account.
+
+Register now to start automatic SMS tracking! 🚀"""
 
             message = self.client.messages.create(
                 body=welcome_message,
@@ -193,7 +199,7 @@ Simply forward any bank SMS to this number and we'll handle the rest! 🚀"""
                 to=f'whatsapp:{to_number}'
             )
             
-            logger.info(f"Welcome message sent to {to_number}: {message.sid}")
+            logger.info(f"Security message sent to unregistered number {to_number}: {message.sid}")
             
         except Exception as e:
             logger.error(f"Error sending welcome message: {e}")
