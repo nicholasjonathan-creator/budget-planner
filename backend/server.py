@@ -870,42 +870,89 @@ async def clear_sms_data():
         logger.error(f"Error clearing SMS data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/admin/clear-all-data")
-async def clear_all_data():
-    """Clear ALL data for complete system reset"""
+# Clear all data (admin only)
+@app.delete("/api/admin/clear-all-data")
+async def clear_all_data(admin_user: User = Depends(get_admin_user)):
+    """Clear all data from the database (admin only)"""
     try:
-        # Clear all transactions
-        transactions_collection = db.transactions
-        trans_result = await transactions_collection.delete_many({})
+        # Clear all collections
+        await db.transactions.delete_many({})
+        await db.budgets.delete_many({})
+        await db.sms_messages.delete_many({})
+        await db.categories.delete_many({})
+        await db.notifications.delete_many({})
+        await db.analytics_cache.delete_many({})
         
-        # Clear all budget limits
-        budget_limits_collection = db.budget_limits
-        budget_result = await budget_limits_collection.delete_many({})
+        logger.info(f"All data cleared by admin: {admin_user.email}")
         
-        # Clear failed SMS collection
-        failed_sms_collection = db.failed_sms
-        failed_result = await failed_sms_collection.delete_many({})
-        
-        # Clear SMS transactions collection
-        sms_transactions_collection = db.sms_transactions
-        sms_result = await sms_transactions_collection.delete_many({})
-        
-        # Keep categories but you can clear them too if needed
-        # categories_collection = db.categories
-        # cat_result = await categories_collection.delete_many({})
-        
-        logger.info("ALL data cleared successfully")
-        return {
-            "success": True,
-            "message": "ALL data cleared successfully - system completely reset",
-            "deleted_transactions": trans_result.deleted_count,
-            "deleted_budget_limits": budget_result.deleted_count,
-            "deleted_failed_sms": failed_result.deleted_count,
-            "deleted_sms_transactions": sms_result.deleted_count
-        }
+        return {"message": "All data cleared successfully"}
     except Exception as e:
         logger.error(f"Error clearing all data: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to clear all data")
+
+# WhatsApp Migration Admin Endpoints
+@app.post("/api/admin/whatsapp/notify-existing-users")
+async def notify_existing_users_whatsapp(admin_user: User = Depends(get_admin_user)):
+    """Send WhatsApp feature announcement to all existing users without phone verification"""
+    try:
+        result = await whatsapp_migration_service.notify_all_existing_users()
+        
+        if result["success"]:
+            return {
+                "success": True,
+                "message": result["message"],
+                "stats": {
+                    "users_notified": result["users_notified"],
+                    "emails_sent": result["emails_sent"],
+                    "errors": result["errors"]
+                }
+            }
+        else:
+            raise HTTPException(status_code=500, detail=result.get("error", "Migration notification failed"))
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in WhatsApp migration notification: {e}")
+        raise HTTPException(status_code=500, detail="Failed to notify existing users")
+
+@app.get("/api/admin/whatsapp/migration-stats")
+async def get_whatsapp_migration_stats(admin_user: User = Depends(get_admin_user)):
+    """Get WhatsApp migration statistics"""
+    try:
+        stats = await whatsapp_migration_service.get_migration_stats()
+        return stats
+        
+    except Exception as e:
+        logger.error(f"Error getting migration stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get migration statistics")
+
+@app.get("/api/admin/whatsapp/unverified-users")
+async def get_unverified_users(admin_user: User = Depends(get_admin_user)):
+    """Get list of users who haven't verified their phone numbers"""
+    try:
+        users = await whatsapp_migration_service.get_users_without_phone_verification()
+        
+        # Return only safe user info for admin view
+        safe_users = []
+        for user in users:
+            safe_users.append({
+                "id": str(user["_id"]),
+                "email": user["email"],
+                "username": user["username"],
+                "created_at": user.get("created_at"),
+                "phone_verified": user.get("phone_verified", False),
+                "has_phone": bool(user.get("phone_number"))
+            })
+        
+        return {
+            "total_unverified": len(safe_users),
+            "users": safe_users
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting unverified users: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get unverified users")
 
 # WhatsApp Webhook Endpoints
 @app.post("/api/whatsapp/webhook")
