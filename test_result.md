@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "I've just implemented a comprehensive user authentication system for the budget planner. Please test the new authentication functionality: 1) User Registration (POST /api/auth/register), 2) User Login (POST /api/auth/login), 3) Protected Route (GET /api/auth/me), 4) JWT Token Verification. Test with users: test@example.com/testuser/securepassword123 and admin@example.com/admin/adminpassword123."
+user_problem_statement: "Implement Enhanced Analytics & Insights system for the Budget Planner application. Features to include: 1) Spending trend alerts and notifications, 2) Financial health scores and budget recommendations, 3) Advanced spending pattern analysis with visualizations, 4) AI-powered budget suggestions based on historical data. The system should provide comprehensive analytics dashboard with interactive charts, smart alerts integrated with existing email system, and actionable insights for better financial management."
 
 backend:
   - task: "User Registration endpoint (POST /api/auth/register)"
