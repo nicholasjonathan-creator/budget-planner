@@ -415,6 +415,12 @@ const BudgetDashboard = () => {
               WhatsApp
               <span className="ml-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">NEW</span>
             </TabsTrigger>
+            <TabsTrigger value="monitoring">
+              Monitoring
+              <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-800">
+                SYSTEM
+              </Badge>
+            </TabsTrigger>
             {isAdmin && (
               <TabsTrigger value="production">
                 <Shield className="h-4 w-4 mr-2" />
