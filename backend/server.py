@@ -345,36 +345,19 @@ async def update_notification_preferences(
 
 @api_router.post("/notifications/test-email")
 async def send_test_email(current_user: User = Depends(get_current_active_user)):
-    """Send a test email to verify email configuration"""
-    try:
-        success = await email_service.send_welcome_email(current_user)
-        if success:
-            return {"message": "Test email sent successfully!", "email": current_user.email}
-        else:
-            raise HTTPException(status_code=500, detail="Failed to send test email")
-    except Exception as e:
-        logger.error(f"Error sending test email: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    """Test email endpoint (disabled for production)"""
+    return {
+        "success": False,
+        "message": "Email service disabled for production - all insights available in dashboard"
+    }
 
 @api_router.get("/notifications/logs")
-async def get_notification_logs(
-    limit: int = 50,
-    current_user: User = Depends(get_current_active_user)
-):
-    """Get notification logs for current user"""
-    try:
-        logs = []
-        async for log in db.notification_logs.find(
-            {"user_id": current_user.id}
-        ).sort("sent_at", -1).limit(limit):
-            log["id"] = str(log["_id"])
-            del log["_id"]
-            logs.append(log)
-        
-        return logs
-    except Exception as e:
-        logger.error(f"Error getting notification logs: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+async def get_notification_logs(current_user: User = Depends(get_current_active_user)):
+    """Get notification logs (disabled for production)"""
+    return {
+        "logs": [],
+        "message": "Email notifications disabled - no logs to display"
+    }
 
 # ==================== PRODUCTION EMAIL ENDPOINTS ====================
 
