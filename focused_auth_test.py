@@ -215,7 +215,7 @@ class FocusedAuthTester:
                 except:
                     self.log_test("User Registration", False, 
                                  f"Server error (500), Response time: {response_time:.2f}s",
-                                 {"response_text": response.text[:200]})
+                                 {"response_text": response.text[:500]})
             else:
                 try:
                     error_data = response.json()
