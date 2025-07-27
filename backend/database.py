@@ -113,6 +113,10 @@ async def create_indexes():
         await spending_alerts_collection.create_index([("user_id", 1), ("date_detected", -1)])
         await spending_alerts_collection.create_index([("user_id", 1), ("is_read", 1)])
         
+        # Monitoring indexes
+        await monitoring_results_collection.create_index([("created_at", -1)])
+        await monitoring_results_collection.create_index([("timestamp", -1)])
+        
         print("Database indexes created successfully")
         
     except Exception as e:
