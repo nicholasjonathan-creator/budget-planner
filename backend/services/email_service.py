@@ -13,7 +13,7 @@ class EmailService:
         """Welcome emails disabled"""
         return {"success": False, "message": "Welcome email disabled"}
     
-    def send_budget_alert_email(self, *args, **kwargs):
+    async def send_budget_alert_email(self, *args, **kwargs):
         """Budget alert emails disabled"""
         return {"success": False, "message": "Budget alerts available in dashboard"}
     
