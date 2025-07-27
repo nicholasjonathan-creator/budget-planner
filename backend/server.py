@@ -1000,25 +1000,41 @@ async def send_phone_verification(
     current_user: User = Depends(get_current_active_user)
 ):
     """
-    Send OTP verification code to user's phone via WhatsApp
+    Send OTP verification code to user's phone via WhatsApp (with fallback)
     """
     try:
         phone_number = request.get("phone_number")
         if not phone_number:
             raise HTTPException(status_code=400, detail="Phone number is required")
         
+        # First, try the main Twilio service
         result = await phone_verification_service.send_verification_otp(
             user_id=str(current_user.id),
             phone_number=phone_number
         )
         
+        # If Twilio fails, use fallback service
+        if not result["success"] and "Failed to send verification code" in result.get("error", ""):
+            logger.warning(f"Twilio failed for user {current_user.id}, using fallback service")
+            result = await fallback_phone_service.send_fallback_verification_otp(
+                user_id=str(current_user.id),
+                phone_number=phone_number
+            )
+        
         if result["success"]:
-            return {
+            response = {
                 "success": True,
                 "message": result["message"],
                 "phone_number": result["phone_number"],
                 "expires_in_minutes": result["expires_in_minutes"]
             }
+            
+            # Add demo information if in fallback mode
+            if result.get("fallback_mode"):
+                response["demo_mode"] = True
+                response["demo_note"] = "Demo Mode: Verification code shown above for testing"
+                
+            return response
         else:
             raise HTTPException(status_code=400, detail=result["error"])
             
@@ -1026,6 +1042,23 @@ async def send_phone_verification(
         raise
     except Exception as e:
         logger.error(f"Phone verification send error: {e}")
+        # Final fallback
+        try:
+            result = await fallback_phone_service.send_fallback_verification_otp(
+                user_id=str(current_user.id),
+                phone_number=phone_number
+            )
+            if result["success"]:
+                return {
+                    "success": True,
+                    "message": result["message"],
+                    "phone_number": result["phone_number"],
+                    "expires_in_minutes": result["expires_in_minutes"],
+                    "demo_mode": True,
+                    "demo_note": "Demo Mode: Verification code shown above for testing"
+                }
+        except:
+            pass
         raise HTTPException(status_code=500, detail="Failed to send verification code")
 
 @app.post("/api/phone/verify-otp")
@@ -1034,24 +1067,38 @@ async def verify_phone_otp(
     current_user: User = Depends(get_current_active_user)
 ):
     """
-    Verify OTP code entered by user
+    Verify OTP code entered by user (supports both Twilio and fallback)
     """
     try:
         otp = request.get("otp")
         if not otp:
             raise HTTPException(status_code=400, detail="OTP code is required")
         
+        # Try main verification service first
         result = await phone_verification_service.verify_otp(
             user_id=str(current_user.id),
             otp=otp
         )
         
+        # If main service fails, try fallback
+        if not result["success"]:
+            result = await fallback_phone_service.verify_fallback_otp(
+                user_id=str(current_user.id),
+                otp=otp
+            )
+        
         if result["success"]:
-            return {
+            response = {
                 "success": True,
                 "message": result["message"],
                 "phone_number": result["phone_number"]
             }
+            
+            # Add demo information if in fallback mode
+            if result.get("fallback_mode"):
+                response["demo_mode"] = True
+                
+            return response
         else:
             raise HTTPException(status_code=400, detail=result["error"])
             
