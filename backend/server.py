@@ -857,9 +857,8 @@ async def startup_event():
 async def shutdown_event():
     """Cleanup on shutdown"""
     try:
-        # Stop email scheduler
-        await email_scheduler.stop()
-        logger.info("Email scheduler stopped")
+        # Email scheduler removed - no email functionality needed
+        logger.info("Email scheduler disabled - no email functionality")
         
         # Stop monitoring scheduler
         await monitoring_scheduler.stop()
