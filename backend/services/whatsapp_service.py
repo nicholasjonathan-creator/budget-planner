@@ -12,6 +12,7 @@ from twilio.rest import Client
 from twilio.request_validator import RequestValidator
 from services.sms_parser import SMSTransactionParser
 from services.transaction_service import TransactionService
+from services.phone_verification_service import phone_verification_service
 from models.user import User
 from database import db
 
