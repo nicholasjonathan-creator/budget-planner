@@ -5,7 +5,7 @@ import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
 import { Loader2, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
-import ApiService from '../services/api';
+import apiService from '../services/api';
 
 const MonitoringPanel = () => {
   const [isChecking, setIsChecking] = useState(false);
