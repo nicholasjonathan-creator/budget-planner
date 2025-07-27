@@ -160,6 +160,9 @@ const WhatsAppIntegration = () => {
         </>
       )}
 
+      {/* SMS Demo */}
+      <SMSDemo />
+
       {/* How it Works */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-yellow-800 mb-3">Security & Privacy</h3>
