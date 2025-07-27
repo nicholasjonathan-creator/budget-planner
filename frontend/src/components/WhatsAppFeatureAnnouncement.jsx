@@ -50,7 +50,7 @@ const WhatsAppFeatureAnnouncement = () => {
   if (!show) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-50 max-w-sm bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg shadow-2xl border border-green-400 animate-slide-in-right">
+    <div className="fixed top-4 right-4 z-40 max-w-sm bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg shadow-2xl border border-green-400 animate-slide-in-right">
       <div className="p-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
