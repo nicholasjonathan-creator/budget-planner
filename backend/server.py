@@ -308,6 +308,8 @@ async def get_all_users(admin_user: User = Depends(get_admin_user)):
     return await UserService.get_all_users()
 
 # ==================== NOTIFICATION ENDPOINTS ====================
+# Email notification endpoints disabled for production deployment
+# Users access all features directly through dashboard
 
 @api_router.get("/notifications/preferences")
 async def get_notification_preferences(current_user: User = Depends(get_current_active_user)):
