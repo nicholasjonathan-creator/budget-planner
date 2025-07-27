@@ -31,6 +31,7 @@ from services.notification_service import NotificationPreferencesService
 from services.email_scheduler import email_scheduler
 from services.production_email_config import production_email_config
 from services.analytics_service import AnalyticsService
+from services.monitoring_service import monitoring_service
 from services.analytics_email_service import AnalyticsEmailService
 from services.whatsapp_service import whatsapp_processor
 from services.phone_verification_service import phone_verification_service
