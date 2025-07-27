@@ -363,8 +363,8 @@ async def get_production_email_status(admin_user: User = Depends(get_admin_user)
         checklist = await production_email_config.get_production_checklist()
         
         scheduler_status = {
-            'running': email_scheduler.is_running,
-            'jobs': len(email_scheduler.scheduler.get_jobs()) if email_scheduler.scheduler else 0
+            'running': False,  # Email scheduler disabled
+            'jobs': 0  # No jobs when disabled
         }
         
         return {
