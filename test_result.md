@@ -318,6 +318,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Deployed Services Integration Verification"
     - "Analytics Email Templates Implementation"
     - "Analytics Email Service Implementation"
     - "Analytics Email API Endpoints"
