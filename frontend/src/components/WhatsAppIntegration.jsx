@@ -59,7 +59,7 @@ const WhatsAppIntegration = () => {
 
     try {
       setTestLoading(true);
-      const result = await testWhatsAppParsing(testSMS);
+      const result = await apiService.testWhatsAppParsing(testSMS);
       setTestResult(result);
       
       if (result.success) {
