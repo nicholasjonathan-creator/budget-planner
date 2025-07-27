@@ -19,3 +19,6 @@ class ProductionEmailConfig:
     def validate_email_setup(self, *args, **kwargs):
         """Email validation disabled"""  
         return {"valid": False, "message": "Email service disabled"}
+
+# Create instance for import
+production_email_config = ProductionEmailConfig()
