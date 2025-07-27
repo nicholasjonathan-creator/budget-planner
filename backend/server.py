@@ -698,6 +698,7 @@ async def manual_classify_sms(request: dict, current_user: User = Depends(get_cu
         # Create transaction
         transaction_data = {
             "id": str(uuid.uuid4()),
+            "user_id": current_user.id,  # Associate with current user
             "type": "expense" if transaction_type == "debit" else "income",
             "category_id": 12,  # Other/Miscellaneous category
             "amount": float(amount),
