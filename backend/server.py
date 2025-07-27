@@ -437,7 +437,7 @@ async def get_monthly_summary(month: int, year: int, current_user: User = Depend
 async def get_category_totals(month: int, year: int, current_user: User = Depends(get_current_active_user)):
     """Get transaction totals by category"""
     try:
-        return await transaction_service.get_category_totals(month, year)
+        return await transaction_service.get_category_totals(month, year, current_user.id)
     except Exception as e:
         logger.error(f"Error getting category totals: {e}")
         raise HTTPException(status_code=500, detail=str(e))
