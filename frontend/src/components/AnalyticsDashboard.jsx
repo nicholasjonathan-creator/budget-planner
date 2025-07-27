@@ -75,6 +75,33 @@ const AnalyticsDashboard = () => {
     }
   };
 
+  const handleSendAllNotifications = async () => {
+    try {
+      setSendingEmails(true);
+      const result = await api.sendAllAnalyticsNotifications();
+      console.log('Email notifications sent:', result);
+      // Show success message
+      if (result.success !== false) {
+        // Create a simple toast notification
+        const toastDiv = document.createElement('div');
+        toastDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg z-50';
+        toastDiv.textContent = 'Analytics email notifications sent successfully!';
+        document.body.appendChild(toastDiv);
+        setTimeout(() => document.body.removeChild(toastDiv), 3000);
+      }
+    } catch (err) {
+      console.error('Error sending email notifications:', err);
+      // Show error message
+      const toastDiv = document.createElement('div');
+      toastDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50';
+      toastDiv.textContent = 'Failed to send email notifications';
+      document.body.appendChild(toastDiv);
+      setTimeout(() => document.body.removeChild(toastDiv), 3000);
+    } finally {
+      setSendingEmails(false);
+    }
+  };
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
