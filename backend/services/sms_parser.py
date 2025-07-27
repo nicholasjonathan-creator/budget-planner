@@ -417,7 +417,12 @@ class SMSTransactionParser:
                 amount = float(amount_str)
                 
                 account = match.group(pattern_info['account_group'])
-                date_str = match.group(pattern_info['date_group'])
+                
+                # Handle date - use current date if not available in SMS
+                if pattern_info.get('date_group') is not None:
+                    date_str = match.group(pattern_info['date_group'])
+                else:
+                    date_str = datetime.now().strftime('%d-%m-%y')  # Use current date
                 
                 # Extract payee
                 payee = self._clean_payee_name(match.group(pattern_info['payee_group']))
