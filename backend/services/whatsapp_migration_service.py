@@ -7,13 +7,14 @@ import logging
 from typing import List, Dict, Any
 from datetime import datetime
 from database import db
-from services.email_service import send_email
+from services.email_service import EmailService
 
 logger = logging.getLogger(__name__)
 
 class WhatsAppMigrationService:
     def __init__(self):
         self.db = db
+        self.email_service = EmailService()
     
     async def get_users_without_phone_verification(self) -> List[Dict[str, Any]]:
         """Get all active users who haven't verified their phone numbers yet"""
@@ -115,7 +116,7 @@ class WhatsAppMigrationService:
             </html>
             """
             
-            await send_email(
+            await self.email_service.send_email(
                 to_email=user['email'],
                 subject=email_subject,
                 html_content=email_content
