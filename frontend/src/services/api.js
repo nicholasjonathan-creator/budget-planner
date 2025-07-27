@@ -8,7 +8,7 @@ class ApiService {
   constructor() {
     this.client = axios.create({
       baseURL: API,
-      timeout: 10000,
+      timeout: 15000, // Increased timeout to 15 seconds
       headers: {
         'Content-Type': 'application/json',
       },
@@ -32,11 +32,28 @@ class ApiService {
       }
     );
 
-    // Add response interceptor for error handling
+    // Add response interceptor for error handling with retry logic
     this.client.interceptors.response.use(
       (response) => response,
-      (error) => {
+      async (error) => {
+        const originalRequest = error.config;
+        
         console.error('API Response Error:', error.response?.data || error.message);
+        
+        // Handle network errors with retry (for net::ERR_ABORTED issues)
+        if (!error.response && !originalRequest._retry && originalRequest.method === 'get') {
+          originalRequest._retry = true;
+          console.log('Retrying failed GET request after network error...');
+          
+          // Wait 1 second before retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          try {
+            return await this.client(originalRequest);
+          } catch (retryError) {
+            console.error('Retry also failed:', retryError.message);
+          }
+        }
         
         // Handle 401 errors (unauthorized) - potentially redirect to login
         if (error.response?.status === 401) {
