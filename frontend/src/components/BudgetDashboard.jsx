@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { PlusCircle, TrendingUp, TrendingDown, DollarSign, AlertTriangle, MessageSquare, Settings, Shield, BarChart3, MessageCircle } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import ApiService from '../services/api';
+import MonitoringPanel from './MonitoringPanel';
 import TransactionForm from './TransactionForm';
 import BudgetChart from './BudgetChart';
 import TransactionList from './TransactionList';
