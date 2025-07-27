@@ -290,6 +290,63 @@ class ApiService {
     const response = await this.client.get('/phone/status');
     return response.data;
   }
+  // ==================== MONITORING ENDPOINTS ====================
+  
+  // Get system health status
+  async getSystemHealth() {
+    try {
+      const response = await this.api.get('/monitoring/health');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting system health:', error);
+      throw error;
+    }
+  }
+
+  // Check user sync status (triggered by user actions like force refresh)
+  async checkUserSyncStatus() {
+    try {
+      const response = await this.api.post('/monitoring/user-sync-check');
+      return response.data;
+    } catch (error) {
+      console.error('Error checking user sync status:', error);
+      throw error;
+    }
+  }
+
+  // Get recent monitoring alerts
+  async getRecentAlerts(timeWindow = 60) {
+    try {
+      const response = await this.api.get(`/monitoring/alerts?time_window=${timeWindow}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error getting recent alerts:', error);
+      throw error;
+    }
+  }
+
+  // Get WhatsApp service status
+  async getWhatsAppStatus() {
+    try {
+      const response = await this.api.get('/monitoring/whatsapp-status');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting WhatsApp status:', error);
+      throw error;
+    }
+  }
+
+  // Run monitoring cycle (admin function)
+  async runMonitoringCycle(timeWindow = 10) {
+    try {
+      const response = await this.api.post(`/monitoring/run-cycle?time_window=${timeWindow}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error running monitoring cycle:', error);
+      throw error;
+    }
+  }
+
 }
 
 export default new ApiService();
