@@ -1,15 +1,13 @@
 import os
 from datetime import datetime
 from typing import Optional
-from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import DuplicateKeyError
 from models.user import User, UserCreate, UserResponse, UserRole
 from services.auth import get_password_hash, verify_password
 from fastapi import HTTPException, status
+from database import db
 
-# MongoDB connection
-client = AsyncIOMotorClient(os.getenv("MONGO_URL"))
-db = client[os.getenv("DB_NAME", "budget_planner")]
+# Use shared database connection
 users_collection = db.users
 
 class UserService:
