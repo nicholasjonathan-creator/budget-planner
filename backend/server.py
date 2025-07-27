@@ -37,7 +37,7 @@ from services.phone_verification_service import phone_verification_service
 from services.whatsapp_migration_service import whatsapp_migration_service
 from services.fallback_phone_service import fallback_phone_service
 from services.analytics_service import AnalyticsService
-from services.analytics_email_service import AnalyticsEmailService
+# Email services removed - no email functionality needed
 from dependencies.auth import get_current_user, get_current_active_user, get_admin_user, get_optional_user
 from database import init_db, db
 
