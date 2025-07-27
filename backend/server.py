@@ -555,22 +555,22 @@ async def get_analytics_summary(
 # ==================== BUDGET LIMITS ENDPOINTS ====================
 
 @api_router.post("/budget-limits", response_model=BudgetLimit)
-async def create_budget_limit(budget_limit: BudgetLimitCreate):
+async def create_budget_limit(budget_limit: BudgetLimitCreate, current_user: User = Depends(get_current_active_user)):
     """Create or update a budget limit"""
     try:
-        result = await transaction_service.create_budget_limit(budget_limit)
+        result = await transaction_service.create_budget_limit(budget_limit, current_user.id)
         # Update spent amounts
-        await transaction_service.update_budget_spent(budget_limit.month, budget_limit.year)
+        await transaction_service.update_budget_spent(budget_limit.month, budget_limit.year, current_user.id)
         return result
     except Exception as e:
         logger.error(f"Error creating budget limit: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/budget-limits", response_model=List[BudgetLimit])
-async def get_budget_limits(month: int, year: int):
+async def get_budget_limits(month: int, year: int, current_user: User = Depends(get_current_active_user)):
     """Get budget limits for a specific month/year"""
     try:
-        return await transaction_service.get_budget_limits(month, year)
+        return await transaction_service.get_budget_limits(month, year, current_user.id)
     except Exception as e:
         logger.error(f"Error getting budget limits: {e}")
         raise HTTPException(status_code=500, detail=str(e))
