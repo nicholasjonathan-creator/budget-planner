@@ -124,8 +124,16 @@ const SMSDemo = ({ onClose, onTransactionAdded }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      onClick={(e) => {
+        // Close modal when clicking the overlay (but not the modal content)
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle className="text-xl font-bold flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
@@ -134,8 +142,12 @@ const SMSDemo = ({ onClose, onTransactionAdded }) => {
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={onClose}
-            className="h-8 w-8 p-0"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClose();
+            }}
+            className="h-8 w-8 p-0 hover:bg-gray-100"
           >
             <X className="h-4 w-4" />
           </Button>
