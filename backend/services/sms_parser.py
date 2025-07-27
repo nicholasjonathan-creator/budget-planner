@@ -423,10 +423,20 @@ class SMSTransactionParser:
         for pattern_name, pattern_info in self.hdfc_patterns.items():
             match = re.search(pattern_info['regex'], sms_text, re.IGNORECASE)
             if match:
+                # Handle patterns without amount (like upi_incomplete_format)
+                if pattern_info['amount_group'] is None:
+                    # This is an incomplete SMS format (likely corrupted or partial)
+                    # Return None to indicate parsing failed
+                    return None
+                
                 amount_str = match.group(pattern_info['amount_group']).replace(',', '')
                 amount = float(amount_str)
                 
-                account = match.group(pattern_info['account_group'])
+                # Handle account - use default if not available
+                if pattern_info['account_group'] is not None:
+                    account = match.group(pattern_info['account_group'])
+                else:
+                    account = 'HDFC'
                 
                 # Handle date - use current date if not available in SMS
                 if pattern_info.get('date_group') is not None:
