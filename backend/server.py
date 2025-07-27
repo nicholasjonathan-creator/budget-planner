@@ -17,6 +17,10 @@ from models.transaction import (
 )
 from models.user import User, UserCreate, UserLogin, UserResponse, Token
 from models.notification import UserNotificationPreferences, NotificationPreferencesUpdate
+from models.analytics import (
+    SpendingTrend, FinancialHealthScore, SpendingPattern, BudgetRecommendation,
+    SpendingAlert, AnalyticsSummary, AnalyticsTimeframe, AlertSeverity
+)
 from services.transaction_service import TransactionService
 from services.sms_service import SMSService
 from services.user_service import UserService
@@ -25,6 +29,7 @@ from services.email_templates import EmailTemplates
 from services.notification_service import NotificationPreferencesService
 from services.email_scheduler import email_scheduler
 from services.production_email_config import production_email_config
+from services.analytics_service import AnalyticsService
 from dependencies.auth import get_current_user, get_current_active_user, get_admin_user, get_optional_user
 from database import init_db, db
 
