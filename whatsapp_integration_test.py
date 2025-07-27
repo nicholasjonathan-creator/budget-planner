@@ -310,8 +310,7 @@ class WhatsAppIntegrationTester:
         for test_name, test_sms in invalid_messages:
             try:
                 response = requests.post(
-                    f"{API_BASE}/whatsapp/test",
-                    json={"sms_text": test_sms},
+                    f"{API_BASE}/whatsapp/test?sms_text={test_sms}",
                     headers=self.get_auth_headers(),
                     timeout=10
                 )
