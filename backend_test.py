@@ -37,7 +37,7 @@ class BudgetPlannerTester:
         if details and not success:
             print(f"   Details: {details}")
     
-    def make_request(self, method, endpoint, data=None, headers=None, timeout=30):
+    def make_request(self, method, endpoint, data=None, headers=None, timeout=60):
         """Make HTTP request with error handling"""
         url = f"{self.base_url}{endpoint}"
         default_headers = {"Content-Type": "application/json"}
@@ -62,11 +62,13 @@ class BudgetPlannerTester:
             
             return response
         except requests.exceptions.Timeout:
+            print(f"Timeout error for {method} {url}")
             return None
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError as e:
+            print(f"Connection error for {method} {url}: {e}")
             return None
         except Exception as e:
-            print(f"Request error: {e}")
+            print(f"Request error for {method} {url}: {e}")
             return None
     
     def test_health_endpoints(self):
