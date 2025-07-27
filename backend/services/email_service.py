@@ -17,7 +17,7 @@ class EmailService:
         """Budget alert emails disabled"""
         return {"success": False, "message": "Budget alerts available in dashboard"}
     
-    def send_monthly_summary_email(self, *args, **kwargs):
+    async def send_monthly_summary_email(self, *args, **kwargs):
         """Monthly summary emails disabled"""
         return {"success": False, "message": "Monthly summaries available in dashboard"}
     
