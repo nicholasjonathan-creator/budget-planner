@@ -329,13 +329,13 @@ class ApiService {
     }
   }
 
-  // Get WhatsApp service status
-  async getWhatsAppStatus() {
+  // Get WhatsApp service status for monitoring
+  async getWhatsAppServiceStatus() {
     try {
-      const response = await this.api.get('/monitoring/whatsapp-status');
+      const response = await this.client.get('/monitoring/whatsapp-status');
       return response.data;
     } catch (error) {
-      console.error('Error getting WhatsApp status:', error);
+      console.error('Error getting WhatsApp service status:', error);
       throw error;
     }
   }
