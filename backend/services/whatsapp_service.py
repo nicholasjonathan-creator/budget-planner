@@ -142,17 +142,35 @@ class WhatsAppSMSProcessor:
                 if 'date' in transaction_dict and transaction_dict['date']:
                     transaction_dict['date'] = transaction_dict['date'].isoformat()
                 
+                # Convert any ObjectId fields to strings
+                for key, value in transaction_dict.items():
+                    if hasattr(value, 'inserted_id'):
+                        transaction_dict[key] = str(value)
+                    elif str(type(value)) == "<class 'bson.objectid.ObjectId'>":
+                        transaction_dict[key] = str(value)
+                
                 # Save transaction to database
                 transaction_result = await self.db.transactions.insert_one(transaction_dict)
                 transaction_id = str(transaction_result.inserted_id)
                 
-                # Add the ID to the transaction dict for response
-                transaction_dict['transaction_id'] = transaction_id
-                transaction_dict['id'] = transaction_id
+                # Create clean response dict without complex objects
+                response_transaction = {
+                    'transaction_id': transaction_id,
+                    'id': transaction_id,
+                    'amount': float(transaction_dict.get('amount', 0)),
+                    'transaction_type': transaction_dict.get('type', 'expense'),
+                    'merchant': transaction_dict.get('merchant', 'Unknown'),
+                    'category': transaction_dict.get('category_id', 'Other'),
+                    'date': transaction_dict.get('date'),
+                    'currency': transaction_dict.get('currency', 'INR'),
+                    'account_number': transaction_dict.get('account_number', ''),
+                    'bank': transaction_dict.get('bank', ''),
+                    'user_id': user_id
+                }
                 
                 return {
                     "success": True,
-                    "transaction": transaction_dict,
+                    "transaction": response_transaction,
                     "parsing_method": "sms_parser"
                 }
             else:
