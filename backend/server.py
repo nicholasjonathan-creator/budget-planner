@@ -1307,15 +1307,19 @@ async def whatsapp_status(request: Request, current_user: User = Depends(get_cur
 
 @app.post("/api/whatsapp/test")
 async def test_whatsapp_parsing(
-    sms_text: str,
+    request: dict,
     current_user: User = Depends(get_current_active_user)
 ):
     """
-    Test SMS parsing without actually sending WhatsApp message
+    Test SMS parsing without actually saving to database or sending WhatsApp message
     """
     try:
-        # Test the SMS parsing logic
-        result = await whatsapp_processor.parse_sms_content(sms_text, current_user.id)
+        sms_text = request.get('sms_text', '')
+        if not sms_text:
+            raise HTTPException(status_code=400, detail="SMS text is required")
+        
+        # Use the test-only parsing method (doesn't save to database)
+        result = await whatsapp_processor.test_sms_parsing_only(sms_text, current_user.id)
         
         return {
             "success": result["success"],
