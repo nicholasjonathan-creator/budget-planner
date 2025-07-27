@@ -5,6 +5,10 @@ class EmailService:
         self.enabled = False
         print("📧 Email service disabled - using dashboard-only mode")
     
+    def _get_base_template(self, title: str, content: str, username: str = "User") -> str:
+        """Base email template - disabled but returns empty string to prevent errors"""
+        return ""
+    
     async def send_email(self, *args, **kwargs):
         """Email sending disabled - users check dashboard for insights"""
         return {"success": False, "message": "Email service disabled - check dashboard for insights"}
