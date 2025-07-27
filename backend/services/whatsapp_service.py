@@ -25,11 +25,18 @@ class WhatsAppSMSProcessor:
         self.auth_token = os.getenv('TWILIO_AUTH_TOKEN')
         self.whatsapp_number = os.getenv('TWILIO_WHATSAPP_NUMBER')
         
-        if not all([self.account_sid, self.auth_token, self.whatsapp_number]):
-            raise ValueError("Missing Twilio configuration. Check environment variables.")
+        # Make Twilio optional for development
+        self.twilio_enabled = all([self.account_sid, self.auth_token, self.whatsapp_number])
         
-        self.client = Client(self.account_sid, self.auth_token)
-        self.validator = RequestValidator(self.auth_token)
+        if self.twilio_enabled:
+            self.client = Client(self.account_sid, self.auth_token)
+            self.validator = RequestValidator(self.auth_token)
+            print("🔗 WhatsApp SMS processor enabled with Twilio")
+        else:
+            self.client = None
+            self.validator = None
+            print("🔗 WhatsApp SMS processor disabled - Twilio not configured")
+        
         self.sms_parser = SMSTransactionParser()
         self.transaction_service = TransactionService()
         self.db = db
