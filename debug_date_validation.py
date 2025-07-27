@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://4e36ad4f-0605-4e84-966c-86dfbb141256.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://fe5a1b17-dacb-468f-a395-f044dbe77291.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_specific_failing_cases():
