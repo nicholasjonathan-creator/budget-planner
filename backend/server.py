@@ -424,10 +424,9 @@ async def trigger_budget_alerts(admin_user: User = Depends(get_admin_user)):
 
 @api_router.post("/notifications/production/trigger-monthly-summaries")
 async def trigger_monthly_summaries(admin_user: User = Depends(get_admin_user)):
-    """Manually trigger monthly summaries for testing (admin only)"""
+    """Manually trigger monthly summaries for testing (admin only) - DISABLED"""
     try:
-        await email_scheduler.send_monthly_summaries()
-        return {"message": "Monthly summaries triggered successfully"}
+        return {"message": "Monthly summaries disabled - no email functionality needed"}
     except Exception as e:
         logger.error(f"Error triggering monthly summaries: {e}")
         raise HTTPException(status_code=500, detail=str(e))
