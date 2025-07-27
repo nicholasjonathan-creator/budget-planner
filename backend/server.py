@@ -114,6 +114,95 @@ async def get_metrics():
         logger.error(f"Metrics endpoint failed: {e}")
         raise HTTPException(status_code=500, detail="Failed to get metrics")
 
+# ==================== MONITORING ENDPOINTS ====================
+
+@api_router.get("/monitoring/health")
+async def get_system_health():
+    """Get system health status"""
+    try:
+        health_status = await monitoring_service.check_system_health()
+        return health_status
+    except Exception as e:
+        logger.error(f"Error getting system health: {e}")
+        return {"error": str(e)}, 500
+
+@api_router.get("/monitoring/alerts")
+async def get_recent_alerts(time_window: int = 60):
+    """Get recent alerts from monitoring system"""
+    try:
+        alerts = await monitoring_service.check_failed_transactions(time_window)
+        return {
+            "alerts": [
+                {
+                    "level": alert.level.value,
+                    "message": alert.message,
+                    "timestamp": alert.timestamp.isoformat(),
+                    "details": alert.details,
+                    "user_id": alert.user_id
+                } for alert in alerts
+            ],
+            "time_window_minutes": time_window
+        }
+    except Exception as e:
+        logger.error(f"Error getting alerts: {e}")
+        return {"error": str(e)}, 500
+
+@api_router.post("/monitoring/user-sync-check")
+async def check_user_sync_issues(current_user: User = Depends(get_current_active_user)):
+    """
+    User-triggered sync check - called when user reports missing transactions
+    or does force refresh
+    """
+    try:
+        alerts = await monitoring_service.check_transaction_sync_issues(current_user.id)
+        
+        # Also run a general failed transaction check
+        failed_alerts = await monitoring_service.check_failed_transactions(60)
+        
+        all_alerts = alerts + failed_alerts
+        
+        return {
+            "sync_alerts": [
+                {
+                    "level": alert.level.value,
+                    "message": alert.message,
+                    "timestamp": alert.timestamp.isoformat(),
+                    "details": alert.details
+                } for alert in all_alerts
+            ],
+            "user_id": current_user.id,
+            "total_alerts": len(all_alerts)
+        }
+    except Exception as e:
+        logger.error(f"Error checking user sync for {current_user.id}: {e}")
+        return {"error": str(e)}, 500
+
+@api_router.post("/monitoring/run-cycle")
+async def run_monitoring_cycle(time_window: int = 10):
+    """
+    Run a complete monitoring cycle
+    """
+    try:
+        results = await monitoring_service.run_monitoring_cycle(time_window)
+        
+        # Store results for historical analysis
+        await monitoring_service.store_monitoring_results(results)
+        
+        return results
+    except Exception as e:
+        logger.error(f"Error running monitoring cycle: {e}")
+        return {"error": str(e)}, 500
+
+@api_router.get("/monitoring/whatsapp-status")
+async def get_whatsapp_status():
+    """Get WhatsApp service specific status"""
+    try:
+        whatsapp_health = await monitoring_service._check_whatsapp_health()
+        return whatsapp_health
+    except Exception as e:
+        logger.error(f"Error getting WhatsApp status: {e}")
+        return {"error": str(e)}, 500
+
 # ==================== AUTHENTICATION ENDPOINTS ====================
 
 @api_router.post("/auth/register", response_model=Token, status_code=status.HTTP_201_CREATED)
