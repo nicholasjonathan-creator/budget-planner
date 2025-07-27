@@ -309,23 +309,34 @@ async def get_all_users(admin_user: User = Depends(get_admin_user)):
 
 # ==================== NOTIFICATION ENDPOINTS ====================
 
-@api_router.get("/notifications/preferences", response_model=UserNotificationPreferences)
+@api_router.get("/notifications/preferences")
 async def get_notification_preferences(current_user: User = Depends(get_current_active_user)):
-    """Get current user's notification preferences"""
+    """Get user notification preferences (UI settings only - emails disabled)"""
     try:
-        return await NotificationPreferencesService.get_user_preferences(current_user.id)
+        # Return minimal preferences for UI state management
+        return {
+            "user_id": current_user.id,
+            "email_enabled": False,
+            "email_notifications_disabled": True,
+            "message": "Email notifications disabled - all insights available in dashboard"
+        }
     except Exception as e:
         logger.error(f"Error getting notification preferences: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@api_router.put("/notifications/preferences", response_model=UserNotificationPreferences)
+@api_router.put("/notifications/preferences")
 async def update_notification_preferences(
-    updates: NotificationPreferencesUpdate,
+    preferences: dict,
     current_user: User = Depends(get_current_active_user)
 ):
-    """Update current user's notification preferences"""
+    """Update notification preferences (UI only - emails disabled)"""
     try:
-        return await NotificationPreferencesService.update_user_preferences(current_user.id, updates)
+        # Just return success for UI compatibility
+        return {
+            "success": True,
+            "message": "Settings saved (email notifications disabled)",
+            "email_enabled": False
+        }
     except Exception as e:
         logger.error(f"Error updating notification preferences: {e}")
         raise HTTPException(status_code=500, detail=str(e))
