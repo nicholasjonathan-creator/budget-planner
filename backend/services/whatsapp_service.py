@@ -66,7 +66,8 @@ class WhatsAppSMSProcessor:
                 return {"status": "new_user", "message": "Welcome message sent"}
             
             # Process the SMS content using existing parser
-            parsing_result = await self.parse_sms_content(message_body, user['user_id'])
+            user_id = user.get('id') or str(user.get('_id'))
+            parsing_result = await self.parse_sms_content(message_body, user_id)
             
             if parsing_result['success']:
                 # Send confirmation message
