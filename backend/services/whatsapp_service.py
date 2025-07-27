@@ -44,6 +44,9 @@ class WhatsAppSMSProcessor:
     def validate_webhook(self, url: str, params: Dict[str, Any], signature: str) -> bool:
         """Validate that the webhook request came from Twilio"""
         try:
+            if not self.twilio_enabled or not self.validator:
+                logger.warning("WhatsApp webhook validation disabled - Twilio not configured")
+                return False
             return self.validator.validate(url, params, signature)
         except Exception as e:
             logger.error(f"Webhook validation error: {e}")
