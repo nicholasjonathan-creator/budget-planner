@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Implement Enhanced Analytics & Insights system for the Budget Planner application. Features to include: 1) Spending trend alerts and notifications, 2) Financial health scores and budget recommendations, 3) Advanced spending pattern analysis with visualizations, 4) AI-powered budget suggestions based on historical data. The system should provide comprehensive analytics dashboard with interactive charts, smart alerts integrated with existing email system, and actionable insights for better financial management."
+user_problem_statement: "Phase 4: Smart Alerts & Notifications - Integrate enhanced analytics insights with the existing email notification system. Features include: 1) Spending alert emails for unusual patterns, 2) Monthly financial health reports with scores and recommendations, 3) AI-powered budget recommendation emails, 4) Weekly analytics digest emails, 5) User preferences for analytics notifications, 6) Manual trigger buttons in analytics dashboard, 7) Integration with existing SendGrid email system."
 
 backend:
   - task: "Enhanced Analytics Models and Service Creation"
