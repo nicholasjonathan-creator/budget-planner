@@ -33,14 +33,14 @@ API_BASE = f"{BACKEND_URL}/api"
 # Test users for authentication (existing users as specified in review request)
 TEST_USERS = {
     "primary": {
-        "email": "admin@example.com",
-        "username": "admin", 
-        "password": "admin123"
+        "email": "testuser@example.com",
+        "username": "testuser", 
+        "password": "testpassword123"
     },
     "secondary": {
-        "email": "test@example.com",
-        "username": "testuser",
-        "password": "test123"
+        "email": "admin@example.com",
+        "username": "admin",
+        "password": "admin123"
     },
     "admin": {
         "email": "superadmin@budgetplanner.app",
