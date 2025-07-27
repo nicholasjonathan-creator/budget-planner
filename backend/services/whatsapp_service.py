@@ -138,12 +138,17 @@ class WhatsAppSMSProcessor:
                 transaction_dict['raw_sms'] = sms_text
                 transaction_dict['source'] = "sms"
                 
+                # Convert datetime to string for JSON serialization
+                if 'date' in transaction_dict and transaction_dict['date']:
+                    transaction_dict['date'] = transaction_dict['date'].isoformat()
+                
                 # Save transaction to database
                 transaction_result = await self.db.transactions.insert_one(transaction_dict)
                 transaction_id = str(transaction_result.inserted_id)
                 
                 # Add the ID to the transaction dict for response
                 transaction_dict['transaction_id'] = transaction_id
+                transaction_dict['id'] = transaction_id
                 
                 return {
                     "success": True,
