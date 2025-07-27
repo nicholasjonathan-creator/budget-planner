@@ -23,6 +23,8 @@ import WhatsAppIntegration from './WhatsAppIntegration';
 import WhatsAppFeatureAnnouncement from './WhatsAppFeatureAnnouncement';
 import { useAuth } from '../contexts/AuthContext';
 
+// Updated: 2025-07-27 - Fixed UI issues: User profile menu, WhatsApp tab visibility, logout functionality
+
 const BudgetDashboard = () => {
   const { user } = useAuth();
   const [transactions, setTransactions] = useState([]);
