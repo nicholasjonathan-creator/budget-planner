@@ -232,6 +232,7 @@ const BudgetDashboard = () => {
       <WhatsAppFeatureAnnouncement />
       
       <div className="max-w-7xl mx-auto">
+        {/* Header with User Profile and Logout - Updated 2025-07-27 */}
         <div className="mb-8 flex justify-between items-start">
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Budget Planner</h1>
