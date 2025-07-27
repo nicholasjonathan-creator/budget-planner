@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 """
-Comprehensive Production Email Automation System Testing
-Tests requested by user for production email functionality:
-1. Email Scheduler Service endpoints (status, configuration, checklist)
-2. Scheduler Controls (start/stop scheduler functionality)
-3. Manual Email Triggers (budget alerts, monthly summaries)
-4. Production Configuration (checklist, SMTP config)
-5. Email Scheduler Functionality (background jobs, health checks)
-6. Integration Testing (admin access control, error handling)
+Enhanced Analytics & Insights Backend System Testing
+Tests requested by user for Enhanced Analytics functionality:
+1. Enhanced Analytics API Endpoints (spending-trends, financial-health, spending-patterns, budget-recommendations, spending-alerts, summary)
+2. Analytics Service Testing (core analytics algorithms)
+3. Database Integration (analytics collections and indexes)
+4. Authentication Integration (JWT authentication for all endpoints)
 """
 
 import requests
@@ -21,6 +19,20 @@ import time
 # Get backend URL from environment
 BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://bf63eddb-6d17-497b-a642-f45a15b77619.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
+
+# Test users for authentication
+TEST_USERS = {
+    "primary": {
+        "email": "test@example.com",
+        "username": "testuser", 
+        "password": "securepassword123"
+    },
+    "admin": {
+        "email": "superadmin@budgetplanner.app",
+        "username": "superadmin",
+        "password": "superadminpassword123"
+    }
+}
 
 class SMSParserTester:
     def __init__(self):
