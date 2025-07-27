@@ -68,10 +68,14 @@ class TransactionService:
             logger.error(f"Error getting transactions: {e}")
             raise
     
-    async def get_transaction_by_id(self, transaction_id: str) -> Optional[Transaction]:
-        """Get a specific transaction by ID"""
+    async def get_transaction_by_id(self, transaction_id: str, user_id: str = None) -> Optional[Transaction]:
+        """Get a specific transaction by ID with user isolation"""
         try:
-            doc = await self.transactions_collection.find_one({"_id": ObjectId(transaction_id)})
+            query = {"_id": ObjectId(transaction_id)}
+            if user_id:
+                query["user_id"] = user_id
+                
+            doc = await self.transactions_collection.find_one(query)
             if doc:
                 doc['id'] = str(doc.pop('_id'))
                 return Transaction(**doc)
