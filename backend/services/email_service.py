@@ -9,7 +9,7 @@ class EmailService:
         """Email sending disabled - users check dashboard for insights"""
         return {"success": False, "message": "Email service disabled - check dashboard for insights"}
     
-    def send_welcome_email(self, *args, **kwargs):
+    async def send_welcome_email(self, *args, **kwargs):
         """Welcome emails disabled"""
         return {"success": False, "message": "Welcome email disabled"}
     
