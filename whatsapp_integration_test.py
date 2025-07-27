@@ -573,8 +573,7 @@ class WhatsAppIntegrationTester:
                     else:
                         # Test with SMS parsing
                         response = requests.post(
-                            f"{API_BASE}/whatsapp/test",
-                            json={"sms_text": test_data},
+                            f"{API_BASE}/whatsapp/test?sms_text={test_data}",
                             headers=self.get_auth_headers(),
                             timeout=10
                         )
