@@ -242,11 +242,15 @@ class ApiService {
     return response.data;
   }
 
-  async testWhatsAppParsing(smsText) {
-    const response = await this.client.post('/whatsapp/test', {
-      sms_text: smsText
-    });
-    return response.data;
+  // Send WhatsApp message
+  async sendWhatsAppMessage(message) {
+    try {
+      const response = await this.client.post('/whatsapp/send', { message });
+      return response.data;
+    } catch (error) {
+      console.error('Error sending WhatsApp message:', error);
+      throw error;
+    }
   }
 
   // ==================== PHONE VERIFICATION ====================
