@@ -499,8 +499,7 @@ class WhatsAppIntegrationTester:
             
             # Test that WhatsApp test endpoint requires authentication
             unauth_test_response = requests.post(
-                f"{API_BASE}/whatsapp/test",
-                json={"sms_text": SAMPLE_SMS_MESSAGES["hdfc_debit"]},
+                f"{API_BASE}/whatsapp/test?sms_text={SAMPLE_SMS_MESSAGES['hdfc_debit']}",
                 headers={"Content-Type": "application/json"},  # No auth header
                 timeout=10
             )
