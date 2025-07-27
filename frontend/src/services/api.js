@@ -1,8 +1,8 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+// Use backend URL directly from environment variable (already includes /api)
+const API = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001/api';
 
 class ApiService {
   constructor() {
