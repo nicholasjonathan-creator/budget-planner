@@ -203,6 +203,38 @@ class ApiService {
     });
     return response.data;
   }
+
+  // ==================== ANALYTICS EMAIL API METHODS ====================
+
+  async sendSpendingAlerts() {
+    const response = await this.client.post('/analytics/send-spending-alerts');
+    return response.data;
+  }
+
+  async sendFinancialHealthReport() {
+    const response = await this.client.post('/analytics/send-financial-health-report');
+    return response.data;
+  }
+
+  async sendBudgetRecommendations() {
+    const response = await this.client.post('/analytics/send-budget-recommendations');
+    return response.data;
+  }
+
+  async sendWeeklyDigest() {
+    const response = await this.client.post('/analytics/send-weekly-digest');
+    return response.data;
+  }
+
+  async sendAllAnalyticsNotifications() {
+    const response = await this.client.post('/analytics/send-all-notifications');
+    return response.data;
+  }
+
+  async processScheduledAnalyticsNotifications() {
+    const response = await this.client.post('/analytics/process-scheduled-notifications');
+    return response.data;
+  }
 }
 
 export default new ApiService();
