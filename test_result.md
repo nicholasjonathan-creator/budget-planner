@@ -104,6 +104,9 @@
 
 user_problem_statement: "After fixing the sms demo button, i want you to act like the best QA/ UAT tester and review your entire code from start to finish, check the front end, the back end, the UX, check the API connections and all system checks to all servers and 3rd party services and your own internal services to ensure all is working as expected. if there are any assumptions you are making share them with me for validation."
 
+# SECURITY NOTE: All sensitive data removed for GitHub safety
+# Email services disabled - dashboard-only approach for production deployment
+
 backend:
   - task: "SMS Demo Modal Close Functionality Fix"
     implemented: true
