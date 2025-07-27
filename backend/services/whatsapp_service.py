@@ -125,41 +125,35 @@ class WhatsAppSMSProcessor:
         """Parse SMS content using existing SMS parser"""
         try:
             # Use existing SMS parsing logic
-            parsed_result = self.sms_parser.parse_sms(
+            transaction = self.sms_parser.parse_sms(
                 sms_text=sms_text,
-                phone_number="whatsapp_forwarded",  # Special identifier for WhatsApp
-                user_id=user_id
+                phone_number="whatsapp_forwarded"  # Special identifier for WhatsApp
             )
             
-            if parsed_result['success']:
-                # Create transaction using existing service
-                transaction_data = {
-                    "user_id": user_id,
-                    "amount": parsed_result['amount'],
-                    "transaction_type": parsed_result['transaction_type'],
-                    "category": parsed_result['category'],
-                    "description": parsed_result['description'],
-                    "merchant": parsed_result['merchant'],
-                    "date": parsed_result['date'],
-                    "currency": parsed_result.get('currency', 'INR'),
-                    "account_number": parsed_result.get('account_number', ''),
-                    "bank": parsed_result.get('bank', ''),
-                    "processing_method": "whatsapp_auto",
-                    "raw_sms": sms_text,
-                    "source": "whatsapp"
-                }
+            if transaction:
+                # Convert Transaction object to dict and add user_id
+                transaction_dict = transaction.dict()
+                transaction_dict['user_id'] = user_id
+                transaction_dict['processing_method'] = "whatsapp_auto"
+                transaction_dict['raw_sms'] = sms_text
+                transaction_dict['source'] = "whatsapp"
                 
-                transaction = await self.transaction_service.create_transaction(transaction_data)
+                # Save transaction to database
+                transaction_result = await self.db.transactions.insert_one(transaction_dict)
+                transaction_id = str(transaction_result.inserted_id)
+                
+                # Add the ID to the transaction dict for response
+                transaction_dict['transaction_id'] = transaction_id
                 
                 return {
                     "success": True,
-                    "transaction": transaction,
-                    "parsing_method": parsed_result.get('parsing_method', 'generic')
+                    "transaction": transaction_dict,
+                    "parsing_method": "sms_parser"
                 }
             else:
                 return {
                     "success": False,
-                    "error": parsed_result.get('error', 'Failed to parse SMS')
+                    "error": "Unable to parse bank SMS - format not recognized"
                 }
         
         except Exception as e:
