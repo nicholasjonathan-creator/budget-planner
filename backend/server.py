@@ -1305,32 +1305,6 @@ async def whatsapp_status(request: Request, current_user: User = Depends(get_cur
         logger.error(f"WhatsApp status error: {e}")
         raise HTTPException(status_code=500, detail="Failed to get WhatsApp status")
 
-@app.post("/api/whatsapp/test")
-async def test_whatsapp_parsing(
-    request: dict,
-    current_user: User = Depends(get_current_active_user)
-):
-    """
-    Test SMS parsing without actually saving to database or sending WhatsApp message
-    """
-    try:
-        sms_text = request.get('sms_text', '')
-        if not sms_text:
-            raise HTTPException(status_code=400, detail="SMS text is required")
-        
-        # Use the test-only parsing method (doesn't save to database)
-        result = await whatsapp_processor.test_sms_parsing_only(sms_text, current_user.id)
-        
-        return {
-            "success": result["success"],
-            "transaction": result.get("transaction"),
-            "error": result.get("error"),
-            "parsing_method": result.get("parsing_method")
-        }
-        
-    except Exception as e:
-        logger.error(f"WhatsApp test parsing error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to test SMS parsing")
 
 if __name__ == "__main__":
     import uvicorn
