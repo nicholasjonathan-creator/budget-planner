@@ -12,6 +12,11 @@ const AuthPage = ({ onSuccess }) => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Budget Planner
           </h1>
+          <div className="mb-4">
+            <span className="inline-block bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium border border-orange-200">
+              Built for India 🇮🇳
+            </span>
+          </div>
           <p className="text-gray-600">
             Track your income, expenses, and stay within budget
           </p>
