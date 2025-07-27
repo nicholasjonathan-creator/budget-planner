@@ -13,7 +13,7 @@ Testing Focus Areas:
 7. User Isolation & Security - multi-user data access controls, no data leakage
 
 Production Deployment Context:
-- Frontend: https://0f621684-5333-4b17-9188-b8424f0e0b0c.preview.emergentagent.com
+- Frontend: https://4e36ad4f-0605-4e84-966c-86dfbb141256.preview.emergentagent.com
 - Backend: Running locally on port 8001 (accessible via /api endpoints)
 - Database: Local MongoDB instance operational
 """
@@ -27,7 +27,7 @@ import uuid
 import time
 
 # Get backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://0f621684-5333-4b17-9188-b8424f0e0b0c.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://4e36ad4f-0605-4e84-966c-86dfbb141256.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test users for authentication (existing users as specified in review request)
