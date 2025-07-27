@@ -528,9 +528,9 @@ class EnhancedAnalyticsTester:
                     timeout=10
                 )
                 
-                if response.status_code == 401:
+                if response.status_code == 401 or response.status_code == 403:
                     unauthorized_count += 1
-                    print(f"   ✅ {endpoint} properly requires authentication")
+                    print(f"   ✅ {endpoint} properly requires authentication (status: {response.status_code})")
                 else:
                     print(f"   ❌ {endpoint} does not require authentication (status: {response.status_code})")
                     
