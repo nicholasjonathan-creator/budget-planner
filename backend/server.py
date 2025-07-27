@@ -53,9 +53,8 @@ api_router = APIRouter(prefix="/api")
 # Initialize services
 transaction_service = TransactionService()
 sms_service = SMSService()
-email_service = EmailTemplates()
+# Email services removed - no email functionality needed
 analytics_service = AnalyticsService()
-analytics_email_service = AnalyticsEmailService()
 
 # CORS middleware
 app.add_middleware(
