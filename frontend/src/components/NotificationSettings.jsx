@@ -16,7 +16,8 @@ import {
   User,
   Bell,
   Settings,
-  Send
+  Send,
+  BarChart3
 } from 'lucide-react';
 
 const NotificationSettings = () => {
