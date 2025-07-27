@@ -641,11 +641,12 @@ async def simulate_bank_sms(bank_type: str = "hdfc"):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/sms/failed")
-async def get_failed_sms():
+async def get_failed_sms(current_user: User = Depends(get_current_active_user)):
     """Get all failed SMS messages for manual classification"""
     try:
         failed_sms = []
-        async for doc in db.sms_transactions.find({"processed": False}):
+        # Filter by user_id for data isolation
+        async for doc in db.sms_transactions.find({"processed": False, "user_id": current_user.id}):
             failed_sms.append({
                 "id": str(doc["_id"]),
                 "message": doc["message"],
@@ -660,7 +661,7 @@ async def get_failed_sms():
         return {"success": False, "error": str(e)}
 
 @api_router.post("/sms/manual-classify")
-async def manual_classify_sms(request: dict):
+async def manual_classify_sms(request: dict, current_user: User = Depends(get_current_active_user)):
     """Manually classify a failed SMS message"""
     try:
         sms_id = request.get("sms_id")
