@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Phone, CheckCircle, AlertCircle, Copy, Send } from 'lucide-react';
-import { getWhatsAppStatus, testWhatsAppParsing } from '../services/api';
+import { MessageCircle, Phone, CheckCircle, AlertCircle, Copy, Send, Shield } from 'lucide-react';
+import apiService from '../services/api';
 import { useToast } from '../hooks/use-toast';
+import PhoneVerification from './PhoneVerification';
 
 const WhatsAppIntegration = () => {
   const [whatsappData, setWhatsappData] = useState(null);
