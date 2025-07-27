@@ -474,6 +474,104 @@ const NotificationSettings = () => {
         </CardContent>
       </Card>
 
+      {/* Analytics Notifications */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <BarChart3 className="h-5 w-5 mr-2" />
+            Analytics & Insights
+          </CardTitle>
+          <CardDescription>
+            Get intelligent insights about your spending patterns and financial health
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Spending Alerts */}
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-base font-medium">Spending Alerts</Label>
+              <p className="text-sm text-gray-500">
+                Get notified about unusual spending patterns and anomalies
+              </p>
+            </div>
+            <Switch
+              checked={preferences.spending_alerts_enabled}
+              onCheckedChange={(checked) => handleSwitchChange('spending_alerts_enabled', checked)}
+              disabled={saving || !preferences.email_enabled}
+            />
+          </div>
+
+          {preferences.spending_alerts_enabled && preferences.email_enabled && (
+            <div className="space-y-3 pt-3 border-t">
+              <div>
+                <Label htmlFor="alert_severity" className="text-sm font-medium">
+                  Alert Sensitivity
+                </Label>
+                <select
+                  id="alert_severity"
+                  value={preferences.spending_alert_severity_threshold}
+                  onChange={(e) => handleSwitchChange('spending_alert_severity_threshold', e.target.value)}
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm mt-1"
+                >
+                  <option value="low">Low - All alerts</option>
+                  <option value="medium">Medium - Important alerts</option>
+                  <option value="high">High - Critical alerts only</option>
+                  <option value="critical">Critical - Emergency alerts only</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Choose how sensitive you want the spending anomaly detection to be
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Financial Health Reports */}
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-base font-medium">Financial Health Reports</Label>
+              <p className="text-sm text-gray-500">
+                Monthly reports with your financial health score and recommendations
+              </p>
+            </div>
+            <Switch
+              checked={preferences.financial_health_reports_enabled}
+              onCheckedChange={(checked) => handleSwitchChange('financial_health_reports_enabled', checked)}
+              disabled={saving || !preferences.email_enabled}
+            />
+          </div>
+
+          {/* Budget Recommendations */}
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-base font-medium">AI Budget Recommendations</Label>
+              <p className="text-sm text-gray-500">
+                Smart suggestions to optimize your budget based on spending patterns
+              </p>
+            </div>
+            <Switch
+              checked={preferences.budget_recommendations_enabled}
+              onCheckedChange={(checked) => handleSwitchChange('budget_recommendations_enabled', checked)}
+              disabled={saving || !preferences.email_enabled}
+            />
+          </div>
+
+          {/* Weekly Analytics Digest */}
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-base font-medium">Weekly Analytics Digest</Label>
+              <p className="text-sm text-gray-500">
+                Weekly summary of your spending trends and financial insights
+              </p>
+            </div>
+            <Switch
+              checked={preferences.weekly_analytics_digest_enabled}
+              onCheckedChange={(checked) => handleSwitchChange('weekly_analytics_digest_enabled', checked)}
+              disabled={saving || !preferences.email_enabled}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Account Updates */}
       <Card>
         <CardHeader>
