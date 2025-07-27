@@ -235,6 +235,19 @@ class ApiService {
     const response = await this.client.post('/analytics/process-scheduled-notifications');
     return response.data;
   }
+
+  // ==================== WHATSAPP INTEGRATION ====================
+  async getWhatsAppStatus() {
+    const response = await this.client.get('/whatsapp/status');
+    return response.data;
+  }
+
+  async testWhatsAppParsing(smsText) {
+    const response = await this.client.post('/whatsapp/test', {
+      sms_text: smsText
+    });
+    return response.data;
+  }
 }
 
 export default new ApiService();
