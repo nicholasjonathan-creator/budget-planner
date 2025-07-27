@@ -7,7 +7,7 @@ from fastapi import HTTPException, status
 from models.user import TokenData
 
 # Configuration
-SECRET_KEY = os.getenv("JWT_SECRET")
+SECRET_KEY = os.getenv("JWT_SECRET") or "dev-secret-key-please-change-in-production"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE", "60"))  # 1 hour default
 
