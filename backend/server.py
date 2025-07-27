@@ -415,10 +415,9 @@ async def get_smtp_config(admin_user: User = Depends(get_admin_user)):
 
 @api_router.post("/notifications/production/trigger-budget-alerts")
 async def trigger_budget_alerts(admin_user: User = Depends(get_admin_user)):
-    """Manually trigger budget alerts for testing (admin only)"""
+    """Manually trigger budget alerts for testing (admin only) - DISABLED"""
     try:
-        await email_scheduler.send_budget_alerts()
-        return {"message": "Budget alerts triggered successfully"}
+        return {"message": "Budget alerts disabled - no email functionality needed"}
     except Exception as e:
         logger.error(f"Error triggering budget alerts: {e}")
         raise HTTPException(status_code=500, detail=str(e))
