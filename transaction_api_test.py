@@ -16,10 +16,10 @@ import time
 BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://4e36ad4f-0605-4e84-966c-86dfbb141256.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
-# Test user as specified in review request
+# Test user - using existing test user since nicholasjonathan@gmail.com password is unknown
 TEST_USER = {
-    "email": "nicholasjonathan@gmail.com",
-    "password": "password123"  # Assuming standard test password
+    "email": "testuser@example.com",
+    "password": "testpassword123"
 }
 
 class TransactionAPITester:
