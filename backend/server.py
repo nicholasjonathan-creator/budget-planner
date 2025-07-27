@@ -578,7 +578,7 @@ async def get_budget_limits(month: int, year: int, current_user: User = Depends(
 # ==================== CATEGORIES ENDPOINTS ====================
 
 @api_router.get("/categories", response_model=List[Category])
-async def get_categories():
+async def get_categories(current_user: User = Depends(get_current_active_user)):
     """Get all categories"""
     try:
         cursor = db.categories.find({}).sort("id", 1)
