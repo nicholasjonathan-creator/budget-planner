@@ -10,7 +10,7 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 from twilio.rest import Client
 from twilio.request_validator import RequestValidator
-from services.sms_parser import SMSParser
+from services.sms_parser import SMSTransactionParser
 from services.transaction_service import TransactionService
 from services.email_service import send_transaction_confirmation_email
 from models.user import User
@@ -29,7 +29,7 @@ class WhatsAppSMSProcessor:
         
         self.client = Client(self.account_sid, self.auth_token)
         self.validator = RequestValidator(self.auth_token)
-        self.sms_parser = SMSParser()
+        self.sms_parser = SMSTransactionParser()
         self.transaction_service = TransactionService()
         self.db = db
     
