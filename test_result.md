@@ -105,6 +105,21 @@
 user_problem_statement: "Phase 4: Smart Alerts & Notifications - Integrate enhanced analytics insights with the existing email notification system. Features include: 1) Spending alert emails for unusual patterns, 2) Monthly financial health reports with scores and recommendations, 3) AI-powered budget recommendation emails, 4) Weekly analytics digest emails, 5) User preferences for analytics notifications, 6) Manual trigger buttons in analytics dashboard, 7) Integration with existing SendGrid email system."
 
 backend:
+  - task: "Transaction API Filtering Issue Investigation"
+    implemented: true
+    working: false
+    file: "backend/services/transaction_service.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "CRITICAL TRANSACTION FILTERING ISSUE DISCOVERED: Comprehensive testing revealed that the /api/transactions?month=6&year=2025 endpoint is NOT returning all transactions correctly. FINDINGS: 1) Database contains 5 transactions for July 2025 (₹150.00, ₹1394.82, ₹1408.00, ₹500.00, ₹500.00), 2) API only returns 2 transactions (₹150.00 and ₹1394.82), 3) Missing transactions are all from SMS source while returned transactions are from manual source, 4) Manual date filtering logic works correctly - all 5 transactions should be in range 2025-07-01 to 2025-08-01, 5) The TransactionService.get_transactions method appears to have a database query execution issue that filters out SMS transactions incorrectly. ROOT CAUSE: The database query in get_transactions method is not returning all matching records despite correct date range logic. This affects both the frontend transaction display and potentially the monthly summary calculations. IMPACT: Users cannot see all their transactions for specific months, leading to incomplete financial data visibility. This is a HIGH PRIORITY issue that needs immediate investigation of the MongoDB query execution in the transaction service."
+      - working: false
+        agent: "testing"
+        comment: "TRANSACTION FILTERING ISSUE CONFIRMED - CRITICAL BUG FOUND: ❌ Conducted extensive testing of the transaction API filtering issue reported for nicholasjonathan@gmail.com. CRITICAL FINDINGS: 1) DATABASE ANALYSIS: Found 5 transactions for July 2025 in database (₹150.00, ₹1394.82, ₹1408.00, ₹500.00, ₹500.00), 2) API FILTERING BUG: /api/transactions?month=6&year=2025 only returns 2 transactions instead of 5, 3) MISSING TRANSACTIONS: 3 SMS-sourced transactions are missing from API response (₹1408.00 from PVR LIMITED, two ₹500.00 HDFC transactions), 4) SOURCE PATTERN: Returned transactions are 'manual' source, missing transactions are 'sms' source, 5) DATE LOGIC CORRECT: Manual filtering confirms all 5 transactions should be in range 2025-07-01 to 2025-08-01, 6) QUERY EXECUTION ISSUE: The TransactionService.get_transactions MongoDB query is not returning all matching records despite correct date range calculation. This is a CRITICAL bug affecting transaction visibility and financial data accuracy. The issue matches exactly what was reported - users can see some but not all transactions for specific months. REQUIRES IMMEDIATE ATTENTION to fix the database query execution in transaction service."
+
   - task: "Deployed Services Integration Verification"
     implemented: true
     working: true
