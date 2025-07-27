@@ -536,6 +536,10 @@ const BudgetDashboard = () => {
           <TabsContent value="whatsapp">
             <WhatsAppIntegration />
           </TabsContent>
+
+          <TabsContent value="monitoring">
+            <MonitoringPanel />
+          </TabsContent>
           
           {isAdmin && (
             <TabsContent value="production">
