@@ -425,6 +425,70 @@ const TransactionList = ({ transactions, categories, onTransactionUpdate, showDe
           })}
         </div>
       </CardContent>
+
+      {/* Transaction Edit Modal */}
+      <TransactionEditModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        transaction={selectedTransaction}
+        categories={categories}
+        onTransactionUpdated={handleTransactionUpdated}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-600" />
+              Delete Transaction
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this transaction? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          {transactionToDelete && (
+            <div className="py-4">
+              <div className="p-4 bg-gray-50 rounded-lg border">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-medium">{transactionToDelete.description}</div>
+                    <div className="text-sm text-gray-600">
+                      {new Date(transactionToDelete.date).toLocaleDateString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                      })}
+                    </div>
+                  </div>
+                  <div className={`font-bold ${transactionToDelete.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                    {transactionToDelete.type === 'income' ? '+' : '-'}₹{transactionToDelete.amount.toLocaleString('en-IN')}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDeleteTransaction}
+              disabled={deleting}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {deleting ? 'Deleting...' : 'Delete Transaction'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
