@@ -35,7 +35,7 @@ const MonitoringPanel = () => {
 
   const checkSystemHealth = async () => {
     try {
-      const health = await ApiService.getSystemHealth();
+      const health = await apiService.getSystemHealth();
       setSystemHealth(health);
       
       if (health.status === 'unhealthy') {
@@ -54,7 +54,7 @@ const MonitoringPanel = () => {
   const checkUserSyncStatus = async () => {
     setIsChecking(true);
     try {
-      const response = await ApiService.checkUserSyncStatus();
+      const response = await apiService.checkUserSyncStatus();
       setAlerts(response.sync_alerts || []);
       setLastCheckTime(new Date());
       
