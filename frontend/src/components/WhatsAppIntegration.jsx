@@ -8,9 +8,6 @@ const WhatsAppIntegration = () => {
   const [whatsappData, setWhatsappData] = useState(null);
   const [phoneStatus, setPhoneStatus] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [testSMS, setTestSMS] = useState('');
-  const [testResult, setTestResult] = useState(null);
-  const [testLoading, setTestLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
