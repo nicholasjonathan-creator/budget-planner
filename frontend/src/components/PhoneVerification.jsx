@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Phone, Shield, CheckCircle, AlertCircle, Clock, Trash2 } from 'lucide-react';
-import { 
-  sendPhoneVerification, 
-  verifyPhoneOTP, 
-  resendPhoneOTP, 
-  unlinkPhoneNumber, 
-  getPhoneVerificationStatus 
-} from '../services/api';
+import apiService from '../services/api';
 import { useToast } from '../hooks/use-toast';
 
 const PhoneVerification = () => {
