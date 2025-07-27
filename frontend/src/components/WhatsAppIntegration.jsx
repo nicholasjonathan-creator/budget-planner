@@ -9,6 +9,7 @@ const WhatsAppIntegration = () => {
   const [whatsappData, setWhatsappData] = useState(null);
   const [phoneStatus, setPhoneStatus] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showSMSDemo, setShowSMSDemo] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
