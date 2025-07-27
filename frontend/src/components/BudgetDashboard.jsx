@@ -235,7 +235,25 @@ const BudgetDashboard = () => {
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Budget Planner</h1>
             <p className="text-gray-600">Track your income, expenses, and stay within budget - Built for India 🇮🇳</p>
           </div>
-          <UserProfile />
+          <div className="flex items-center gap-3">
+            <UserProfile />
+            {/* Fallback logout button if dropdown doesn't work */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => {
+                if (window.confirm('Are you sure you want to logout?')) {
+                  localStorage.removeItem('auth_token');
+                  document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                  window.location.reload();
+                }
+              }}
+              className="text-red-600 hover:bg-red-50 border border-red-200"
+            >
+              <LogOut className="h-4 w-4 mr-1" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         {/* Month/Year Selector */}
