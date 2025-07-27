@@ -1063,7 +1063,7 @@ async def get_phone_verification_status(current_user: User = Depends(get_current
     """
     try:
         # Get user data including phone verification status
-        user_data = await db.users.find_one({"_id": current_user.id})
+        user_data = await db.users.find_one({"_id": str(current_user.id)})
         
         if not user_data:
             raise HTTPException(status_code=404, detail="User not found")
