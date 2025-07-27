@@ -433,7 +433,7 @@ class TransactionAPITester:
 
     def run_all_tests(self):
         """Run all transaction API tests"""
-        print("🚀 Starting Transaction API Testing for nicholasjonathan@gmail.com")
+        print("🚀 Starting Transaction API Testing for testuser@example.com")
         print("Focus: /api/transactions filtering issue with month=6&year=2025")
         print("=" * 80)
         
@@ -446,6 +446,10 @@ class TransactionAPITester:
         if not self.authenticate_user():
             print("❌ Could not authenticate test user. Aborting tests.")
             return False
+        
+        # Create test transactions to simulate the issue
+        if not self.create_test_transactions():
+            print("⚠️  Could not create all test transactions, but continuing with existing data...")
         
         # Run all transaction API tests
         self.test_transactions_with_month_year_filter()
