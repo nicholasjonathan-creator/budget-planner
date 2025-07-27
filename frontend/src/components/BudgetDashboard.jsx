@@ -484,6 +484,10 @@ const BudgetDashboard = () => {
             />
           </TabsContent>
           
+          <TabsContent value="analytics">
+            <AnalyticsDashboard />
+          </TabsContent>
+          
           <TabsContent value="budget">
             <BudgetLimitsManager 
               budgetLimits={budgetLimits}
