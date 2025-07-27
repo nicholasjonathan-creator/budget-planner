@@ -12,7 +12,6 @@ from twilio.rest import Client
 from twilio.request_validator import RequestValidator
 from services.sms_parser import SMSTransactionParser
 from services.transaction_service import TransactionService
-from services.email_service import send_transaction_confirmation_email
 from models.user import User
 from database import db
 
