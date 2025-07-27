@@ -53,11 +53,17 @@ class WhatsAppSMSProcessor:
             to_number = webhook_data.get('To', '').replace('whatsapp:', '')
             message_sid = webhook_data.get('MessageSid', '')
             
+            # Normalize phone numbers (ensure they start with +)
+            if from_number and not from_number.startswith('+'):
+                from_number = '+' + from_number
+            if to_number and not to_number.startswith('+'):
+                to_number = '+' + to_number
+            
             logger.info(f"Received WhatsApp message from {from_number}: {message_body[:100]}...")
             
             # Check if this is a valid WhatsApp message to our number
             if to_number != self.whatsapp_number:
-                logger.warning(f"Message received for unexpected number: {to_number}")
+                logger.warning(f"Message received for unexpected number: {to_number} (expected: {self.whatsapp_number})")
                 return {"status": "ignored", "reason": "wrong_number"}
             
             # Find user by phone number (simplified - you might want a better user mapping)
