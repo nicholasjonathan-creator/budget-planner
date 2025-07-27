@@ -20,6 +20,8 @@ categories_collection = db.categories
 users_collection = db.users
 notification_preferences_collection = db.notification_preferences
 notification_logs_collection = db.notification_logs
+analytics_cache_collection = db.analytics_cache
+spending_alerts_collection = db.spending_alerts
 
 # Initialize default categories
 async def init_categories():
