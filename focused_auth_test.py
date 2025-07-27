@@ -228,7 +228,8 @@ class FocusedAuthTester:
                                  {"response_text": response.text[:200]})
         else:
             self.log_test("User Registration", False, 
-                         f"No response from server (likely timeout), Response time: {response_time:.2f}s")
+                         f"No response from server (likely timeout), Response time: {response_time:.2f}s",
+                         {"timeout_details": "Request completed but no valid response object"})
         
         return False
     
