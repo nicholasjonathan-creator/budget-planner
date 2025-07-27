@@ -248,6 +248,48 @@ class ApiService {
     });
     return response.data;
   }
+
+  // ==================== PHONE VERIFICATION ====================
+  async sendPhoneVerification(phoneData) {
+    try {
+      const response = await this.client.post('/phone/send-verification', phoneData);
+      return response.data;
+    } catch (error) {
+      throw { response: { data: error.response?.data || error.message } };
+    }
+  }
+
+  async verifyPhoneOTP(otpData) {
+    try {
+      const response = await this.client.post('/phone/verify-otp', otpData);
+      return response.data;
+    } catch (error) {
+      throw { response: { data: error.response?.data || error.message } };
+    }
+  }
+
+  async resendPhoneOTP() {
+    try {
+      const response = await this.client.post('/phone/resend-otp');
+      return response.data;
+    } catch (error) {
+      throw { response: { data: error.response?.data || error.message } };
+    }
+  }
+
+  async unlinkPhoneNumber() {
+    try {
+      const response = await this.client.delete('/phone/unlink');
+      return response.data;
+    } catch (error) {
+      throw { response: { data: error.response?.data || error.message } };
+    }
+  }
+
+  async getPhoneVerificationStatus() {
+    const response = await this.client.get('/phone/status');
+    return response.data;
+  }
 }
 
 export default new ApiService();
