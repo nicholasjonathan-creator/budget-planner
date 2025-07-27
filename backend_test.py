@@ -69,13 +69,13 @@ class Phase4AnalyticsEmailTester:
         """Authenticate test users and get JWT tokens"""
         print("\n🔐 Authenticating Test Users...")
         
-        # Try to authenticate primary user
+        # Try to authenticate secondary user (analyticstest)
         try:
             login_response = requests.post(
                 f"{API_BASE}/auth/login",
                 json={
-                    "email": TEST_USERS["primary"]["email"],
-                    "password": TEST_USERS["primary"]["password"]
+                    "email": TEST_USERS["secondary"]["email"],
+                    "password": TEST_USERS["secondary"]["password"]
                 },
                 headers={"Content-Type": "application/json"},
                 timeout=10
@@ -85,25 +85,10 @@ class Phase4AnalyticsEmailTester:
                 login_data = login_response.json()
                 self.auth_token = login_data.get("access_token")
                 self.user_id = login_data.get("user", {}).get("id")
-                print(f"✅ Primary user authenticated: {TEST_USERS['primary']['email']}")
+                print(f"✅ Secondary user authenticated: {TEST_USERS['secondary']['email']}")
             else:
-                # Try to register the user first
-                print("🔄 Primary user not found, attempting registration...")
-                register_response = requests.post(
-                    f"{API_BASE}/auth/register",
-                    json=TEST_USERS["primary"],
-                    headers={"Content-Type": "application/json"},
-                    timeout=10
-                )
-                
-                if register_response.status_code == 201:
-                    register_data = register_response.json()
-                    self.auth_token = register_data.get("access_token")
-                    self.user_id = register_data.get("user", {}).get("id")
-                    print(f"✅ Primary user registered and authenticated: {TEST_USERS['primary']['email']}")
-                else:
-                    print(f"❌ Failed to register primary user: {register_response.status_code}")
-                    return False
+                print(f"❌ Failed to authenticate secondary user: {login_response.status_code}")
+                return False
                     
         except Exception as e:
             print(f"❌ Error authenticating primary user: {e}")
