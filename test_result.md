@@ -175,6 +175,7 @@ test_plan:
     - "Clean Codebase Setup"
     - "Backend Service Health Check"
     - "Frontend Service Health Check"
+    - "Frontend Comprehensive Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
