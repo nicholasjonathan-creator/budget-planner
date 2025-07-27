@@ -20,7 +20,7 @@ const PhoneVerification = () => {
   const loadPhoneStatus = async () => {
     try {
       setStatusLoading(true);
-      const status = await getPhoneVerificationStatus();
+      const status = await apiService.getPhoneVerificationStatus();
       setPhoneStatus(status);
       
       if (status.phone_verified) {
@@ -46,7 +46,7 @@ const PhoneVerification = () => {
 
     try {
       setLoading(true);
-      await sendPhoneVerification({ phone_number: phoneNumber });
+      await apiService.sendPhoneVerification({ phone_number: phoneNumber });
       
       toast({
         title: "Verification Sent!",
@@ -78,7 +78,7 @@ const PhoneVerification = () => {
 
     try {
       setLoading(true);
-      await verifyPhoneOTP({ otp: otp });
+      await apiService.verifyPhoneOTP({ otp: otp });
       
       toast({
         title: "Success!",
@@ -102,7 +102,7 @@ const PhoneVerification = () => {
   const handleResendOTP = async () => {
     try {
       setResendLoading(true);
-      await resendPhoneOTP();
+      await apiService.resendPhoneOTP();
       
       toast({
         title: "Code Resent",
@@ -127,7 +127,7 @@ const PhoneVerification = () => {
 
     try {
       setLoading(true);
-      await unlinkPhoneNumber();
+      await apiService.unlinkPhoneNumber();
       
       toast({
         title: "Phone Unlinked",
