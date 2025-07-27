@@ -247,12 +247,13 @@ App: https://0f621684-5333-4b17-9188-b8424f0e0b0c.preview.emergentagent.com"""
         """Send email notification for processed transaction"""
         try:
             if user.get('email') and user.get('transaction_confirmation_enabled', False):
-                await send_transaction_confirmation_email(
-                    user['email'],
-                    user.get('username', 'User'),
-                    transaction
-                )
-                logger.info(f"Email notification sent to {user['email']}")
+                # Email notification functionality temporarily disabled
+                # await send_transaction_confirmation_email(
+                #     user['email'],
+                #     user.get('username', 'User'),
+                #     transaction
+                # )
+                logger.info(f"Email notification would be sent to {user['email']} (currently disabled)")
         except Exception as e:
             logger.error(f"Error sending email notification: {e}")
     
