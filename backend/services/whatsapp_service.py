@@ -57,6 +57,11 @@ class WhatsAppSMSProcessor:
         Process incoming WhatsApp message containing forwarded bank SMS
         """
         try:
+            # Check if Twilio is enabled
+            if not self.twilio_enabled:
+                logger.warning("WhatsApp message processing disabled - Twilio not configured")
+                return {"status": "disabled", "reason": "twilio_not_configured"}
+            
             # Extract message details from Twilio webhook
             message_body = webhook_data.get('Body', '').strip()
             from_number = webhook_data.get('From', '').replace('whatsapp:', '')
