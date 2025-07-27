@@ -77,6 +77,12 @@ class NotificationPreferencesUpdate(BaseModel):
     sms_processing_enabled: Optional[bool] = None
     sms_processing_frequency: Optional[NotificationFrequency] = None
     account_updates_enabled: Optional[bool] = None
+    # Analytics preferences
+    spending_alerts_enabled: Optional[bool] = None
+    spending_alert_severity_threshold: Optional[str] = None
+    financial_health_reports_enabled: Optional[bool] = None
+    budget_recommendations_enabled: Optional[bool] = None
+    weekly_analytics_digest_enabled: Optional[bool] = None
     email_enabled: Optional[bool] = None
     email_address: Optional[EmailStr] = None
 
