@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { PlusCircle, TrendingUp, TrendingDown, DollarSign, AlertTriangle, MessageSquare, Settings, Shield } from 'lucide-react';
+import { PlusCircle, TrendingUp, TrendingDown, DollarSign, AlertTriangle, MessageSquare, Settings, Shield, BarChart3 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import ApiService from '../services/api';
 import TransactionForm from './TransactionForm';
