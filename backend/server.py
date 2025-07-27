@@ -905,34 +905,46 @@ app.include_router(api_router)
 # Startup event
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database and start email scheduler on startup"""
-    await init_db()
-    
-    # Start email scheduler if in production
-    if production_email_config.environment == 'production':
-        try:
-            email_scheduler.start()
-            logger.info("Email scheduler started for production environment")
-        except Exception as e:
-            logger.error(f"Failed to start email scheduler: {e}")
-    else:
-        logger.info("Email scheduler not started (development environment)")
-    
-    logger.info("Budget Planner API started successfully")
+    """Initialize services on startup"""
+    try:
+        # Initialize database
+        await init_db()
+        logger.info("Database initialized successfully")
+        
+        # Initialize email scheduler based on environment
+        if os.getenv('ENVIRONMENT') == 'production':
+            await email_scheduler.start()
+            logger.info("Email scheduler started (production environment)")
+        else:
+            logger.info("Email scheduler not started (development environment)")
+            
+        # Start monitoring scheduler
+        await monitoring_scheduler.start()
+        logger.info("Monitoring scheduler started")
+        
+        logger.info("Budget Planner API started successfully")
+        
+    except Exception as e:
+        logger.error(f"Error during startup: {e}")
+        raise
 
-# Shutdown event
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
-    # Stop email scheduler
     try:
-        if email_scheduler.is_running:
-            email_scheduler.stop()
-            logger.info("Email scheduler stopped")
+        # Stop email scheduler
+        await email_scheduler.stop()
+        logger.info("Email scheduler stopped")
+        
+        # Stop monitoring scheduler
+        await monitoring_scheduler.stop()
+        logger.info("Monitoring scheduler stopped")
+        
+        logger.info("Budget Planner API shutting down")
+        
     except Exception as e:
-        logger.error(f"Error stopping email scheduler: {e}")
-    
-    logger.info("Budget Planner API shutting down")
+        logger.error(f"Error during shutdown: {e}")
+        raise
 
 # ==================== ADMIN ENDPOINTS
 @app.post("/api/admin/clear-sms-data")
