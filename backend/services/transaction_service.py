@@ -109,9 +109,21 @@ class TransactionService:
             query = {"_id": ObjectId(transaction_id)}
             if user_id:
                 query["user_id"] = user_id
-                
+            
+            # Get transaction before deletion to update budgets
+            transaction = await self.get_transaction_by_id(transaction_id)
+            
             result = await self.transactions_collection.delete_one(query)
-            return result.deleted_count > 0
+            success = result.deleted_count > 0
+            
+            # Update budget spent amounts if transaction was deleted
+            if success and transaction and user_id:
+                # Convert date to month/year for budget update
+                month = transaction.date.month - 1  # Convert to 0-indexed
+                year = transaction.date.year
+                await self.update_budget_spent(month, year, user_id)
+            
+            return success
             
         except Exception as e:
             logger.error(f"Error deleting transaction: {e}")
