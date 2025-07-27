@@ -3,6 +3,7 @@ import { MessageCircle, Phone, CheckCircle, AlertCircle, Copy, Send, Shield } fr
 import apiService from '../services/api';
 import { useToast } from '../hooks/use-toast';
 import PhoneVerification from './PhoneVerification';
+import SMSDemo from './SMSDemo';
 
 const WhatsAppIntegration = () => {
   const [whatsappData, setWhatsappData] = useState(null);
