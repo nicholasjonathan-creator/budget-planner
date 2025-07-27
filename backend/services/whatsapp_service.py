@@ -135,7 +135,7 @@ class WhatsAppSMSProcessor:
                 transaction_dict['user_id'] = user_id
                 transaction_dict['processing_method'] = "whatsapp_auto"
                 transaction_dict['raw_sms'] = sms_text
-                transaction_dict['source'] = "whatsapp"
+                transaction_dict['source'] = "sms"
                 
                 # Save transaction to database
                 transaction_result = await self.db.transactions.insert_one(transaction_dict)
