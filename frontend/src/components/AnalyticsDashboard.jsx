@@ -176,17 +176,32 @@ const AnalyticsDashboard = () => {
           <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
           <p className="text-gray-600 mt-1">Comprehensive insights into your financial health</p>
         </div>
-        <div className="flex space-x-2">
-          {['weekly', 'monthly', 'quarterly'].map((timeframe) => (
-            <Button
-              key={timeframe}
-              variant={activeTimeframe === timeframe ? "default" : "outline"}
-              size="sm"
-              onClick={() => setActiveTimeframe(timeframe)}
-            >
-              {timeframe.charAt(0).toUpperCase() + timeframe.slice(1)}
-            </Button>
-          ))}
+        <div className="flex items-center space-x-3">
+          {/* Timeframe Buttons */}
+          <div className="flex space-x-2">
+            {['weekly', 'monthly', 'quarterly'].map((timeframe) => (
+              <Button
+                key={timeframe}
+                variant={activeTimeframe === timeframe ? "default" : "outline"}
+                size="sm"
+                onClick={() => setActiveTimeframe(timeframe)}
+              >
+                {timeframe.charAt(0).toUpperCase() + timeframe.slice(1)}
+              </Button>
+            ))}
+          </div>
+          
+          {/* Email Notifications Button */}
+          <Button
+            onClick={handleSendAllNotifications}
+            disabled={sendingEmails}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Bell className="h-4 w-4" />
+            {sendingEmails ? 'Sending...' : 'Send Email Alerts'}
+          </Button>
         </div>
       </div>
 
