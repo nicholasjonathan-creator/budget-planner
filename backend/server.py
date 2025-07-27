@@ -26,7 +26,7 @@ from services.transaction_service import TransactionService
 from services.sms_service import SMSService
 from services.user_service import UserService
 from services.auth import create_user_token
-from services.email_templates import EmailTemplates
+# Email templates removed - no email functionality needed
 from services.notification_service import NotificationPreferencesService
 from services.email_scheduler import email_scheduler
 from services.production_email_config import production_email_config
