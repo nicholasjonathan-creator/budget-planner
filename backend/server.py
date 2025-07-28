@@ -1437,8 +1437,6 @@ async def remove_phone_number(
     Remove phone number from account
     """
     try:
-        from services.phone_management_service import phone_management_service
-        
         reason = request.get("reason", "User requested phone number removal")
         
         result = await phone_management_service.remove_phone_number(current_user.id, reason)
