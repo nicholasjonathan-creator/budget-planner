@@ -10,7 +10,7 @@ class UserRole(str, Enum):
 class User(BaseModel):
     id: Optional[str] = Field(default=None, alias="_id")
     email: EmailStr
-    username: str
+    username: Optional[str] = None  # Made optional - will be deprecated
     password_hash: str
     role: UserRole = UserRole.USER
     is_active: bool = True
@@ -22,7 +22,7 @@ class User(BaseModel):
         json_schema_extra = {
             "example": {
                 "email": "user@example.com",
-                "username": "johndoe",
+                "username": "johndoe",  # Optional
                 "password_hash": "$2b$12$...",
                 "role": "user",
                 "is_active": True
@@ -31,14 +31,14 @@ class User(BaseModel):
 
 class UserCreate(BaseModel):
     email: EmailStr
-    username: str
+    username: Optional[str] = None  # Made optional
     password: str
     
     class Config:
         json_schema_extra = {
             "example": {
                 "email": "user@example.com",
-                "username": "johndoe",
+                "username": "johndoe",  # Optional
                 "password": "securepassword123"
             }
         }
