@@ -102,7 +102,7 @@ class SMSService:
     
     async def get_unprocessed_sms(self) -> List[SMSTransaction]:
         """Get all unprocessed SMS messages"""
-        cursor = self.collection.find({"processed": False})
+        cursor = self.sms_collection.find({"processed": False})
         return [SMSTransaction(**doc) async for doc in cursor]
     
     async def reprocess_sms(self, sms_id: str) -> dict:
