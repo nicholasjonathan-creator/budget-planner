@@ -338,7 +338,7 @@ class ApiService {
   // Get recent monitoring alerts
   async getRecentAlerts(timeWindow = 60) {
     try {
-      const response = await this.api.get(`/monitoring/alerts?time_window=${timeWindow}`);
+      const response = await this.client.get(`/monitoring/alerts?time_window=${timeWindow}`);
       return response.data;
     } catch (error) {
       console.error('Error getting recent alerts:', error);
