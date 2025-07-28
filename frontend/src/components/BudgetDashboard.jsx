@@ -573,6 +573,18 @@ const BudgetDashboard = () => {
             <WhatsAppIntegration />
           </TabsContent>
 
+          <TabsContent value="sms">
+            <SMSManagement />
+          </TabsContent>
+
+          <TabsContent value="phone">
+            <PhoneNumberManagement />
+          </TabsContent>
+
+          <TabsContent value="account">
+            <AccountDeletion />
+          </TabsContent>
+
           <TabsContent value="monitoring">
             <MonitoringPanel />
           </TabsContent>
