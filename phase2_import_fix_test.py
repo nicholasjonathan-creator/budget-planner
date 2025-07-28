@@ -54,8 +54,13 @@ class Phase2ImportFixTester:
         except requests.exceptions.SSLError as e:
             print(f"SSL error for {method} {url}: {e}")
             return None
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             print(f"Request error for {method} {url}: {e}")
+            return None
+        except Exception as e:
+            print(f"Unexpected error for {method} {url}: {e}")
+            import traceback
+            traceback.print_exc()
             return None
     
     def test_import_fix_verification(self):
