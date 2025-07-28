@@ -78,13 +78,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Phase 1: Username Optional Registration"
-    - "Phase 1: Password Reset Functionality"
-    - "Phase 1: SMS Duplicate Detection"
-  stuck_tasks:
-    - "Phase 1: Username Optional Registration"
-    - "Phase 1: Password Reset Functionality"
-    - "Phase 1: SMS Duplicate Detection"
+    - "Phase 2: Account Deletion Endpoints"
+    - "Phase 2: Phone Number Management Endpoints"
+    - "Phase 2: Enhanced SMS Management"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
