@@ -760,43 +760,58 @@ class BudgetPlannerTester:
             self.log_test("Malformed JSON Handling", False, f"Error testing malformed JSON: {e}")
     
     def run_all_tests(self):
-        """Run all test suites"""
-        print("🚀 Starting Comprehensive Backend Testing")
+        """Run all test suites with focus on Twilio integration"""
+        print("🚀 Starting Comprehensive Backend Testing - TWILIO INTEGRATION FOCUS")
         print(f"🎯 Target: {self.base_url}")
-        print("=" * 60)
+        print("🔧 Focus: Testing Twilio WhatsApp and Phone Verification after credential deployment")
+        print("=" * 80)
         
         start_time = time.time()
         
-        # Run test suites
+        # Run basic health tests first
         self.test_health_endpoints()
         self.test_database_connectivity()
         self.test_production_environment_status()
-        self.test_sms_endpoints_without_auth()
-        self.test_whatsapp_status_without_auth()
-        self.test_error_handling()
         
+        # PRIORITY: Test Twilio integration immediately
+        print("\n🔥 PRIORITY TESTING: TWILIO INTEGRATION STATUS")
+        print("=" * 50)
+        self.test_twilio_service_configuration()
+        
+        # Test SMS and WhatsApp without auth first
+        self.test_sms_endpoints_without_auth()
+        
+        # Test authentication system
         auth_success = self.test_authentication_system()
         
         if auth_success:
+            # PRIORITY: Test Twilio-dependent features with authentication
+            print("\n🔥 AUTHENTICATED TWILIO TESTING")
+            print("=" * 40)
+            self.test_whatsapp_integration()
+            self.test_phone_verification()
+            self.test_sms_processor_with_twilio()
+            
+            # Test other functionality
             self.test_transaction_management()
             self.test_sms_parsing_system()
             self.test_analytics_insights()
-            self.test_whatsapp_integration()
-            self.test_phone_verification()
             self.test_budget_management()
             self.test_notification_system()
         else:
             print("\n⚠️  Skipping authenticated tests due to registration/login issues")
         
+        # Test monitoring and error handling
         self.test_monitoring_system()
+        self.test_error_handling()
         
-        # Generate summary
+        # Generate summary with Twilio focus
         end_time = time.time()
         duration = end_time - start_time
         
-        print("\n" + "=" * 60)
-        print("📊 TEST SUMMARY")
-        print("=" * 60)
+        print("\n" + "=" * 80)
+        print("📊 TEST SUMMARY - TWILIO INTEGRATION FOCUS")
+        print("=" * 80)
         
         total_tests = len(self.test_results)
         passed_tests = sum(1 for result in self.test_results if result["success"])
@@ -808,6 +823,37 @@ class BudgetPlannerTester:
         print(f"⏱️  Duration: {duration:.2f} seconds")
         print(f"📈 Success Rate: {(passed_tests/total_tests)*100:.1f}%")
         
+        # TWILIO-SPECIFIC SUMMARY
+        print("\n🔧 TWILIO INTEGRATION STATUS:")
+        twilio_tests = [
+            "Twilio WhatsApp Number", "Twilio Sandbox Code", "Twilio Service Status",
+            "Twilio Configuration Status", "WhatsApp Status", "WhatsApp Monitoring",
+            "Send Phone Verification", "OTP Verification Endpoint"
+        ]
+        
+        twilio_passed = 0
+        twilio_total = 0
+        
+        for test_name in twilio_tests:
+            test_result = next((r for r in self.test_results if r["test"] == test_name), None)
+            if test_result:
+                twilio_total += 1
+                status = "✅" if test_result["success"] else "❌"
+                print(f"   {status} {test_name}: {test_result['message']}")
+                if test_result["success"]:
+                    twilio_passed += 1
+        
+        if twilio_total > 0:
+            twilio_success_rate = (twilio_passed / twilio_total) * 100
+            print(f"\n🎯 TWILIO SUCCESS RATE: {twilio_success_rate:.1f}% ({twilio_passed}/{twilio_total})")
+            
+            if twilio_success_rate >= 80:
+                print("   ✅ TWILIO INTEGRATION: WORKING PROPERLY")
+            elif twilio_success_rate >= 50:
+                print("   ⚠️  TWILIO INTEGRATION: PARTIALLY WORKING")
+            else:
+                print("   ❌ TWILIO INTEGRATION: NOT WORKING")
+        
         if failed_tests > 0:
             print("\n🔍 FAILED TESTS:")
             for result in self.test_results:
@@ -817,7 +863,7 @@ class BudgetPlannerTester:
         print("\n🎯 CRITICAL FUNCTIONALITY STATUS:")
         critical_tests = [
             "Health Check", "Database Categories Access", "Database Metrics", 
-            "Environment Detection", "User Registration", "SMS Statistics"
+            "Environment Detection", "User Registration", "Twilio Configuration Status"
         ]
         
         for test_name in critical_tests:
@@ -825,32 +871,6 @@ class BudgetPlannerTester:
             if test_result:
                 status = "✅" if test_result["success"] else "❌"
                 print(f"   {status} {test_name}")
-        
-        # Production readiness assessment
-        print("\n🏭 PRODUCTION READINESS ASSESSMENT:")
-        
-        core_services_working = all([
-            any(r["test"] == "Health Check" and r["success"] for r in self.test_results),
-            any(r["test"] == "Database Categories Access" and r["success"] for r in self.test_results),
-            any(r["test"] == "Database Metrics" and r["success"] for r in self.test_results),
-        ])
-        
-        if core_services_working:
-            print("   ✅ Core Services: Backend API and Database are operational")
-        else:
-            print("   ❌ Core Services: Critical issues with backend or database")
-        
-        auth_working = any(r["test"] == "User Registration" and r["success"] for r in self.test_results)
-        if auth_working:
-            print("   ✅ Authentication: User registration and login working")
-        else:
-            print("   ⚠️  Authentication: Registration issues detected (may be environment-specific)")
-        
-        monitoring_working = any(r["test"] == "System Health Monitoring" and r["success"] for r in self.test_results)
-        if monitoring_working:
-            print("   ✅ Monitoring: System monitoring and alerting operational")
-        else:
-            print("   ❌ Monitoring: Issues with monitoring system")
         
         return passed_tests, failed_tests, total_tests
 
