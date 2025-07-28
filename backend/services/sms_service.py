@@ -119,6 +119,24 @@ class SMSService:
             logger.error(f"Error reprocessing SMS: {e}")
             return {"success": False, "message": f"Error reprocessing SMS: {str(e)}"}
     
+    async def get_user_sms_stats(self, user_id: str) -> dict:
+        """Get SMS processing statistics for a specific user"""
+        try:
+            total_sms = await self.sms_collection.count_documents({"user_id": user_id})
+            processed_sms = await self.sms_collection.count_documents({"user_id": user_id, "processed": True})
+            failed_sms = await self.sms_collection.count_documents({"user_id": user_id, "processed": False})
+            
+            return {
+                "total_sms": total_sms,
+                "processed_sms": processed_sms,
+                "failed_sms": failed_sms,
+                "success_rate": (processed_sms / total_sms * 100) if total_sms > 0 else 0
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting user SMS stats: {e}")
+            return {"error": str(e)}
+    
     async def get_sms_stats(self) -> dict:
         """Get SMS processing statistics"""
         try:
