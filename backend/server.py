@@ -1273,6 +1273,238 @@ async def full_account_consolidation(
         logger.error(f"Full consolidation error: {e}")
         raise HTTPException(status_code=500, detail="Failed to perform full consolidation")
 
+# Phase 2: Account Deletion Endpoints
+@app.get("/api/account/deletion/preview")
+async def get_account_deletion_preview(
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get preview of account data before deletion
+    """
+    try:
+        from services.account_deletion_service import account_deletion_service
+        
+        data_summary = await account_deletion_service.get_account_data_summary(current_user.id)
+        
+        return data_summary
+        
+    except Exception as e:
+        logger.error(f"Account deletion preview error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get account deletion preview")
+
+@app.post("/api/account/deletion/soft-delete")
+async def soft_delete_account(
+    request: dict = Body(...),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Soft delete account (deactivate but preserve data)
+    """
+    try:
+        from services.account_deletion_service import account_deletion_service
+        
+        reason = request.get("reason", "User requested account deactivation")
+        
+        result = await account_deletion_service.soft_delete_account(current_user.id, reason)
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Soft delete account error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to deactivate account")
+
+@app.post("/api/account/deletion/hard-delete")
+async def hard_delete_account(
+    request: dict = Body(...),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Hard delete account (complete removal of all data)
+    """
+    try:
+        from services.account_deletion_service import account_deletion_service
+        
+        reason = request.get("reason", "User requested complete account deletion")
+        confirmation = request.get("confirmation")
+        
+        if confirmation != "PERMANENTLY DELETE MY ACCOUNT":
+            raise HTTPException(
+                status_code=400, 
+                detail="Confirmation text required: 'PERMANENTLY DELETE MY ACCOUNT'"
+            )
+        
+        result = await account_deletion_service.hard_delete_account(current_user.id, reason)
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Hard delete account error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete account")
+
+@app.get("/api/account/export-data")
+async def export_account_data(
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Export all user data for GDPR compliance
+    """
+    try:
+        from services.account_deletion_service import account_deletion_service
+        
+        export_result = await account_deletion_service.export_user_data(current_user.id)
+        
+        return export_result
+        
+    except Exception as e:
+        logger.error(f"Export account data error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to export account data")
+
+# Phase 2: Phone Number Management Endpoints
+@app.get("/api/phone/status")
+async def get_phone_status(
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get current phone number status
+    """
+    try:
+        from services.phone_management_service import phone_management_service
+        
+        status = await phone_management_service.get_phone_status(current_user.id)
+        
+        return status
+        
+    except Exception as e:
+        logger.error(f"Get phone status error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get phone status")
+
+@app.post("/api/phone/initiate-change")
+async def initiate_phone_change(
+    request: dict = Body(...),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Initiate phone number change
+    """
+    try:
+        from services.phone_management_service import phone_management_service
+        
+        new_phone_number = request.get("new_phone_number")
+        if not new_phone_number:
+            raise HTTPException(status_code=400, detail="New phone number is required")
+        
+        result = await phone_management_service.initiate_phone_change(
+            current_user.id, new_phone_number
+        )
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Initiate phone change error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to initiate phone change")
+
+@app.post("/api/phone/complete-change")
+async def complete_phone_change(
+    request: dict = Body(...),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Complete phone number change with verification
+    """
+    try:
+        from services.phone_management_service import phone_management_service
+        
+        new_phone_number = request.get("new_phone_number")
+        verification_code = request.get("verification_code")
+        
+        if not new_phone_number or not verification_code:
+            raise HTTPException(
+                status_code=400, 
+                detail="New phone number and verification code are required"
+            )
+        
+        result = await phone_management_service.complete_phone_change(
+            current_user.id, new_phone_number, verification_code
+        )
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Complete phone change error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to complete phone change")
+
+@app.delete("/api/phone/remove")
+async def remove_phone_number(
+    request: dict = Body(...),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Remove phone number from account
+    """
+    try:
+        from services.phone_management_service import phone_management_service
+        
+        reason = request.get("reason", "User requested phone number removal")
+        
+        result = await phone_management_service.remove_phone_number(current_user.id, reason)
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Remove phone number error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to remove phone number")
+
+@app.get("/api/phone/history")
+async def get_phone_history(
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get phone number change history
+    """
+    try:
+        from services.phone_management_service import phone_management_service
+        
+        history = await phone_management_service.get_phone_history(current_user.id)
+        
+        return history
+        
+    except Exception as e:
+        logger.error(f"Get phone history error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get phone history")
+
+@app.post("/api/phone/cancel-change")
+async def cancel_phone_change(
+    request: dict = Body(...),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Cancel pending phone number change
+    """
+    try:
+        from services.phone_management_service import phone_management_service
+        
+        new_phone_number = request.get("new_phone_number")
+        if not new_phone_number:
+            raise HTTPException(status_code=400, detail="New phone number is required")
+        
+        result = await phone_management_service.cancel_phone_change(
+            current_user.id, new_phone_number
+        )
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Cancel phone change error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to cancel phone change")
+
 # SMS Management Endpoints
 @app.get("/api/sms/list")
 async def get_user_sms_list(
