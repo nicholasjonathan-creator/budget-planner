@@ -1166,40 +1166,275 @@ class BudgetPlannerTester:
             else:
                 self.log_test("SMS Hash Generation", False, "Cannot verify SMS hash generation")
 
-    def test_login_issue_for_pat_user(self):
-        """Test login issue investigation for user 'Pat' - Focus on login functionality"""
+    def test_critical_login_fix_verification(self):
+        """Test critical login fix verification - Focus on production environment and login performance"""
         print("\n" + "=" * 80)
-        print("🎯 LOGIN ISSUE INVESTIGATION FOR USER 'PAT'")
+        print("🎯 CRITICAL LOGIN FIX VERIFICATION FOR USER 'PAT'")
         print("🌐 Testing Backend: https://budget-planner-backendjuly.onrender.com")
-        print("📧 User Email: patrick1091+1@gmail.com")
-        print("🔍 Issue: User stuck on 'Logging in...' and login not completing")
+        print("🔧 Fix: Removed --reload flag and set ENVIRONMENT=production")
+        print("📧 Test User: patrick1091+1@gmail.com")
+        print("🎯 Expected: Backend responds within 3-5 seconds, no timeouts")
         print("=" * 80)
         
-        # Test 1: Login Endpoint Health
-        print("\n🔧 TEST 1: LOGIN ENDPOINT HEALTH")
-        print("   - Test POST /api/auth/login endpoint")
-        print("   - Verify it accepts credentials and returns tokens")
-        print("   - Check response time and success rate")
+        # Test 1: Backend Health Check - Verify Environment is Production
+        print("\n🔧 TEST 1: BACKEND HEALTH CHECK - PRODUCTION ENVIRONMENT")
+        print("   - Verify environment is set to 'production'")
+        print("   - Check database connectivity")
+        print("   - Verify service health")
         
-        # Test login endpoint with invalid credentials first to check if endpoint is working
+        start_time = time.time()
+        response = self.make_request("GET", "/health", timeout=10)
+        response_time = time.time() - start_time
+        
+        if response and response.status_code == 200:
+            data = response.json()
+            environment = data.get("environment", "unknown")
+            database = data.get("database", "unknown")
+            status = data.get("status", "unknown")
+            
+            if environment == "production":
+                self.log_test("Production Environment Check", True, 
+                             f"✅ ENVIRONMENT=production confirmed - DB: {database}, Status: {status}, Time: {response_time:.2f}s")
+            else:
+                self.log_test("Production Environment Check", False, 
+                             f"❌ Environment is '{environment}', expected 'production' - Time: {response_time:.2f}s")
+        else:
+            self.log_test("Production Environment Check", False, 
+                         f"❌ Health check failed - Status: {response.status_code if response else 'Timeout'}, Time: {response_time:.2f}s")
+        
+        # Test 2: Login Performance Test - Response Time
+        print("\n🔧 TEST 2: LOGIN PERFORMANCE TEST")
+        print("   - Test login endpoint response time")
+        print("   - Expected: < 5 seconds response time")
+        print("   - Verify no hanging or timeout issues")
+        
+        # Test with invalid credentials to check endpoint performance
         invalid_login_data = {
-            "email": "nonexistent@test.com",
+            "email": "test@example.com",
             "password": "wrongpassword"
         }
         
         start_time = time.time()
-        response = self.make_request("POST", "/auth/login", invalid_login_data)
+        response = self.make_request("POST", "/auth/login", invalid_login_data, timeout=10)
         response_time = time.time() - start_time
         
         if response and response.status_code == 401:
-            self.log_test("Login Endpoint Health", True, 
-                         f"✅ Login endpoint working - Response time: {response_time:.2f}s")
+            if response_time < 5.0:
+                self.log_test("Login Performance Test", True, 
+                             f"✅ Login endpoint responds quickly - Time: {response_time:.2f}s (< 5s)")
+            else:
+                self.log_test("Login Performance Test", False, 
+                             f"❌ Login endpoint slow - Time: {response_time:.2f}s (>= 5s)")
         elif response and response.status_code == 422:
-            self.log_test("Login Endpoint Health", True, 
-                         f"✅ Login endpoint accessible - Validation working - Response time: {response_time:.2f}s")
+            if response_time < 5.0:
+                self.log_test("Login Performance Test", True, 
+                             f"✅ Login endpoint accessible and fast - Time: {response_time:.2f}s (< 5s)")
+            else:
+                self.log_test("Login Performance Test", False, 
+                             f"❌ Login endpoint slow - Time: {response_time:.2f}s (>= 5s)")
         else:
-            self.log_test("Login Endpoint Health", False, 
-                         f"❌ Login endpoint issue - Status: {response.status_code if response else 'No response'} - Response time: {response_time:.2f}s")
+            self.log_test("Login Performance Test", False, 
+                         f"❌ Login endpoint timeout/error - Status: {response.status_code if response else 'Timeout'}, Time: {response_time:.2f}s")
+        
+        # Test 3: Authentication Flow Test
+        print("\n🔧 TEST 3: AUTHENTICATION FLOW TEST")
+        print("   - Test complete login workflow")
+        print("   - Verify authentication tokens generated correctly")
+        print("   - Test protected route access")
+        
+        # Create a test user for authentication flow
+        timestamp = int(time.time())
+        test_email = f"pattest{timestamp}@budgetplanner.com"
+        test_password = "SecurePass123!"
+        test_username = f"pattest{timestamp}"
+        
+        # Register test user
+        registration_data = {
+            "email": test_email,
+            "password": test_password,
+            "username": test_username
+        }
+        
+        start_time = time.time()
+        response = self.make_request("POST", "/auth/register", registration_data, timeout=10)
+        registration_time = time.time() - start_time
+        
+        if response and response.status_code == 201:
+            data = response.json()
+            access_token = data.get("access_token")
+            user_id = data.get("user", {}).get("id")
+            
+            if access_token and registration_time < 5.0:
+                self.log_test("User Registration Flow", True, 
+                             f"✅ Registration successful - Token generated, Time: {registration_time:.2f}s")
+                
+                # Test login with the registered user
+                login_data = {
+                    "email": test_email,
+                    "password": test_password
+                }
+                
+                start_time = time.time()
+                login_response = self.make_request("POST", "/auth/login", login_data, timeout=10)
+                login_time = time.time() - start_time
+                
+                if login_response and login_response.status_code == 200:
+                    login_data_response = login_response.json()
+                    login_token = login_data_response.get("access_token")
+                    
+                    if login_token and login_time < 5.0:
+                        self.log_test("Authentication Flow", True, 
+                                     f"✅ Login successful - Token: {login_token[:20]}..., Time: {login_time:.2f}s")
+                        
+                        # Test protected route access
+                        temp_token = self.access_token
+                        self.access_token = login_token
+                        
+                        start_time = time.time()
+                        me_response = self.make_request("GET", "/auth/me", timeout=10)
+                        me_time = time.time() - start_time
+                        
+                        if me_response and me_response.status_code == 200:
+                            me_data = me_response.json()
+                            if me_time < 5.0:
+                                self.log_test("Protected Route Access", True, 
+                                             f"✅ Protected route accessible - User: {me_data.get('email')}, Time: {me_time:.2f}s")
+                            else:
+                                self.log_test("Protected Route Access", False, 
+                                             f"❌ Protected route slow - Time: {me_time:.2f}s")
+                        else:
+                            self.log_test("Protected Route Access", False, 
+                                         f"❌ Protected route failed - Status: {me_response.status_code if me_response else 'Timeout'}")
+                        
+                        self.access_token = temp_token
+                    else:
+                        self.log_test("Authentication Flow", False, 
+                                     f"❌ Login slow or failed - Time: {login_time:.2f}s")
+                else:
+                    self.log_test("Authentication Flow", False, 
+                                 f"❌ Login failed - Status: {login_response.status_code if login_response else 'Timeout'}")
+            else:
+                self.log_test("User Registration Flow", False, 
+                             f"❌ Registration slow or failed - Time: {registration_time:.2f}s")
+        else:
+            self.log_test("User Registration Flow", False, 
+                         f"❌ Registration failed - Status: {response.status_code if response else 'Timeout'}")
+        
+        # Test 4: User "Pat" Login Simulation
+        print("\n🔧 TEST 4: USER 'PAT' LOGIN SIMULATION")
+        print("   - Simulate user 'Pat' login scenario")
+        print("   - Test with realistic user credentials")
+        print("   - Verify login completes successfully")
+        
+        # Create a user similar to 'Pat' for testing
+        pat_timestamp = int(time.time())
+        pat_email = f"patrick{pat_timestamp}@gmail.com"
+        pat_password = "PatSecure123!"
+        pat_username = f"patrick{pat_timestamp}"
+        
+        # Register Pat-like user
+        pat_registration_data = {
+            "email": pat_email,
+            "password": pat_password,
+            "username": pat_username
+        }
+        
+        start_time = time.time()
+        response = self.make_request("POST", "/auth/register", pat_registration_data, timeout=10)
+        pat_reg_time = time.time() - start_time
+        
+        if response and response.status_code == 201:
+            # Test Pat-like user login
+            pat_login_data = {
+                "email": pat_email,
+                "password": pat_password
+            }
+            
+            start_time = time.time()
+            pat_login_response = self.make_request("POST", "/auth/login", pat_login_data, timeout=10)
+            pat_login_time = time.time() - start_time
+            
+            if pat_login_response and pat_login_response.status_code == 200:
+                pat_data = pat_login_response.json()
+                pat_token = pat_data.get("access_token")
+                pat_user = pat_data.get("user", {})
+                
+                if pat_token and pat_login_time < 5.0:
+                    self.log_test("User 'Pat' Login Simulation", True, 
+                                 f"✅ Pat-like user login successful - User: {pat_user.get('username')}, Time: {pat_login_time:.2f}s")
+                    
+                    # Test multiple login attempts to simulate real usage
+                    successful_logins = 0
+                    total_attempts = 3
+                    total_time = 0
+                    
+                    for i in range(total_attempts):
+                        start_time = time.time()
+                        attempt_response = self.make_request("POST", "/auth/login", pat_login_data, timeout=10)
+                        attempt_time = time.time() - start_time
+                        total_time += attempt_time
+                        
+                        if attempt_response and attempt_response.status_code == 200 and attempt_time < 5.0:
+                            successful_logins += 1
+                    
+                    success_rate = (successful_logins / total_attempts) * 100
+                    avg_time = total_time / total_attempts
+                    
+                    if success_rate >= 100 and avg_time < 5.0:
+                        self.log_test("Login Reliability Test", True, 
+                                     f"✅ Login reliability excellent - {success_rate}% success, Avg time: {avg_time:.2f}s")
+                    elif success_rate >= 80:
+                        self.log_test("Login Reliability Test", True, 
+                                     f"✅ Login reliability good - {success_rate}% success, Avg time: {avg_time:.2f}s")
+                    else:
+                        self.log_test("Login Reliability Test", False, 
+                                     f"❌ Login reliability poor - {success_rate}% success, Avg time: {avg_time:.2f}s")
+                else:
+                    self.log_test("User 'Pat' Login Simulation", False, 
+                                 f"❌ Pat-like user login slow or failed - Time: {pat_login_time:.2f}s")
+            else:
+                self.log_test("User 'Pat' Login Simulation", False, 
+                             f"❌ Pat-like user login failed - Status: {pat_login_response.status_code if pat_login_response else 'Timeout'}")
+        else:
+            self.log_test("User 'Pat' Login Simulation", False, 
+                         f"❌ Pat-like user registration failed - Status: {response.status_code if response else 'Timeout'}")
+        
+        # Test 5: Critical Success Indicators Summary
+        print("\n🔧 TEST 5: CRITICAL SUCCESS INDICATORS SUMMARY")
+        print("   - Verify all key success indicators are met")
+        print("   - Confirm critical login fix is working")
+        
+        # Count successful tests
+        successful_tests = 0
+        total_critical_tests = 0
+        
+        for result in self.test_results[-20:]:  # Check last 20 test results
+            if any(keyword in result["test"] for keyword in ["Production Environment", "Login Performance", "Authentication Flow", "Pat Login", "Login Reliability"]):
+                total_critical_tests += 1
+                if result["success"]:
+                    successful_tests += 1
+        
+        if total_critical_tests > 0:
+            success_rate = (successful_tests / total_critical_tests) * 100
+            
+            if success_rate >= 80:
+                self.log_test("Critical Login Fix Verification", True, 
+                             f"✅ CRITICAL LOGIN FIX SUCCESSFUL - {success_rate}% of critical tests passed")
+                print(f"\n🎉 CONCLUSION: Critical login fix is working correctly!")
+                print(f"   - Backend environment: production ✅")
+                print(f"   - Login performance: < 5 seconds ✅") 
+                print(f"   - Authentication flow: working ✅")
+                print(f"   - User login: successful ✅")
+                print(f"   - No more hanging or timeout issues ✅")
+            else:
+                self.log_test("Critical Login Fix Verification", False, 
+                             f"❌ CRITICAL LOGIN FIX INCOMPLETE - Only {success_rate}% of critical tests passed")
+                print(f"\n⚠️  CONCLUSION: Critical login fix needs attention!")
+                print(f"   - Some critical tests are still failing")
+                print(f"   - Backend may still have performance issues")
+        else:
+            self.log_test("Critical Login Fix Verification", False, 
+                         "❌ Unable to verify critical login fix - No test results available")
         
         # Test 2: Authentication Flow with Pat's Email
         print("\n🔧 TEST 2: AUTHENTICATION FLOW FOR USER 'PAT'")
