@@ -1356,6 +1356,37 @@ class BudgetPlannerTester:
             else:
                 print("   ❌ TWILIO INTEGRATION: NOT WORKING")
         
+        # ACCOUNT CONSOLIDATION SUMMARY
+        print("\n🔗 ACCOUNT CONSOLIDATION STATUS:")
+        consolidation_tests = [
+            "Consolidation Preview", "Phone Number Transfer", "Full Account Consolidation",
+            "Invalid Phone Error Handling", "Consolidation Auth Required", "Transfer Auth Required", 
+            "Full Merge Auth Required"
+        ]
+        
+        consolidation_passed = 0
+        consolidation_total = 0
+        
+        for test_name in consolidation_tests:
+            test_result = next((r for r in self.test_results if r["test"] == test_name), None)
+            if test_result:
+                consolidation_total += 1
+                status = "✅" if test_result["success"] else "❌"
+                print(f"   {status} {test_name}: {test_result['message']}")
+                if test_result["success"]:
+                    consolidation_passed += 1
+        
+        if consolidation_total > 0:
+            consolidation_success_rate = (consolidation_passed / consolidation_total) * 100
+            print(f"\n🎯 ACCOUNT CONSOLIDATION SUCCESS RATE: {consolidation_success_rate:.1f}% ({consolidation_passed}/{consolidation_total})")
+            
+            if consolidation_success_rate >= 80:
+                print("   ✅ ACCOUNT CONSOLIDATION: FULLY FUNCTIONAL")
+            elif consolidation_success_rate >= 60:
+                print("   ⚠️  ACCOUNT CONSOLIDATION: PARTIALLY WORKING")
+            else:
+                print("   ❌ ACCOUNT CONSOLIDATION: ISSUES DETECTED")
+        
         # PHONE NUMBER CLEANUP SUMMARY
         print("\n🧹 PHONE NUMBER CLEANUP STATUS (+919886763496):")
         cleanup_tests = [
