@@ -23,10 +23,7 @@ const AccountConsolidation = ({ phoneNumber, onConsolidationComplete }) => {
     setError(null);
     
     try {
-      const response = await apiCall(
-        `/account/consolidation/preview?phone_number=${encodeURIComponent(phoneNumber)}`,
-        'GET'
-      );
+      const response = await apiService.getConsolidationPreview(phoneNumber);
       setConsolidationPreview(response);
     } catch (err) {
       setError('Failed to load consolidation preview: ' + err.message);
