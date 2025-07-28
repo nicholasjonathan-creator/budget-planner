@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { PlusCircle, TrendingUp, TrendingDown, DollarSign, AlertTriangle, MessageSquare, Settings, Shield, BarChart3, MessageCircle, LogOut } from 'lucide-react';
+import { PlusCircle, TrendingUp, TrendingDown, DollarSign, AlertTriangle, MessageSquare, Settings, Shield, BarChart3, MessageCircle, LogOut, Trash2, Phone, User } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import ApiService from '../services/api';
 import MonitoringPanel from './MonitoringPanel';
@@ -21,6 +21,9 @@ import ProductionEmailManagement from './ProductionEmailManagement';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import WhatsAppIntegration from './WhatsAppIntegration';
 import WhatsAppFeatureAnnouncement from './WhatsAppFeatureAnnouncement';
+import AccountDeletion from './AccountDeletion';
+import PhoneNumberManagement from './PhoneNumberManagement';
+import SMSManagement from './SMSManagement';
 import { useAuth } from '../contexts/AuthContext';
 
 // Updated: 2025-07-27 - Fixed UI issues: User profile menu, WhatsApp tab visibility, logout functionality
