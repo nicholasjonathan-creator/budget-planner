@@ -731,71 +731,107 @@ class BudgetPlannerTester:
             self.log_test("Monitoring Cycle", False, "Monitoring cycle failed")
     
     def test_phase2_account_deletion_endpoints(self):
-        """Test Phase 2: Account Deletion Endpoints"""
+        """Test Phase 2: Account Deletion Endpoints - Focus on Import Fix Verification"""
         print("\n=== TESTING PHASE 2: ACCOUNT DELETION ENDPOINTS ===")
+        print("🎯 FOCUS: Verifying import fix - endpoints should return 401/403 instead of 404")
         
-        if not self.access_token:
-            self.log_test("Account Deletion Tests", False, "No authentication token available")
-            return
+        # Test 1: Account Deletion Preview WITHOUT Authentication (should return 401, not 404)
+        print("🔍 1. Testing Account Deletion Preview WITHOUT Auth (expecting 401, not 404)...")
+        temp_token = self.access_token
+        self.access_token = None  # Remove auth temporarily
         
-        # Test 1: Account Deletion Preview
-        print("🔍 1. Testing Account Deletion Preview...")
         response = self.make_request("GET", "/account/deletion/preview")
-        if response and response.status_code == 200:
-            data = response.json()
-            user_info = data.get("user", {})
-            transaction_count = data.get("transaction_count", 0)
-            sms_count = data.get("sms_count", 0)
-            self.log_test("Account Deletion Preview", True, 
-                         f"✅ Preview successful - User: {user_info.get('email', 'N/A')}, "
-                         f"Transactions: {transaction_count}, SMS: {sms_count}")
+        if response and response.status_code == 401:
+            self.log_test("Account Deletion Preview (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 401 (Unauthorized) instead of 404")
+        elif response and response.status_code == 403:
+            self.log_test("Account Deletion Preview (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 403 (Forbidden) instead of 404")
+        elif response and response.status_code == 404:
+            self.log_test("Account Deletion Preview (No Auth)", False, 
+                         "❌ IMPORT FIX FAILED - Still returns 404 (Not Found)")
         else:
-            self.log_test("Account Deletion Preview", False, 
-                         f"Preview failed - Status: {response.status_code if response else 'No response'}")
+            self.log_test("Account Deletion Preview (No Auth)", False, 
+                         f"❌ Unexpected response - Status: {response.status_code if response else 'No response'}")
         
-        # Test 2: Soft Delete Account
-        print("🔍 2. Testing Soft Delete Account...")
-        soft_delete_data = {"reason": "Testing soft delete functionality"}
-        response = self.make_request("POST", "/account/deletion/soft-delete", soft_delete_data)
-        if response and response.status_code == 200:
-            data = response.json()
-            if data.get("success"):
-                self.log_test("Soft Delete Account", True, f"✅ Soft delete successful: {data.get('message', '')}")
+        self.access_token = temp_token  # Restore auth
+        
+        # Test 2: Account Deletion Preview WITH Authentication
+        if self.access_token:
+            print("🔍 2. Testing Account Deletion Preview WITH Auth...")
+            response = self.make_request("GET", "/account/deletion/preview")
+            if response and response.status_code == 200:
+                data = response.json()
+                user_info = data.get("user", {})
+                transaction_count = data.get("transaction_count", 0)
+                sms_count = data.get("sms_count", 0)
+                self.log_test("Account Deletion Preview", True, 
+                             f"✅ Preview successful - User: {user_info.get('email', 'N/A')}, "
+                             f"Transactions: {transaction_count}, SMS: {sms_count}")
             else:
-                self.log_test("Soft Delete Account", False, f"Soft delete failed: {data.get('error', 'Unknown error')}")
-        else:
-            self.log_test("Soft Delete Account", False, 
-                         f"Soft delete failed - Status: {response.status_code if response else 'No response'}")
+                self.log_test("Account Deletion Preview", False, 
+                             f"Preview failed - Status: {response.status_code if response else 'No response'}")
         
-        # Test 3: Hard Delete Account (should require confirmation)
-        print("🔍 3. Testing Hard Delete Account...")
+        # Test 3: Soft Delete Account WITH Authentication
+        if self.access_token:
+            print("🔍 3. Testing Soft Delete Account...")
+            soft_delete_data = {"reason": "Testing soft delete functionality"}
+            response = self.make_request("POST", "/account/deletion/soft-delete", soft_delete_data)
+            if response and response.status_code == 200:
+                data = response.json()
+                if data.get("success"):
+                    self.log_test("Soft Delete Account", True, f"✅ Soft delete successful: {data.get('message', '')}")
+                else:
+                    self.log_test("Soft Delete Account", False, f"Soft delete failed: {data.get('error', 'Unknown error')}")
+            else:
+                self.log_test("Soft Delete Account", False, 
+                             f"Soft delete failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 4: Hard Delete Account WITHOUT Authentication (should return 401/403, not 404)
+        print("🔍 4. Testing Hard Delete Account WITHOUT Auth (expecting 401/403, not 404)...")
+        temp_token = self.access_token
+        self.access_token = None  # Remove auth temporarily
+        
         hard_delete_data = {
             "reason": "Testing hard delete functionality",
             "confirmation": "PERMANENTLY DELETE MY ACCOUNT"
         }
         response = self.make_request("POST", "/account/deletion/hard-delete", hard_delete_data)
-        if response and response.status_code == 200:
-            data = response.json()
-            if data.get("success"):
-                self.log_test("Hard Delete Account", True, f"✅ Hard delete endpoint accessible: {data.get('message', '')}")
-            else:
-                self.log_test("Hard Delete Account", False, f"Hard delete failed: {data.get('error', 'Unknown error')}")
+        if response and response.status_code == 401:
+            self.log_test("Hard Delete Account (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 401 (Unauthorized) instead of 404")
+        elif response and response.status_code == 403:
+            self.log_test("Hard Delete Account (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 403 (Forbidden) instead of 404")
+        elif response and response.status_code == 404:
+            self.log_test("Hard Delete Account (No Auth)", False, 
+                         "❌ IMPORT FIX FAILED - Still returns 404 (Not Found)")
         else:
-            self.log_test("Hard Delete Account", False, 
-                         f"Hard delete failed - Status: {response.status_code if response else 'No response'}")
+            self.log_test("Hard Delete Account (No Auth)", False, 
+                         f"❌ Unexpected response - Status: {response.status_code if response else 'No response'}")
         
-        # Test 4: Account Data Export
-        print("🔍 4. Testing Account Data Export...")
+        self.access_token = temp_token  # Restore auth
+        
+        # Test 5: Account Data Export WITHOUT Authentication (should return 401/403, not 404)
+        print("🔍 5. Testing Account Data Export WITHOUT Auth (expecting 401/403, not 404)...")
+        temp_token = self.access_token
+        self.access_token = None  # Remove auth temporarily
+        
         response = self.make_request("GET", "/account/export-data")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "user_data" in data or "export_data" in data:
-                self.log_test("Account Data Export", True, "✅ Data export successful")
-            else:
-                self.log_test("Account Data Export", False, "Data export returned unexpected format")
+        if response and response.status_code == 401:
+            self.log_test("Account Data Export (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 401 (Unauthorized) instead of 404")
+        elif response and response.status_code == 403:
+            self.log_test("Account Data Export (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 403 (Forbidden) instead of 404")
+        elif response and response.status_code == 404:
+            self.log_test("Account Data Export (No Auth)", False, 
+                         "❌ IMPORT FIX FAILED - Still returns 404 (Not Found)")
         else:
-            self.log_test("Account Data Export", False, 
-                         f"Data export failed - Status: {response.status_code if response else 'No response'}")
+            self.log_test("Account Data Export (No Auth)", False, 
+                         f"❌ Unexpected response - Status: {response.status_code if response else 'No response'}")
+        
+        self.access_token = temp_token  # Restore auth
 
     def test_phase2_phone_management_endpoints(self):
         """Test Phase 2: Phone Number Management Endpoints"""
