@@ -1275,6 +1275,7 @@ class BudgetPlannerTester:
                 print(f"   📈 {category} Success Rate: {category_success_rate:.1f}% ({category_passed}/{category_total})")
         
         # Overall Import Fix Summary
+        import_fix_success_rate = 0
         if import_fix_total > 0:
             import_fix_success_rate = (import_fix_passed / import_fix_total) * 100
             print(f"\n🎯 IMPORT FIX SUCCESS RATE: {import_fix_success_rate:.1f}% ({import_fix_passed}/{import_fix_total})")
@@ -1285,8 +1286,11 @@ class BudgetPlannerTester:
                 print("   ⚠️  IMPORT FIX: PARTIALLY SUCCESSFUL - Some endpoints still return 404")
             else:
                 print("   ❌ IMPORT FIX: FAILED - Most endpoints still return 404")
+        else:
+            print(f"\n🎯 IMPORT FIX SUCCESS RATE: No import fix tests found")
         
         # Overall Functional Summary
+        functional_success_rate = 0
         if functional_total > 0:
             functional_success_rate = (functional_passed / functional_total) * 100
             print(f"\n🚀 FUNCTIONAL SUCCESS RATE: {functional_success_rate:.1f}% ({functional_passed}/{functional_total})")
@@ -1297,6 +1301,8 @@ class BudgetPlannerTester:
                 print("   ⚠️  PHASE 2 FUNCTIONALITY: PARTIALLY WORKING")
             else:
                 print("   ❌ PHASE 2 FUNCTIONALITY: CRITICAL ISSUES DETECTED")
+        else:
+            print(f"\n🚀 FUNCTIONAL SUCCESS RATE: No functional tests found")
         
         # Authentication status
         auth_tests = ["User Registration", "User Login", "Protected Route Access"]
