@@ -327,7 +327,7 @@ class ApiService {
   // Check user sync status (triggered by user actions like force refresh)
   async checkUserSyncStatus() {
     try {
-      const response = await this.api.post('/monitoring/user-sync-check');
+      const response = await this.client.post('/monitoring/user-sync-check');
       return response.data;
     } catch (error) {
       console.error('Error checking user sync status:', error);
