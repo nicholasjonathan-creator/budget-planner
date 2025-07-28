@@ -316,7 +316,7 @@ class ApiService {
   // Get system health status
   async getSystemHealth() {
     try {
-      const response = await this.api.get('/monitoring/health');
+      const response = await this.client.get('/monitoring/health');
       return response.data;
     } catch (error) {
       console.error('Error getting system health:', error);
