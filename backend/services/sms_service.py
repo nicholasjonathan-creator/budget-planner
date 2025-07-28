@@ -19,19 +19,43 @@ class SMSService:
         return hashlib.md5(f"{phone_number}:{message}".encode()).hexdigest()
         
     async def receive_sms(self, phone_number: str, message: str, user_id: str = None) -> dict:
-        """Receive and process incoming SMS"""
+        """Receive and process incoming SMS with duplicate detection"""
         try:
+            # Generate SMS hash for duplicate detection
+            sms_hash = self.get_sms_hash(phone_number, message)
+            
+            # Check for duplicates
+            existing_sms = await self.sms_collection.find_one({
+                "sms_hash": sms_hash,
+                "user_id": user_id
+            })
+            
+            if existing_sms:
+                logger.warning(f"Duplicate SMS detected for user {user_id}: {sms_hash}")
+                return {
+                    "success": False,
+                    "status": "duplicate",
+                    "message": "This SMS has already been processed",
+                    "existing_sms_id": str(existing_sms["_id"]),
+                    "existing_transaction_id": existing_sms.get("transaction_id"),
+                    "processed_at": existing_sms.get("timestamp")
+                }
+            
             # Store raw SMS
             sms_record = SMSTransaction(
                 phone_number=phone_number,
                 message=message,
                 timestamp=datetime.now(),
                 processed=False,
-                user_id=user_id  # Add user_id to SMS record
+                user_id=user_id
             )
             
+            # Add SMS hash to record
+            sms_dict = sms_record.dict()
+            sms_dict["sms_hash"] = sms_hash
+            
             # Save to database
-            result = await self.collection.insert_one(sms_record.dict())
+            result = await self.sms_collection.insert_one(sms_dict)
             sms_id = str(result.inserted_id)
             
             # Parse and process transaction
@@ -44,11 +68,11 @@ class SMSService:
                     transaction_dict['user_id'] = user_id
                     
                 # Save transaction to database
-                transaction_result = await db.transactions.insert_one(transaction_dict)
+                transaction_result = await self.transactions_collection.insert_one(transaction_dict)
                 transaction_id = str(transaction_result.inserted_id)
                 
                 # Update SMS record as processed
-                await self.collection.update_one(
+                await self.sms_collection.update_one(
                     {"_id": result.inserted_id},
                     {"$set": {"processed": True, "transaction_id": transaction_id}}
                 )
@@ -56,20 +80,21 @@ class SMSService:
                 logger.info(f"SMS processed successfully: {transaction_id}")
                 return {
                     "success": True,
-                    "transaction_id": transaction_id,
                     "sms_id": sms_id,
-                    "message": "Transaction processed successfully"
+                    "transaction_id": transaction_id,
+                    "transaction": transaction_dict,
+                    "message": "SMS processed successfully"
                 }
             else:
-                logger.warning(f"Failed to parse SMS: {message}")
+                logger.warning(f"Failed to parse SMS from {phone_number}")
                 return {
                     "success": False,
                     "sms_id": sms_id,
-                    "message": "Could not parse transaction from SMS"
+                    "message": "SMS received but could not be parsed into transaction"
                 }
                 
         except Exception as e:
-            logger.error(f"Error processing SMS: {e}")
+            logger.error(f"SMS processing error: {e}")
             return {
                 "success": False,
                 "message": f"Error processing SMS: {str(e)}"
