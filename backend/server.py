@@ -39,6 +39,9 @@ from services.phone_verification_service import phone_verification_service
 from services.whatsapp_migration_service import whatsapp_migration_service
 from services.fallback_phone_service import fallback_phone_service
 from services.analytics_service import AnalyticsService
+# Phase 2 Service Imports
+from services.account_deletion_service import account_deletion_service
+from services.phone_management_service import phone_management_service
 # Email services removed - no email functionality needed
 from dependencies.auth import get_current_user, get_current_active_user, get_admin_user, get_optional_user
 from database import init_db, db
