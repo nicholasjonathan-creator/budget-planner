@@ -107,17 +107,10 @@ export const AuthProvider = ({ children }) => {
     if (!token) return null;
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get current user');
-      }
-
-      const userData = await response.json();
+      // Use ApiService with proper authentication handling
+      const response = await ApiService.client.get('/auth/me');
+      const userData = response.data;
+      
       setUser(userData);
       Cookies.set('auth_user', JSON.stringify(userData), { expires: 1 });
       
