@@ -707,10 +707,10 @@ async def reprocess_sms(sms_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/sms/stats")
-async def get_sms_stats():
-    """Get SMS processing statistics"""
+async def get_sms_stats(current_user: User = Depends(get_current_active_user)):
+    """Get SMS processing statistics for current user"""
     try:
-        return await sms_service.get_sms_stats()
+        return await sms_service.get_user_sms_stats(current_user.id)
     except Exception as e:
         logger.error(f"Error getting SMS stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))
