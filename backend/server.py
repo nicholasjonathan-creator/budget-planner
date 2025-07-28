@@ -1472,8 +1472,6 @@ async def cancel_phone_change(
     Cancel pending phone number change
     """
     try:
-        from services.phone_management_service import phone_management_service
-        
         new_phone_number = request.get("new_phone_number")
         if not new_phone_number:
             raise HTTPException(status_code=400, detail="New phone number is required")
