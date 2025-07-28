@@ -3524,10 +3524,10 @@ class BudgetPlannerTester:
         
         start_time = time.time()
         
-        # PRIORITY: Test Login Issue for User 'Pat'
-        print("\n🔥 PRIORITY TESTING: LOGIN ISSUE INVESTIGATION FOR USER 'PAT'")
+        # PRIORITY: Test Critical Login Fix for User 'Pat'
+        print("\n🔥 PRIORITY TESTING: CRITICAL LOGIN FIX VERIFICATION FOR USER 'PAT'")
         print("=" * 60)
-        self.test_login_issue_for_pat_user()
+        self.test_critical_login_fix_verification()
         
         # PRIORITY: Test Phase 1 Implementation Features
         print("\n🔥 PRIORITY TESTING: PHASE 1 IMPLEMENTATION FEATURES")
