@@ -76,7 +76,7 @@ const RegisterForm = ({ onSwitchToLogin, onSuccess }) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-2">
-              Email
+              Email Address *
             </label>
             <Input
               id="email"
