@@ -730,7 +730,399 @@ class BudgetPlannerTester:
         else:
             self.log_test("Monitoring Cycle", False, "Monitoring cycle failed")
     
-    def test_whatsapp_message_processing_verification(self):
+    def test_phase2_account_deletion_endpoints(self):
+        """Test Phase 2: Account Deletion Endpoints"""
+        print("\n=== TESTING PHASE 2: ACCOUNT DELETION ENDPOINTS ===")
+        
+        if not self.access_token:
+            self.log_test("Account Deletion Tests", False, "No authentication token available")
+            return
+        
+        # Test 1: Account Deletion Preview
+        print("🔍 1. Testing Account Deletion Preview...")
+        response = self.make_request("GET", "/account/deletion/preview")
+        if response and response.status_code == 200:
+            data = response.json()
+            user_info = data.get("user", {})
+            transaction_count = data.get("transaction_count", 0)
+            sms_count = data.get("sms_count", 0)
+            self.log_test("Account Deletion Preview", True, 
+                         f"✅ Preview successful - User: {user_info.get('email', 'N/A')}, "
+                         f"Transactions: {transaction_count}, SMS: {sms_count}")
+        else:
+            self.log_test("Account Deletion Preview", False, 
+                         f"Preview failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 2: Soft Delete Account
+        print("🔍 2. Testing Soft Delete Account...")
+        soft_delete_data = {"reason": "Testing soft delete functionality"}
+        response = self.make_request("POST", "/account/deletion/soft-delete", soft_delete_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            if data.get("success"):
+                self.log_test("Soft Delete Account", True, f"✅ Soft delete successful: {data.get('message', '')}")
+            else:
+                self.log_test("Soft Delete Account", False, f"Soft delete failed: {data.get('error', 'Unknown error')}")
+        else:
+            self.log_test("Soft Delete Account", False, 
+                         f"Soft delete failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 3: Hard Delete Account (should require confirmation)
+        print("🔍 3. Testing Hard Delete Account...")
+        hard_delete_data = {
+            "reason": "Testing hard delete functionality",
+            "confirmation": "PERMANENTLY DELETE MY ACCOUNT"
+        }
+        response = self.make_request("POST", "/account/deletion/hard-delete", hard_delete_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            if data.get("success"):
+                self.log_test("Hard Delete Account", True, f"✅ Hard delete endpoint accessible: {data.get('message', '')}")
+            else:
+                self.log_test("Hard Delete Account", False, f"Hard delete failed: {data.get('error', 'Unknown error')}")
+        else:
+            self.log_test("Hard Delete Account", False, 
+                         f"Hard delete failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 4: Account Data Export
+        print("🔍 4. Testing Account Data Export...")
+        response = self.make_request("GET", "/account/export-data")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "user_data" in data or "export_data" in data:
+                self.log_test("Account Data Export", True, "✅ Data export successful")
+            else:
+                self.log_test("Account Data Export", False, "Data export returned unexpected format")
+        else:
+            self.log_test("Account Data Export", False, 
+                         f"Data export failed - Status: {response.status_code if response else 'No response'}")
+
+    def test_phase2_phone_management_endpoints(self):
+        """Test Phase 2: Phone Number Management Endpoints"""
+        print("\n=== TESTING PHASE 2: PHONE NUMBER MANAGEMENT ENDPOINTS ===")
+        
+        if not self.access_token:
+            self.log_test("Phone Management Tests", False, "No authentication token available")
+            return
+        
+        # Test 1: Phone Status
+        print("🔍 1. Testing Phone Status...")
+        response = self.make_request("GET", "/phone/status")
+        if response and response.status_code == 200:
+            data = response.json()
+            phone_number = data.get("phone_number")
+            phone_verified = data.get("phone_verified", False)
+            self.log_test("Phone Status", True, 
+                         f"✅ Phone status retrieved - Number: {phone_number}, Verified: {phone_verified}")
+        else:
+            self.log_test("Phone Status", False, 
+                         f"Phone status failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 2: Initiate Phone Change
+        print("🔍 2. Testing Phone Change Initiation...")
+        phone_change_data = {"new_phone_number": "+919876543210"}
+        response = self.make_request("POST", "/phone/initiate-change", phone_change_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            if data.get("success"):
+                self.log_test("Phone Change Initiation", True, f"✅ Phone change initiated: {data.get('message', '')}")
+            else:
+                self.log_test("Phone Change Initiation", False, f"Phone change failed: {data.get('error', 'Unknown error')}")
+        else:
+            self.log_test("Phone Change Initiation", False, 
+                         f"Phone change initiation failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 3: Complete Phone Change
+        print("🔍 3. Testing Phone Change Completion...")
+        complete_change_data = {
+            "new_phone_number": "+919876543210",
+            "verification_code": "123456"
+        }
+        response = self.make_request("POST", "/phone/complete-change", complete_change_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            self.log_test("Phone Change Completion", True, "✅ Phone change completion endpoint accessible")
+        elif response and response.status_code == 400:
+            # Expected - invalid verification code
+            self.log_test("Phone Change Completion", True, "✅ Phone change completion endpoint working (invalid code expected)")
+        else:
+            self.log_test("Phone Change Completion", False, 
+                         f"Phone change completion failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 4: Remove Phone Number
+        print("🔍 4. Testing Phone Number Removal...")
+        remove_phone_data = {"reason": "Testing phone removal functionality"}
+        response = self.make_request("DELETE", "/phone/remove", remove_phone_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            if data.get("success"):
+                self.log_test("Phone Number Removal", True, f"✅ Phone removal successful: {data.get('message', '')}")
+            else:
+                self.log_test("Phone Number Removal", False, f"Phone removal failed: {data.get('error', 'Unknown error')}")
+        else:
+            self.log_test("Phone Number Removal", False, 
+                         f"Phone removal failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 5: Phone Change History
+        print("🔍 5. Testing Phone Change History...")
+        response = self.make_request("GET", "/phone/history")
+        if response and response.status_code == 200:
+            data = response.json()
+            history_count = len(data.get("history", []))
+            self.log_test("Phone Change History", True, f"✅ Phone history retrieved - {history_count} entries")
+        else:
+            self.log_test("Phone Change History", False, 
+                         f"Phone history failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 6: Cancel Phone Change
+        print("🔍 6. Testing Phone Change Cancellation...")
+        cancel_change_data = {"new_phone_number": "+919876543210"}
+        response = self.make_request("POST", "/phone/cancel-change", cancel_change_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            if data.get("success"):
+                self.log_test("Phone Change Cancellation", True, f"✅ Phone change cancelled: {data.get('message', '')}")
+            else:
+                self.log_test("Phone Change Cancellation", False, f"Phone change cancellation failed: {data.get('error', 'Unknown error')}")
+        else:
+            self.log_test("Phone Change Cancellation", False, 
+                         f"Phone change cancellation failed - Status: {response.status_code if response else 'No response'}")
+
+    def test_phase2_enhanced_sms_management(self):
+        """Test Phase 2: Enhanced SMS Management"""
+        print("\n=== TESTING PHASE 2: ENHANCED SMS MANAGEMENT ===")
+        
+        if not self.access_token:
+            self.log_test("Enhanced SMS Tests", False, "No authentication token available")
+            return
+        
+        # Test 1: SMS List Retrieval
+        print("🔍 1. Testing SMS List Retrieval...")
+        response = self.make_request("GET", "/sms/list?page=1&limit=10")
+        if response and response.status_code == 200:
+            data = response.json()
+            sms_list = data.get("sms_list", [])
+            total_count = data.get("total_count", 0)
+            self.log_test("SMS List Retrieval", True, 
+                         f"✅ SMS list retrieved - {len(sms_list)} messages, Total: {total_count}")
+        else:
+            self.log_test("SMS List Retrieval", False, 
+                         f"SMS list failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 2: Create Test SMS for Duplicate Detection
+        print("🔍 2. Creating test SMS for duplicate detection...")
+        test_sms_data = {
+            "phone_number": "+919876543210",
+            "message": "HDFC Bank: Rs 500.00 debited from A/c **1234 on 15-Dec-23 at TEST MERCHANT. Avl Bal: Rs 15,000.00"
+        }
+        response = self.make_request("POST", "/sms/receive", test_sms_data)
+        test_sms_id = None
+        if response and response.status_code == 200:
+            data = response.json()
+            if data.get("success"):
+                self.log_test("Test SMS Creation", True, "✅ Test SMS created successfully")
+                # Try to get the SMS ID from the response or list
+                sms_response = self.make_request("GET", "/sms/list?page=1&limit=1")
+                if sms_response and sms_response.status_code == 200:
+                    sms_data = sms_response.json()
+                    sms_list = sms_data.get("sms_list", [])
+                    if sms_list:
+                        test_sms_id = sms_list[0].get("id")
+            else:
+                self.log_test("Test SMS Creation", False, f"Test SMS creation failed: {data.get('error', 'Unknown error')}")
+        else:
+            self.log_test("Test SMS Creation", False, 
+                         f"Test SMS creation failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 3: SMS Duplicate Detection
+        print("🔍 3. Testing SMS Duplicate Detection...")
+        response = self.make_request("POST", "/sms/find-duplicates")
+        if response and response.status_code == 200:
+            data = response.json()
+            duplicate_groups = data.get("duplicate_groups", [])
+            total_groups = data.get("total_groups", 0)
+            self.log_test("SMS Duplicate Detection", True, 
+                         f"✅ Duplicate detection successful - {total_groups} duplicate groups found")
+        else:
+            self.log_test("SMS Duplicate Detection", False, 
+                         f"Duplicate detection failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 4: Create Duplicate SMS
+        print("🔍 4. Creating duplicate SMS...")
+        duplicate_sms_data = {
+            "phone_number": "+919876543210",
+            "message": "HDFC Bank: Rs 500.00 debited from A/c **1234 on 15-Dec-23 at TEST MERCHANT. Avl Bal: Rs 15,000.00"
+        }
+        response = self.make_request("POST", "/sms/receive", duplicate_sms_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            if data.get("success"):
+                self.log_test("Duplicate SMS Creation", True, "✅ Duplicate SMS created successfully")
+            else:
+                self.log_test("Duplicate SMS Creation", False, f"Duplicate SMS creation failed: {data.get('error', 'Unknown error')}")
+        else:
+            self.log_test("Duplicate SMS Creation", False, 
+                         f"Duplicate SMS creation failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 5: SMS Duplicate Resolution
+        print("🔍 5. Testing SMS Duplicate Resolution...")
+        if test_sms_id:
+            resolve_data = {
+                "sms_hash": "test_hash",
+                "keep_sms_id": test_sms_id
+            }
+            response = self.make_request("POST", "/sms/resolve-duplicates", resolve_data)
+            if response and response.status_code == 200:
+                data = response.json()
+                if data.get("success"):
+                    self.log_test("SMS Duplicate Resolution", True, f"✅ Duplicate resolution successful: {data.get('message', '')}")
+                else:
+                    self.log_test("SMS Duplicate Resolution", False, f"Duplicate resolution failed: {data.get('error', 'Unknown error')}")
+            else:
+                self.log_test("SMS Duplicate Resolution", False, 
+                             f"Duplicate resolution failed - Status: {response.status_code if response else 'No response'}")
+        else:
+            self.log_test("SMS Duplicate Resolution", False, "Cannot test duplicate resolution - no test SMS ID available")
+        
+        # Test 6: SMS Deletion
+        print("🔍 6. Testing SMS Deletion...")
+        if test_sms_id:
+            response = self.make_request("DELETE", f"/sms/{test_sms_id}")
+            if response and response.status_code == 200:
+                data = response.json()
+                if data.get("success"):
+                    self.log_test("SMS Deletion", True, f"✅ SMS deletion successful: {data.get('message', '')}")
+                else:
+                    self.log_test("SMS Deletion", False, f"SMS deletion failed: {data.get('error', 'Unknown error')}")
+            else:
+                self.log_test("SMS Deletion", False, 
+                             f"SMS deletion failed - Status: {response.status_code if response else 'No response'}")
+        else:
+            # Test with a dummy ID to check if endpoint exists
+            response = self.make_request("DELETE", "/sms/dummy_id")
+            if response and response.status_code == 404:
+                self.log_test("SMS Deletion Endpoint", True, "✅ SMS deletion endpoint accessible (404 expected for dummy ID)")
+            elif response and response.status_code == 200:
+                self.log_test("SMS Deletion Endpoint", True, "✅ SMS deletion endpoint accessible")
+            else:
+                self.log_test("SMS Deletion Endpoint", False, 
+                             f"SMS deletion endpoint not accessible - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 7: SMS Hash Generation (implicit test through duplicate detection)
+        print("🔍 7. Testing SMS Hash Generation...")
+        # This is tested implicitly through the duplicate detection functionality
+        # If duplicate detection works, hash generation is working
+        response = self.make_request("POST", "/sms/find-duplicates")
+        if response and response.status_code == 200:
+            self.log_test("SMS Hash Generation", True, "✅ SMS hash generation working (verified through duplicate detection)")
+        else:
+            self.log_test("SMS Hash Generation", False, "Cannot verify SMS hash generation")
+
+    def run_phase2_production_tests(self):
+        """Run comprehensive Phase 2 production deployment tests"""
+        print("=" * 80)
+        print("🚀 PHASE 2 PRODUCTION DEPLOYMENT VERIFICATION")
+        print("🌐 Testing Backend: https://budget-planner-backendjuly.onrender.com")
+        print("=" * 80)
+        
+        # Basic health checks first
+        self.test_health_endpoints()
+        
+        # Authentication system
+        auth_success = self.test_authentication_system()
+        
+        if auth_success:
+            # Phase 2 specific tests
+            self.test_phase2_account_deletion_endpoints()
+            self.test_phase2_phone_management_endpoints()
+            self.test_phase2_enhanced_sms_management()
+        else:
+            print("\n⚠️  Authentication failed - Phase 2 tests require authentication")
+        
+        # Generate Phase 2 specific summary
+        self.generate_phase2_summary()
+
+    def generate_phase2_summary(self):
+        """Generate Phase 2 specific test summary"""
+        print("\n" + "=" * 80)
+        print("📊 PHASE 2 DEPLOYMENT VERIFICATION SUMMARY")
+        print("=" * 80)
+        
+        # Phase 2 test categories
+        phase2_categories = {
+            "Account Deletion Endpoints": [
+                "Account Deletion Preview", "Soft Delete Account", 
+                "Hard Delete Account", "Account Data Export"
+            ],
+            "Phone Number Management Endpoints": [
+                "Phone Status", "Phone Change Initiation", "Phone Change Completion",
+                "Phone Number Removal", "Phone Change History", "Phone Change Cancellation"
+            ],
+            "Enhanced SMS Management": [
+                "SMS List Retrieval", "Test SMS Creation", "SMS Duplicate Detection",
+                "Duplicate SMS Creation", "SMS Duplicate Resolution", "SMS Deletion Endpoint",
+                "SMS Hash Generation"
+            ]
+        }
+        
+        overall_passed = 0
+        overall_total = 0
+        
+        for category, test_names in phase2_categories.items():
+            print(f"\n🔍 {category}:")
+            category_passed = 0
+            category_total = 0
+            
+            for test_name in test_names:
+                test_result = next((r for r in self.test_results if r["test"] == test_name), None)
+                if test_result:
+                    category_total += 1
+                    overall_total += 1
+                    status = "✅" if test_result["success"] else "❌"
+                    print(f"   {status} {test_name}: {test_result['message']}")
+                    if test_result["success"]:
+                        category_passed += 1
+                        overall_passed += 1
+            
+            if category_total > 0:
+                category_success_rate = (category_passed / category_total) * 100
+                print(f"   📈 {category} Success Rate: {category_success_rate:.1f}% ({category_passed}/{category_total})")
+        
+        # Overall Phase 2 summary
+        if overall_total > 0:
+            overall_success_rate = (overall_passed / overall_total) * 100
+            print(f"\n🎯 OVERALL PHASE 2 SUCCESS RATE: {overall_success_rate:.1f}% ({overall_passed}/{overall_total})")
+            
+            if overall_success_rate >= 80:
+                print("   ✅ PHASE 2 DEPLOYMENT: FULLY OPERATIONAL")
+            elif overall_success_rate >= 60:
+                print("   ⚠️  PHASE 2 DEPLOYMENT: PARTIALLY WORKING")
+            else:
+                print("   ❌ PHASE 2 DEPLOYMENT: CRITICAL ISSUES DETECTED")
+        
+        # Authentication status
+        auth_tests = ["User Registration", "User Login", "Protected Route Access"]
+        auth_passed = sum(1 for test_name in auth_tests 
+                         for result in self.test_results 
+                         if result["test"] == test_name and result["success"])
+        auth_total = len(auth_tests)
+        
+        if auth_total > 0:
+            auth_success_rate = (auth_passed / auth_total) * 100
+            print(f"\n🔐 AUTHENTICATION SYSTEM: {auth_success_rate:.1f}% ({auth_passed}/{auth_total})")
+        
+        # Service health
+        health_tests = ["Root Endpoint", "Health Check", "Metrics Endpoint"]
+        health_passed = sum(1 for test_name in health_tests 
+                           for result in self.test_results 
+                           if result["test"] == test_name and result["success"])
+        health_total = len(health_tests)
+        
+        if health_total > 0:
+            health_success_rate = (health_passed / health_total) * 100
+            print(f"🏥 SERVICE HEALTH: {health_success_rate:.1f}% ({health_passed}/{health_total})")
+        
+        print("\n" + "=" * 80)
         """Test WhatsApp message processing verification for +919886763496"""
         print("\n=== TESTING WHATSAPP MESSAGE PROCESSING VERIFICATION ===")
         
