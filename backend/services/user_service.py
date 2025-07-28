@@ -27,14 +27,14 @@ class UserService:
         if not username:
             username = user_data.email.split('@')[0]
             
-        # Check if username already exists (if provided)
+        # Check if username already exists and make it unique if needed
         if username:
             existing_username = await users_collection.find_one({"username": username})
             if existing_username:
                 # Auto-generate unique username if conflict
                 import time
                 timestamp = str(int(time.time()))[-4:]  # Last 4 digits of timestamp
-                username = f"{username}{timestamp}"
+                username = f"{username}_{timestamp}"
         
         # Create user document
         user_dict = {
