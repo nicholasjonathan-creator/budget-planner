@@ -4,6 +4,7 @@ import apiService from '../services/api';
 import { useToast } from '../hooks/use-toast';
 import PhoneVerification from './PhoneVerification';
 import SMSDemo from './SMSDemo';
+import AccountConsolidationModal from './AccountConsolidationModal';
 
 const WhatsAppIntegration = () => {
   const [whatsappData, setWhatsappData] = useState(null);
