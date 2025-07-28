@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { toast } from '../hooks/use-toast';
+import PasswordReset from './PasswordReset';
 
 const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
   const [email, setEmail] = useState('');
