@@ -39,7 +39,9 @@ const RegisterForm = ({ onSwitchToLogin, onSuccess }) => {
     setLoading(true);
 
     try {
-      const result = await register(email, username, password);
+      // Only include username if provided
+      const usernameToUse = username.trim() || null;
+      const result = await register(email, usernameToUse, password);
       
       if (result.success) {
         toast({
