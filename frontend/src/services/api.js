@@ -490,6 +490,120 @@ class ApiService {
     }
   }
 
+  // Phase 2: Account Deletion Methods
+  async getAccountDeletionPreview() {
+    try {
+      const response = await this.client.get('/account/deletion/preview');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting account deletion preview:', error);
+      throw error;
+    }
+  }
+
+  async softDeleteAccount(reason = '') {
+    try {
+      const response = await this.client.post('/account/deletion/soft-delete', { reason });
+      return response.data;
+    } catch (error) {
+      console.error('Error soft deleting account:', error);
+      throw error;
+    }
+  }
+
+  async hardDeleteAccount(reason = '', confirmation = '') {
+    try {
+      const response = await this.client.post('/account/deletion/hard-delete', { 
+        reason, 
+        confirmation 
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error hard deleting account:', error);
+      throw error;
+    }
+  }
+
+  async exportAccountData() {
+    try {
+      const response = await this.client.get('/account/export-data');
+      return response.data;
+    } catch (error) {
+      console.error('Error exporting account data:', error);
+      throw error;
+    }
+  }
+
+  // Phase 2: Phone Number Management Methods
+  async getPhoneStatus() {
+    try {
+      const response = await this.client.get('/phone/status');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting phone status:', error);
+      throw error;
+    }
+  }
+
+  async initiatePhoneChange(newPhoneNumber) {
+    try {
+      const response = await this.client.post('/phone/initiate-change', {
+        new_phone_number: newPhoneNumber
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error initiating phone change:', error);
+      throw error;
+    }
+  }
+
+  async completePhoneChange(newPhoneNumber, verificationCode) {
+    try {
+      const response = await this.client.post('/phone/complete-change', {
+        new_phone_number: newPhoneNumber,
+        verification_code: verificationCode
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error completing phone change:', error);
+      throw error;
+    }
+  }
+
+  async removePhoneNumber(reason = '') {
+    try {
+      const response = await this.client.delete('/phone/remove', { 
+        data: { reason } 
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error removing phone number:', error);
+      throw error;
+    }
+  }
+
+  async getPhoneHistory() {
+    try {
+      const response = await this.client.get('/phone/history');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting phone history:', error);
+      throw error;
+    }
+  }
+
+  async cancelPhoneChange(newPhoneNumber) {
+    try {
+      const response = await this.client.post('/phone/cancel-change', {
+        new_phone_number: newPhoneNumber
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error cancelling phone change:', error);
+      throw error;
+    }
+  }
+
 }
 
 export default new ApiService();
