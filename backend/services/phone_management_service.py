@@ -96,7 +96,7 @@ class PhoneManagementService:
             await self.phone_history_collection.insert_one(change_request)
             
             # Initiate verification for new phone number
-            verification_result = await self.verification_service.send_verification_code(
+            verification_result = await self.verification_service.send_verification_otp(
                 user_id, new_phone_number
             )
             
