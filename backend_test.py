@@ -12,7 +12,7 @@ import uuid
 import sys
 
 # Backend URL - Current environment backend URL
-BASE_URL = "https://0767e749-6846-4863-a163-29d316dc927d.preview.emergentagent.com/api"
+BASE_URL = "https://57d97870-0a22-4961-80d4-f1bd4b737cc9.preview.emergentagent.com/api"
 
 class BudgetPlannerTester:
     def __init__(self):
