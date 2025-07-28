@@ -58,7 +58,7 @@ class UserLogin(BaseModel):
 class UserResponse(BaseModel):
     id: str
     email: EmailStr
-    username: str
+    username: Optional[str] = None  # Made optional
     role: UserRole
     is_active: bool
     created_at: datetime
