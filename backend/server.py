@@ -1273,6 +1273,197 @@ async def full_account_consolidation(
         logger.error(f"Full consolidation error: {e}")
         raise HTTPException(status_code=500, detail="Failed to perform full consolidation")
 
+# SMS Management Endpoints
+@app.get("/api/sms/list")
+async def get_user_sms_list(
+    page: int = 1,
+    limit: int = 20,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get user's SMS messages with pagination
+    """
+    try:
+        skip = (page - 1) * limit
+        
+        # Get SMS messages for the current user
+        cursor = db.sms_transactions.find(
+            {"user_id": current_user.id}
+        ).sort("timestamp", -1).skip(skip).limit(limit)
+        
+        sms_list = []
+        async for sms_doc in cursor:
+            sms_list.append({
+                "id": str(sms_doc["_id"]),
+                "phone_number": sms_doc.get("phone_number"),
+                "message": sms_doc.get("message"),
+                "timestamp": sms_doc.get("timestamp"),
+                "processed": sms_doc.get("processed", False),
+                "transaction_id": sms_doc.get("transaction_id"),
+                "sms_hash": sms_doc.get("sms_hash")
+            })
+        
+        # Get total count
+        total_count = await db.sms_transactions.count_documents({"user_id": current_user.id})
+        
+        return {
+            "sms_list": sms_list,
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": (total_count + limit - 1) // limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Get SMS list error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get SMS list")
+
+@app.delete("/api/sms/{sms_id}")
+async def delete_sms(
+    sms_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Delete a specific SMS message and its associated transaction
+    """
+    try:
+        from bson import ObjectId
+        
+        # Get SMS record
+        sms_doc = await db.sms_transactions.find_one({
+            "_id": ObjectId(sms_id),
+            "user_id": current_user.id
+        })
+        
+        if not sms_doc:
+            raise HTTPException(status_code=404, detail="SMS not found")
+        
+        # Delete associated transaction if exists
+        transaction_id = sms_doc.get("transaction_id")
+        if transaction_id:
+            await db.transactions.delete_one({
+                "_id": ObjectId(transaction_id),
+                "user_id": current_user.id
+            })
+        
+        # Delete SMS record
+        await db.sms_transactions.delete_one({
+            "_id": ObjectId(sms_id),
+            "user_id": current_user.id
+        })
+        
+        return {"success": True, "message": "SMS and associated transaction deleted"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Delete SMS error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete SMS")
+
+@app.post("/api/sms/find-duplicates")
+async def find_duplicate_sms(
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Find duplicate SMS messages for the current user
+    """
+    try:
+        # Aggregate to find duplicates
+        pipeline = [
+            {"$match": {"user_id": current_user.id}},
+            {"$group": {
+                "_id": "$sms_hash",
+                "count": {"$sum": 1},
+                "sms_ids": {"$push": "$_id"},
+                "messages": {"$push": "$message"},
+                "timestamps": {"$push": "$timestamp"}
+            }},
+            {"$match": {"count": {"$gt": 1}}}
+        ]
+        
+        duplicates = []
+        async for doc in db.sms_transactions.aggregate(pipeline):
+            duplicates.append({
+                "sms_hash": doc["_id"],
+                "count": doc["count"],
+                "sms_ids": [str(sms_id) for sms_id in doc["sms_ids"]],
+                "message": doc["messages"][0],  # First message (they should be identical)
+                "timestamps": doc["timestamps"]
+            })
+        
+        return {
+            "duplicate_groups": duplicates,
+            "total_groups": len(duplicates)
+        }
+        
+    except Exception as e:
+        logger.error(f"Find duplicates error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to find duplicate SMS")
+
+@app.post("/api/sms/resolve-duplicates")
+async def resolve_duplicate_sms(
+    request: dict = Body(...),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Resolve duplicate SMS messages by keeping one and deleting others
+    """
+    try:
+        from bson import ObjectId
+        
+        sms_hash = request.get("sms_hash")
+        keep_sms_id = request.get("keep_sms_id")
+        
+        if not sms_hash or not keep_sms_id:
+            raise HTTPException(status_code=400, detail="SMS hash and keep_sms_id are required")
+        
+        # Get all SMS with this hash
+        cursor = db.sms_transactions.find({
+            "sms_hash": sms_hash,
+            "user_id": current_user.id
+        })
+        
+        sms_to_delete = []
+        async for sms_doc in cursor:
+            sms_id = str(sms_doc["_id"])
+            if sms_id != keep_sms_id:
+                sms_to_delete.append({
+                    "sms_id": sms_id,
+                    "transaction_id": sms_doc.get("transaction_id")
+                })
+        
+        # Delete duplicate SMS and their transactions
+        deleted_count = 0
+        for sms_info in sms_to_delete:
+            # Delete transaction if exists
+            if sms_info["transaction_id"]:
+                await db.transactions.delete_one({
+                    "_id": ObjectId(sms_info["transaction_id"]),
+                    "user_id": current_user.id
+                })
+            
+            # Delete SMS
+            result = await db.sms_transactions.delete_one({
+                "_id": ObjectId(sms_info["sms_id"]),
+                "user_id": current_user.id
+            })
+            
+            if result.deleted_count > 0:
+                deleted_count += 1
+        
+        return {
+            "success": True,
+            "message": f"Deleted {deleted_count} duplicate SMS messages",
+            "kept_sms_id": keep_sms_id,
+            "deleted_count": deleted_count
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Resolve duplicates error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to resolve duplicate SMS")
+
 # Password Reset Endpoints
 @app.post("/api/auth/forgot-password")
 async def forgot_password(request: dict = Body(...)):
