@@ -1273,6 +1273,114 @@ async def full_account_consolidation(
         logger.error(f"Full consolidation error: {e}")
         raise HTTPException(status_code=500, detail="Failed to perform full consolidation")
 
+# Password Reset Endpoints
+@app.post("/api/auth/forgot-password")
+async def forgot_password(request: dict = Body(...)):
+    """
+    Initiate password reset process
+    """
+    try:
+        from services.password_reset_service import password_reset_service
+        
+        email = request.get("email")
+        if not email:
+            raise HTTPException(status_code=400, detail="Email is required")
+        
+        result = await password_reset_service.initiate_password_reset(email)
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Forgot password error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to initiate password reset")
+
+@app.post("/api/auth/validate-reset-token")
+async def validate_reset_token(request: dict = Body(...)):
+    """
+    Validate password reset token
+    """
+    try:
+        from services.password_reset_service import password_reset_service
+        
+        token = request.get("token")
+        if not token:
+            raise HTTPException(status_code=400, detail="Token is required")
+        
+        result = await password_reset_service.validate_reset_token(token)
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Validate reset token error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to validate reset token")
+
+@app.post("/api/auth/reset-password")
+async def reset_password(request: dict = Body(...)):
+    """
+    Reset password using token
+    """
+    try:
+        from services.password_reset_service import password_reset_service
+        
+        token = request.get("token")
+        new_password = request.get("new_password")
+        
+        if not token or not new_password:
+            raise HTTPException(status_code=400, detail="Token and new password are required")
+        
+        result = await password_reset_service.reset_password(token, new_password)
+        
+        if result["success"]:
+            return result
+        else:
+            raise HTTPException(status_code=400, detail=result["error"])
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Reset password error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to reset password")
+
+@app.post("/api/auth/change-password")
+async def change_password(
+    request: dict = Body(...),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Change password for authenticated user
+    """
+    try:
+        from services.auth import verify_password, get_password_hash
+        from bson import ObjectId
+        
+        current_password = request.get("current_password")
+        new_password = request.get("new_password")
+        
+        if not current_password or not new_password:
+            raise HTTPException(status_code=400, detail="Current and new passwords are required")
+        
+        # Verify current password
+        if not verify_password(current_password, current_user.password_hash):
+            raise HTTPException(status_code=400, detail="Current password is incorrect")
+        
+        # Update password
+        password_hash = get_password_hash(new_password)
+        await db.users.update_one(
+            {"_id": ObjectId(current_user.id)},
+            {"$set": {
+                "password_hash": password_hash,
+                "updated_at": datetime.utcnow()
+            }}
+        )
+        
+        return {"success": True, "message": "Password changed successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Change password error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to change password")
+
 @app.get("/api/whatsapp/status")
 async def whatsapp_status(request: Request, current_user: User = Depends(get_current_active_user)):
     """
