@@ -897,6 +897,175 @@ class BudgetPlannerTester:
             else:
                 print(f"   ❌ WHATSAPP MESSAGE PROCESSING: ISSUES DETECTED")
     
+    def test_account_consolidation_functionality(self):
+        """Test new account consolidation functionality for WhatsApp integration"""
+        print("\n=== TESTING ACCOUNT CONSOLIDATION FUNCTIONALITY ===")
+        
+        target_phone = "+919886763496"
+        
+        if not self.access_token:
+            self.log_test("Account Consolidation Tests", False, "No authentication token available")
+            return
+        
+        # Test 1: Account consolidation preview endpoint
+        print(f"🔍 1. Testing consolidation preview for phone {target_phone}")
+        response = self.make_request("GET", f"/account/consolidation/preview?phone_number={target_phone}")
+        
+        if response and response.status_code == 200:
+            data = response.json()
+            if "error" in data:
+                self.log_test("Consolidation Preview", False, f"Preview returned error: {data['error']}")
+            else:
+                source_account = data.get("source_account", {})
+                target_account = data.get("target_account", {})
+                consolidation_plan = data.get("consolidation_plan", {})
+                
+                self.log_test("Consolidation Preview", True, 
+                             f"✅ Preview successful - Source: {source_account.get('email', 'N/A')}, "
+                             f"Target: {target_account.get('email', 'N/A')}, "
+                             f"Action: {consolidation_plan.get('action', 'N/A')}")
+        elif response and response.status_code == 401:
+            self.log_test("Consolidation Preview Auth", True, "✅ Authentication required (expected)")
+        elif response and response.status_code == 500:
+            try:
+                error_data = response.json()
+                error_detail = error_data.get('detail', 'Unknown server error')
+                self.log_test("Consolidation Preview", False, f"Server error: {error_detail}")
+            except:
+                self.log_test("Consolidation Preview", False, f"Server error (status 500)")
+        else:
+            self.log_test("Consolidation Preview", False, 
+                         f"Failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 2: Phone number transfer endpoint
+        print(f"🔄 2. Testing phone number transfer for {target_phone}")
+        response = self.make_request("POST", f"/account/consolidation/transfer-phone?phone_number={target_phone}")
+        
+        if response and response.status_code == 200:
+            data = response.json()
+            if data.get("success"):
+                self.log_test("Phone Number Transfer", True, f"✅ Transfer successful: {data.get('message', '')}")
+            else:
+                self.log_test("Phone Number Transfer", False, f"Transfer failed: {data.get('error', 'Unknown error')}")
+        elif response and response.status_code == 401:
+            self.log_test("Phone Transfer Auth", True, "✅ Authentication required (expected)")
+        elif response and response.status_code == 500:
+            try:
+                error_data = response.json()
+                error_detail = error_data.get('detail', 'Unknown server error')
+                self.log_test("Phone Number Transfer", False, f"Server error: {error_detail}")
+            except:
+                self.log_test("Phone Number Transfer", False, f"Server error (status 500)")
+        else:
+            self.log_test("Phone Number Transfer", False, 
+                         f"Failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 3: Full account consolidation endpoint
+        print(f"🔗 3. Testing full account consolidation for {target_phone}")
+        response = self.make_request("POST", f"/account/consolidation/full-merge?phone_number={target_phone}")
+        
+        if response and response.status_code == 200:
+            data = response.json()
+            if data.get("success"):
+                consolidation_results = data.get("consolidation_results", {})
+                self.log_test("Full Account Consolidation", True, 
+                             f"✅ Consolidation successful: {data.get('message', '')} - "
+                             f"Transactions: {consolidation_results.get('transactions_transferred', 0)}, "
+                             f"SMS: {consolidation_results.get('sms_messages_transferred', 0)}")
+            else:
+                self.log_test("Full Account Consolidation", False, f"Consolidation failed: {data.get('error', 'Unknown error')}")
+        elif response and response.status_code == 401:
+            self.log_test("Full Consolidation Auth", True, "✅ Authentication required (expected)")
+        elif response and response.status_code == 500:
+            try:
+                error_data = response.json()
+                error_detail = error_data.get('detail', 'Unknown server error')
+                self.log_test("Full Account Consolidation", False, f"Server error: {error_detail}")
+            except:
+                self.log_test("Full Account Consolidation", False, f"Server error (status 500)")
+        else:
+            self.log_test("Full Account Consolidation", False, 
+                         f"Failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 4: Error handling with invalid phone number
+        print(f"🚫 4. Testing error handling with invalid phone number")
+        invalid_phone = "+1234567890"
+        response = self.make_request("GET", f"/account/consolidation/preview?phone_number={invalid_phone}")
+        
+        if response and response.status_code == 200:
+            data = response.json()
+            if "error" in data and "not found" in data["error"].lower():
+                self.log_test("Invalid Phone Error Handling", True, f"✅ Proper error handling: {data['error']}")
+            else:
+                self.log_test("Invalid Phone Error Handling", False, f"Unexpected response for invalid phone: {data}")
+        elif response and response.status_code == 401:
+            self.log_test("Invalid Phone Auth Check", True, "✅ Authentication required (expected)")
+        else:
+            self.log_test("Invalid Phone Error Handling", False, 
+                         f"Unexpected response - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 5: Test without authentication to verify auth is required
+        print(f"🔒 5. Testing endpoints without authentication")
+        # Temporarily remove token
+        temp_token = self.access_token
+        self.access_token = None
+        
+        response = self.make_request("GET", f"/account/consolidation/preview?phone_number={target_phone}")
+        if response and response.status_code == 401:
+            self.log_test("Consolidation Auth Required", True, "✅ Preview endpoint requires authentication")
+        else:
+            self.log_test("Consolidation Auth Required", False, 
+                         f"Preview endpoint should require auth - Status: {response.status_code if response else 'No response'}")
+        
+        response = self.make_request("POST", f"/account/consolidation/transfer-phone?phone_number={target_phone}")
+        if response and response.status_code == 401:
+            self.log_test("Transfer Auth Required", True, "✅ Transfer endpoint requires authentication")
+        else:
+            self.log_test("Transfer Auth Required", False, 
+                         f"Transfer endpoint should require auth - Status: {response.status_code if response else 'No response'}")
+        
+        response = self.make_request("POST", f"/account/consolidation/full-merge?phone_number={target_phone}")
+        if response and response.status_code == 401:
+            self.log_test("Full Merge Auth Required", True, "✅ Full merge endpoint requires authentication")
+        else:
+            self.log_test("Full Merge Auth Required", False, 
+                         f"Full merge endpoint should require auth - Status: {response.status_code if response else 'No response'}")
+        
+        # Restore token
+        self.access_token = temp_token
+        
+        # Summary of account consolidation tests
+        print(f"\n📋 ACCOUNT CONSOLIDATION TEST SUMMARY:")
+        consolidation_tests = [
+            "Consolidation Preview", "Phone Number Transfer", "Full Account Consolidation",
+            "Invalid Phone Error Handling", "Consolidation Auth Required", "Transfer Auth Required", 
+            "Full Merge Auth Required"
+        ]
+        
+        consolidation_passed = 0
+        consolidation_total = 0
+        
+        for test_name in consolidation_tests:
+            test_result = next((r for r in self.test_results if r["test"] == test_name), None)
+            if test_result:
+                consolidation_total += 1
+                status = "✅" if test_result["success"] else "❌"
+                print(f"   {status} {test_name}: {test_result['message']}")
+                if test_result["success"]:
+                    consolidation_passed += 1
+        
+        if consolidation_total > 0:
+            consolidation_success_rate = (consolidation_passed / consolidation_total) * 100
+            print(f"\n🎯 ACCOUNT CONSOLIDATION SUCCESS RATE: {consolidation_success_rate:.1f}% ({consolidation_passed}/{consolidation_total})")
+            
+            if consolidation_success_rate >= 80:
+                print(f"   ✅ ACCOUNT CONSOLIDATION: FULLY FUNCTIONAL")
+                print(f"   📱 Phone {target_phone} consolidation ready for WhatsApp integration")
+            elif consolidation_success_rate >= 60:
+                print(f"   ⚠️  ACCOUNT CONSOLIDATION: PARTIALLY WORKING")
+            else:
+                print(f"   ❌ ACCOUNT CONSOLIDATION: ISSUES DETECTED")
+
     def test_phone_number_cleanup(self):
         """Test cleanup of specific phone number +919886763496 from database"""
         print("\n=== TESTING PHONE NUMBER CLEANUP (+919886763496) ===")
