@@ -1365,8 +1365,6 @@ async def get_phone_status(
     Get current phone number status
     """
     try:
-        from services.phone_management_service import phone_management_service
-        
         status = await phone_management_service.get_phone_status(current_user.id)
         
         return status
