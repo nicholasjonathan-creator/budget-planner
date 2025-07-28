@@ -3376,11 +3376,41 @@ class BudgetPlannerTester:
         print("="*80)
 
 def main():
-    """Main test execution"""
+    """Main test execution for Phase 2 production deployment verification"""
+    print("🚀 Starting Phase 2 Production Deployment Verification...")
+    print(f"🌐 Target Backend: {BASE_URL}")
+    print("📋 Focus: Account Deletion, Phone Management, Enhanced SMS Management")
+    
     tester = BudgetPlannerTester()
     
-    # Run Phase 2 comprehensive tests
-    tester.run_phase2_comprehensive_tests()
+    try:
+        # Run Phase 2 specific tests
+        tester.run_phase2_production_tests()
+        
+        # Print final results
+        print(f"\n📊 TESTING COMPLETED")
+        print(f"Total Tests Run: {len(tester.test_results)}")
+        
+        passed_tests = sum(1 for result in tester.test_results if result["success"])
+        total_tests = len(tester.test_results)
+        
+        if total_tests > 0:
+            success_rate = (passed_tests / total_tests) * 100
+            print(f"Overall Success Rate: {success_rate:.1f}% ({passed_tests}/{total_tests})")
+            
+            if success_rate >= 80:
+                print("🎉 PHASE 2 DEPLOYMENT: READY FOR PRODUCTION")
+            elif success_rate >= 60:
+                print("⚠️  PHASE 2 DEPLOYMENT: NEEDS ATTENTION")
+            else:
+                print("❌ PHASE 2 DEPLOYMENT: CRITICAL ISSUES")
+        
+    except KeyboardInterrupt:
+        print("\n⚠️  Testing interrupted by user")
+    except Exception as e:
+        print(f"\n❌ Testing failed with error: {e}")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == "__main__":
     main()
