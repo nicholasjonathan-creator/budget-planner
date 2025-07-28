@@ -106,6 +106,7 @@ const PhoneVerification = ({ onVerificationComplete, onAccountConflict }) => {
       
       setStep('verified');
       await loadPhoneStatus();
+      onVerificationComplete && onVerificationComplete();
     } catch (error) {
       toast({
         title: "Verification Failed",
