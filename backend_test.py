@@ -1228,6 +1228,24 @@ class BudgetPlannerTester:
         elif response and response.status_code == 200:
             self.log_test("SMS Stats Authentication Required", False, 
                          "❌ SMS stats should require authentication but doesn't")
+        elif response is None:
+            # Try again with a shorter timeout for this specific test
+            try:
+                import requests
+                url = f"{self.base_url}/sms/stats"
+                response = requests.get(url, timeout=30)
+                if response.status_code in [401, 403]:
+                    self.log_test("SMS Stats Authentication Required", True, 
+                                 f"✅ SMS stats now requires authentication - Status: {response.status_code}")
+                elif response.status_code == 200:
+                    self.log_test("SMS Stats Authentication Required", False, 
+                                 "❌ SMS stats should require authentication but doesn't")
+                else:
+                    self.log_test("SMS Stats Authentication Required", False, 
+                                 f"❌ Unexpected SMS stats response - Status: {response.status_code}")
+            except Exception as e:
+                self.log_test("SMS Stats Authentication Required", False, 
+                             f"❌ SMS stats endpoint not accessible - Error: {str(e)}")
         else:
             self.log_test("SMS Stats Authentication Required", False, 
                          f"❌ Unexpected SMS stats response - Status: {response.status_code if response else 'No response'}")
