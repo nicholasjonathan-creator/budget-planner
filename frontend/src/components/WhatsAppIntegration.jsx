@@ -146,7 +146,13 @@ const WhatsAppIntegration = () => {
           <p className="text-orange-700 text-center mb-6">
             To securely process your SMS forwards, please verify your phone number first.
           </p>
-          <PhoneVerification />
+          <PhoneVerification 
+            onVerificationComplete={() => loadData()}
+            onAccountConflict={(phoneNumber) => {
+              setConsolidationPhoneNumber(phoneNumber);
+              setShowConsolidationModal(true);
+            }}
+          />
         </div>
       )}
 
