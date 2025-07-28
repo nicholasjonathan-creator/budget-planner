@@ -165,10 +165,12 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Login Issue Investigation for User 'Pat'"
     - "Critical Fixes for User 'Pat' Testing: Phone Verification Fix"
     - "Critical Fixes for User 'Pat' Testing: SMS Stats Fix"
     - "Critical Fixes for User 'Pat' Testing: SMS Display Fix"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Login Issue Investigation for User 'Pat'"
   test_all: false
   test_priority: "high_first"
 
