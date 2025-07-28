@@ -1285,8 +1285,6 @@ async def get_account_deletion_preview(
     Get preview of account data before deletion
     """
     try:
-        from services.account_deletion_service import account_deletion_service
-        
         data_summary = await account_deletion_service.get_account_data_summary(current_user.id)
         
         return data_summary
