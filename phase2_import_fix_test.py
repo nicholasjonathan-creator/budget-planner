@@ -36,11 +36,11 @@ class Phase2ImportFixTester:
         
         try:
             if method.upper() == "GET":
-                response = self.session.get(url, headers=headers, timeout=timeout)
+                response = self.session.get(url, headers=headers, timeout=timeout, verify=True)
             elif method.upper() == "POST":
-                response = self.session.post(url, json=data, headers=headers, timeout=timeout)
+                response = self.session.post(url, json=data, headers=headers, timeout=timeout, verify=True)
             elif method.upper() == "DELETE":
-                response = self.session.delete(url, headers=headers, timeout=timeout)
+                response = self.session.delete(url, headers=headers, timeout=timeout, verify=True)
             else:
                 raise ValueError(f"Unsupported method: {method}")
             
@@ -50,6 +50,9 @@ class Phase2ImportFixTester:
             return None
         except requests.exceptions.ConnectionError as e:
             print(f"Connection error for {method} {url}: {e}")
+            return None
+        except requests.exceptions.SSLError as e:
+            print(f"SSL error for {method} {url}: {e}")
             return None
         except Exception as e:
             print(f"Request error for {method} {url}: {e}")
