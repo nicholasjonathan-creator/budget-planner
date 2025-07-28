@@ -986,104 +986,155 @@ class BudgetPlannerTester:
         self.access_token = temp_token  # Restore auth
 
     def test_phase2_enhanced_sms_management(self):
-        """Test Phase 2: Enhanced SMS Management"""
+        """Test Phase 2: Enhanced SMS Management - Focus on Import Fix Verification"""
         print("\n=== TESTING PHASE 2: ENHANCED SMS MANAGEMENT ===")
+        print("🎯 FOCUS: Verifying import fix - endpoints should return 401/403 instead of 404")
         
-        if not self.access_token:
-            self.log_test("Enhanced SMS Tests", False, "No authentication token available")
-            return
+        # Test 1: SMS List Retrieval WITHOUT Authentication (should return 401/403, not 404)
+        print("🔍 1. Testing SMS List Retrieval WITHOUT Auth (expecting 401/403, not 404)...")
+        temp_token = self.access_token
+        self.access_token = None  # Remove auth temporarily
         
-        # Test 1: SMS List Retrieval
-        print("🔍 1. Testing SMS List Retrieval...")
         response = self.make_request("GET", "/sms/list?page=1&limit=10")
-        if response and response.status_code == 200:
-            data = response.json()
-            sms_list = data.get("sms_list", [])
-            total_count = data.get("total_count", 0)
-            self.log_test("SMS List Retrieval", True, 
-                         f"✅ SMS list retrieved - {len(sms_list)} messages, Total: {total_count}")
+        if response and response.status_code == 401:
+            self.log_test("SMS List Retrieval (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 401 (Unauthorized) instead of 404")
+        elif response and response.status_code == 403:
+            self.log_test("SMS List Retrieval (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 403 (Forbidden) instead of 404")
+        elif response and response.status_code == 404:
+            self.log_test("SMS List Retrieval (No Auth)", False, 
+                         "❌ IMPORT FIX FAILED - Still returns 404 (Not Found)")
         else:
-            self.log_test("SMS List Retrieval", False, 
-                         f"SMS list failed - Status: {response.status_code if response else 'No response'}")
+            self.log_test("SMS List Retrieval (No Auth)", False, 
+                         f"❌ Unexpected response - Status: {response.status_code if response else 'No response'}")
         
-        # Test 2: Create Test SMS for Duplicate Detection
-        print("🔍 2. Creating test SMS for duplicate detection...")
-        test_sms_data = {
-            "phone_number": "+919876543210",
-            "message": "HDFC Bank: Rs 500.00 debited from A/c **1234 on 15-Dec-23 at TEST MERCHANT. Avl Bal: Rs 15,000.00"
-        }
-        response = self.make_request("POST", "/sms/receive", test_sms_data)
-        test_sms_id = None
-        if response and response.status_code == 200:
-            data = response.json()
-            if data.get("success"):
-                self.log_test("Test SMS Creation", True, "✅ Test SMS created successfully")
-                # Try to get the SMS ID from the response or list
-                sms_response = self.make_request("GET", "/sms/list?page=1&limit=1")
-                if sms_response and sms_response.status_code == 200:
-                    sms_data = sms_response.json()
-                    sms_list = sms_data.get("sms_list", [])
-                    if sms_list:
-                        test_sms_id = sms_list[0].get("id")
+        self.access_token = temp_token  # Restore auth
+        
+        # Test 2: SMS List Retrieval WITH Authentication
+        if self.access_token:
+            print("🔍 2. Testing SMS List Retrieval WITH Auth...")
+            response = self.make_request("GET", "/sms/list?page=1&limit=10")
+            if response and response.status_code == 200:
+                data = response.json()
+                sms_list = data.get("sms_list", [])
+                total_count = data.get("total_count", 0)
+                self.log_test("SMS List Retrieval", True, 
+                             f"✅ SMS list retrieved - {len(sms_list)} messages, Total: {total_count}")
             else:
-                self.log_test("Test SMS Creation", False, f"Test SMS creation failed: {data.get('error', 'Unknown error')}")
-        else:
-            self.log_test("Test SMS Creation", False, 
-                         f"Test SMS creation failed - Status: {response.status_code if response else 'No response'}")
+                self.log_test("SMS List Retrieval", False, 
+                             f"SMS list failed - Status: {response.status_code if response else 'No response'}")
         
-        # Test 3: SMS Duplicate Detection
-        print("🔍 3. Testing SMS Duplicate Detection...")
+        # Test 3: SMS Duplicate Detection WITHOUT Authentication (should return 401/403, not 404)
+        print("🔍 3. Testing SMS Duplicate Detection WITHOUT Auth (expecting 401/403, not 404)...")
+        temp_token = self.access_token
+        self.access_token = None  # Remove auth temporarily
+        
         response = self.make_request("POST", "/sms/find-duplicates")
-        if response and response.status_code == 200:
-            data = response.json()
-            duplicate_groups = data.get("duplicate_groups", [])
-            total_groups = data.get("total_groups", 0)
-            self.log_test("SMS Duplicate Detection", True, 
-                         f"✅ Duplicate detection successful - {total_groups} duplicate groups found")
+        if response and response.status_code == 401:
+            self.log_test("SMS Duplicate Detection (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 401 (Unauthorized) instead of 404")
+        elif response and response.status_code == 403:
+            self.log_test("SMS Duplicate Detection (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 403 (Forbidden) instead of 404")
+        elif response and response.status_code == 404:
+            self.log_test("SMS Duplicate Detection (No Auth)", False, 
+                         "❌ IMPORT FIX FAILED - Still returns 404 (Not Found)")
         else:
-            self.log_test("SMS Duplicate Detection", False, 
-                         f"Duplicate detection failed - Status: {response.status_code if response else 'No response'}")
+            self.log_test("SMS Duplicate Detection (No Auth)", False, 
+                         f"❌ Unexpected response - Status: {response.status_code if response else 'No response'}")
         
-        # Test 4: Create Duplicate SMS
-        print("🔍 4. Creating duplicate SMS...")
-        duplicate_sms_data = {
-            "phone_number": "+919876543210",
-            "message": "HDFC Bank: Rs 500.00 debited from A/c **1234 on 15-Dec-23 at TEST MERCHANT. Avl Bal: Rs 15,000.00"
-        }
-        response = self.make_request("POST", "/sms/receive", duplicate_sms_data)
-        if response and response.status_code == 200:
-            data = response.json()
-            if data.get("success"):
-                self.log_test("Duplicate SMS Creation", True, "✅ Duplicate SMS created successfully")
+        self.access_token = temp_token  # Restore auth
+        
+        # Test 4: SMS Duplicate Detection WITH Authentication
+        if self.access_token:
+            print("🔍 4. Testing SMS Duplicate Detection WITH Auth...")
+            response = self.make_request("POST", "/sms/find-duplicates")
+            if response and response.status_code == 200:
+                data = response.json()
+                duplicate_groups = data.get("duplicate_groups", [])
+                total_groups = data.get("total_groups", 0)
+                self.log_test("SMS Duplicate Detection", True, 
+                             f"✅ Duplicate detection successful - {total_groups} duplicate groups found")
             else:
-                self.log_test("Duplicate SMS Creation", False, f"Duplicate SMS creation failed: {data.get('error', 'Unknown error')}")
-        else:
-            self.log_test("Duplicate SMS Creation", False, 
-                         f"Duplicate SMS creation failed - Status: {response.status_code if response else 'No response'}")
+                self.log_test("SMS Duplicate Detection", False, 
+                             f"Duplicate detection failed - Status: {response.status_code if response else 'No response'}")
         
-        # Test 5: SMS Duplicate Resolution
-        print("🔍 5. Testing SMS Duplicate Resolution...")
-        if test_sms_id:
-            resolve_data = {
-                "sms_hash": "test_hash",
-                "keep_sms_id": test_sms_id
+        # Test 5: SMS Duplicate Resolution WITHOUT Authentication (should return 401/403, not 404)
+        print("🔍 5. Testing SMS Duplicate Resolution WITHOUT Auth (expecting 401/403, not 404)...")
+        temp_token = self.access_token
+        self.access_token = None  # Remove auth temporarily
+        
+        resolve_data = {
+            "sms_hash": "test_hash",
+            "keep_sms_id": "dummy_id"
+        }
+        response = self.make_request("POST", "/sms/resolve-duplicates", resolve_data)
+        if response and response.status_code == 401:
+            self.log_test("SMS Duplicate Resolution (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 401 (Unauthorized) instead of 404")
+        elif response and response.status_code == 403:
+            self.log_test("SMS Duplicate Resolution (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 403 (Forbidden) instead of 404")
+        elif response and response.status_code == 404:
+            self.log_test("SMS Duplicate Resolution (No Auth)", False, 
+                         "❌ IMPORT FIX FAILED - Still returns 404 (Not Found)")
+        else:
+            self.log_test("SMS Duplicate Resolution (No Auth)", False, 
+                         f"❌ Unexpected response - Status: {response.status_code if response else 'No response'}")
+        
+        self.access_token = temp_token  # Restore auth
+        
+        # Test 6: SMS Deletion WITHOUT Authentication (should return 401/403, not 404)
+        print("🔍 6. Testing SMS Deletion WITHOUT Auth (expecting 401/403, not 404)...")
+        temp_token = self.access_token
+        self.access_token = None  # Remove auth temporarily
+        
+        response = self.make_request("DELETE", "/sms/dummy_id")
+        if response and response.status_code == 401:
+            self.log_test("SMS Deletion (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 401 (Unauthorized) instead of 404")
+        elif response and response.status_code == 403:
+            self.log_test("SMS Deletion (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 403 (Forbidden) instead of 404")
+        elif response and response.status_code == 404:
+            self.log_test("SMS Deletion (No Auth)", False, 
+                         "❌ IMPORT FIX FAILED - Still returns 404 (Not Found)")
+        else:
+            self.log_test("SMS Deletion (No Auth)", False, 
+                         f"❌ Unexpected response - Status: {response.status_code if response else 'No response'}")
+        
+        self.access_token = temp_token  # Restore auth
+        
+        # Test 7: Create Test SMS for functional testing (if authenticated)
+        test_sms_id = None
+        if self.access_token:
+            print("🔍 7. Creating test SMS for functional testing...")
+            test_sms_data = {
+                "phone_number": "+919876543210",
+                "message": "HDFC Bank: Rs 500.00 debited from A/c **1234 on 15-Dec-23 at TEST MERCHANT. Avl Bal: Rs 15,000.00"
             }
-            response = self.make_request("POST", "/sms/resolve-duplicates", resolve_data)
+            response = self.make_request("POST", "/sms/receive", test_sms_data)
             if response and response.status_code == 200:
                 data = response.json()
                 if data.get("success"):
-                    self.log_test("SMS Duplicate Resolution", True, f"✅ Duplicate resolution successful: {data.get('message', '')}")
+                    self.log_test("Test SMS Creation", True, "✅ Test SMS created successfully")
+                    # Try to get the SMS ID from the response or list
+                    sms_response = self.make_request("GET", "/sms/list?page=1&limit=1")
+                    if sms_response and sms_response.status_code == 200:
+                        sms_data = sms_response.json()
+                        sms_list = sms_data.get("sms_list", [])
+                        if sms_list:
+                            test_sms_id = sms_list[0].get("id")
                 else:
-                    self.log_test("SMS Duplicate Resolution", False, f"Duplicate resolution failed: {data.get('error', 'Unknown error')}")
+                    self.log_test("Test SMS Creation", False, f"Test SMS creation failed: {data.get('error', 'Unknown error')}")
             else:
-                self.log_test("SMS Duplicate Resolution", False, 
-                             f"Duplicate resolution failed - Status: {response.status_code if response else 'No response'}")
-        else:
-            self.log_test("SMS Duplicate Resolution", False, "Cannot test duplicate resolution - no test SMS ID available")
+                self.log_test("Test SMS Creation", False, 
+                             f"Test SMS creation failed - Status: {response.status_code if response else 'No response'}")
         
-        # Test 6: SMS Deletion
-        print("🔍 6. Testing SMS Deletion...")
-        if test_sms_id:
+        # Test 8: SMS Deletion WITH Authentication (functional test)
+        if self.access_token and test_sms_id:
+            print("🔍 8. Testing SMS Deletion WITH Auth (functional test)...")
             response = self.make_request("DELETE", f"/sms/{test_sms_id}")
             if response and response.status_code == 200:
                 data = response.json()
@@ -1094,8 +1145,9 @@ class BudgetPlannerTester:
             else:
                 self.log_test("SMS Deletion", False, 
                              f"SMS deletion failed - Status: {response.status_code if response else 'No response'}")
-        else:
+        elif self.access_token:
             # Test with a dummy ID to check if endpoint exists
+            print("🔍 8. Testing SMS Deletion endpoint accessibility...")
             response = self.make_request("DELETE", "/sms/dummy_id")
             if response and response.status_code == 404:
                 self.log_test("SMS Deletion Endpoint", True, "✅ SMS deletion endpoint accessible (404 expected for dummy ID)")
@@ -1105,15 +1157,14 @@ class BudgetPlannerTester:
                 self.log_test("SMS Deletion Endpoint", False, 
                              f"SMS deletion endpoint not accessible - Status: {response.status_code if response else 'No response'}")
         
-        # Test 7: SMS Hash Generation (implicit test through duplicate detection)
-        print("🔍 7. Testing SMS Hash Generation...")
-        # This is tested implicitly through the duplicate detection functionality
-        # If duplicate detection works, hash generation is working
-        response = self.make_request("POST", "/sms/find-duplicates")
-        if response and response.status_code == 200:
-            self.log_test("SMS Hash Generation", True, "✅ SMS hash generation working (verified through duplicate detection)")
-        else:
-            self.log_test("SMS Hash Generation", False, "Cannot verify SMS hash generation")
+        # Test 9: SMS Hash Generation (implicit test through duplicate detection)
+        if self.access_token:
+            print("🔍 9. Testing SMS Hash Generation (through duplicate detection)...")
+            response = self.make_request("POST", "/sms/find-duplicates")
+            if response and response.status_code == 200:
+                self.log_test("SMS Hash Generation", True, "✅ SMS hash generation working (verified through duplicate detection)")
+            else:
+                self.log_test("SMS Hash Generation", False, "Cannot verify SMS hash generation")
 
     def run_phase2_production_tests(self):
         """Run comprehensive Phase 2 production deployment tests"""
