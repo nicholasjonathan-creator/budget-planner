@@ -14,7 +14,7 @@ class UserService:
     @staticmethod
     async def create_user(user_data: UserCreate) -> UserResponse:
         """Create a new user"""
-        # Check if user already exists
+        # Check if user already exists by email (primary unique identifier)
         existing_user = await users_collection.find_one({"email": user_data.email})
         if existing_user:
             raise HTTPException(
@@ -22,18 +22,24 @@ class UserService:
                 detail="Email already registered"
             )
         
-        # Check if username already exists
-        existing_username = await users_collection.find_one({"username": user_data.username})
-        if existing_username:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Username already taken"
-            )
+        # Generate username from email if not provided
+        username = user_data.username
+        if not username:
+            username = user_data.email.split('@')[0]
+            
+        # Check if username already exists (if provided)
+        if username:
+            existing_username = await users_collection.find_one({"username": username})
+            if existing_username:
+                # Auto-generate unique username if conflict
+                import time
+                timestamp = str(int(time.time()))[-4:]  # Last 4 digits of timestamp
+                username = f"{username}{timestamp}"
         
         # Create user document
         user_dict = {
             "email": user_data.email,
-            "username": user_data.username,
+            "username": username,
             "password_hash": get_password_hash(user_data.password),
             "role": UserRole.USER,
             "is_active": True,
@@ -57,7 +63,7 @@ class UserService:
         except DuplicateKeyError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User with this email or username already exists"
+                detail="User with this email already exists"
             )
     
     @staticmethod
