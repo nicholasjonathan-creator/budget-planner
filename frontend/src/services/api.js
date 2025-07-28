@@ -360,7 +360,7 @@ class ApiService {
   // Run monitoring cycle (admin function)
   async runMonitoringCycle(timeWindow = 10) {
     try {
-      const response = await this.api.post(`/monitoring/run-cycle?time_window=${timeWindow}`);
+      const response = await this.client.post(`/monitoring/run-cycle?time_window=${timeWindow}`);
       return response.data;
     } catch (error) {
       console.error('Error running monitoring cycle:', error);
