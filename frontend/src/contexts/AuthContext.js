@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
+import ApiService from '../services/api';
 
 const AuthContext = createContext();
 
@@ -43,20 +44,13 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      // Use ApiService with proper error handling
+      const response = await ApiService.client.post('/auth/login', {
+        email,
+        password
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Login failed');
-      }
-
-      const data = await response.json();
+      const data = response.data;
       
       // Store token and user data in cookies
       Cookies.set('auth_token', data.access_token, { expires: 1 }); // 1 day
@@ -68,7 +62,8 @@ export const AuthProvider = ({ children }) => {
       return { success: true, user: data.user };
     } catch (error) {
       console.error('Login error:', error);
-      return { success: false, error: error.message };
+      const errorMessage = error.response?.data?.detail || error.message || 'Login failed';
+      return { success: false, error: errorMessage };
     }
   };
 
