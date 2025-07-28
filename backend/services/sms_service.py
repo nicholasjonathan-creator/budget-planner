@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 class SMSService:
     def __init__(self):
         self.parser = SMSTransactionParser()
-        self.collection = db.sms_transactions
+        self.sms_collection = db.sms_transactions
+        self.transactions_collection = db.transactions
         
     async def receive_sms(self, phone_number: str, message: str, user_id: str = None) -> dict:
         """Receive and process incoming SMS"""
