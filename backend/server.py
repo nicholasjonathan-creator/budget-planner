@@ -1348,8 +1348,6 @@ async def export_account_data(
     Export all user data for GDPR compliance
     """
     try:
-        from services.account_deletion_service import account_deletion_service
-        
         export_result = await account_deletion_service.export_user_data(current_user.id)
         
         return export_result
