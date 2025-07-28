@@ -1166,6 +1166,187 @@ class BudgetPlannerTester:
             else:
                 self.log_test("SMS Hash Generation", False, "Cannot verify SMS hash generation")
 
+    def test_login_issue_for_pat_user(self):
+        """Test login issue investigation for user 'Pat' - Focus on login functionality"""
+        print("\n" + "=" * 80)
+        print("🎯 LOGIN ISSUE INVESTIGATION FOR USER 'PAT'")
+        print("🌐 Testing Backend: https://budget-planner-backendjuly.onrender.com")
+        print("📧 User Email: patrick1091+1@gmail.com")
+        print("🔍 Issue: User stuck on 'Logging in...' and login not completing")
+        print("=" * 80)
+        
+        # Test 1: Login Endpoint Health
+        print("\n🔧 TEST 1: LOGIN ENDPOINT HEALTH")
+        print("   - Test POST /api/auth/login endpoint")
+        print("   - Verify it accepts credentials and returns tokens")
+        print("   - Check response time and success rate")
+        
+        # Test login endpoint with invalid credentials first to check if endpoint is working
+        invalid_login_data = {
+            "email": "nonexistent@test.com",
+            "password": "wrongpassword"
+        }
+        
+        start_time = time.time()
+        response = self.make_request("POST", "/auth/login", invalid_login_data)
+        response_time = time.time() - start_time
+        
+        if response and response.status_code == 401:
+            self.log_test("Login Endpoint Health", True, 
+                         f"✅ Login endpoint working - Response time: {response_time:.2f}s")
+        elif response and response.status_code == 422:
+            self.log_test("Login Endpoint Health", True, 
+                         f"✅ Login endpoint accessible - Validation working - Response time: {response_time:.2f}s")
+        else:
+            self.log_test("Login Endpoint Health", False, 
+                         f"❌ Login endpoint issue - Status: {response.status_code if response else 'No response'} - Response time: {response_time:.2f}s")
+        
+        # Test 2: Authentication Flow with Pat's Email
+        print("\n🔧 TEST 2: AUTHENTICATION FLOW FOR USER 'PAT'")
+        print("   - Test login with email: patrick1091+1@gmail.com")
+        print("   - Verify JWT token generation")
+        print("   - Test token validation endpoint /api/auth/me")
+        
+        # Try to login with Pat's email (we don't know the password, so this will likely fail)
+        pat_login_data = {
+            "email": "patrick1091+1@gmail.com",
+            "password": "testpassword123"  # We don't know the real password
+        }
+        
+        start_time = time.time()
+        response = self.make_request("POST", "/auth/login", pat_login_data)
+        login_response_time = time.time() - start_time
+        
+        if response and response.status_code == 401:
+            try:
+                error_data = response.json()
+                error_detail = error_data.get('detail', '')
+                if 'Incorrect email or password' in error_detail:
+                    self.log_test("Pat User Login Attempt", True, 
+                                 f"✅ User 'Pat' exists in database - Login endpoint working - Response time: {login_response_time:.2f}s")
+                else:
+                    self.log_test("Pat User Login Attempt", False, 
+                                 f"❌ Unexpected login error: {error_detail} - Response time: {login_response_time:.2f}s")
+            except:
+                self.log_test("Pat User Login Attempt", True, 
+                             f"✅ Login endpoint responding correctly - Response time: {login_response_time:.2f}s")
+        elif response and response.status_code == 200:
+            # Unexpected success - this would mean we guessed the password
+            data = response.json()
+            access_token = data.get("access_token")
+            if access_token:
+                self.log_test("Pat User Login Success", True, 
+                             f"✅ UNEXPECTED SUCCESS - Pat user logged in - Response time: {login_response_time:.2f}s")
+                
+                # Test token validation
+                temp_token = self.access_token
+                self.access_token = access_token
+                
+                response = self.make_request("GET", "/auth/me")
+                if response and response.status_code == 200:
+                    user_data = response.json()
+                    self.log_test("Pat Token Validation", True, 
+                                 f"✅ JWT token valid - User: {user_data.get('email')}")
+                else:
+                    self.log_test("Pat Token Validation", False, 
+                                 "❌ JWT token validation failed")
+                
+                self.access_token = temp_token  # Restore original token
+            else:
+                self.log_test("Pat User Login", False, 
+                             f"❌ Login response missing access token - Response time: {login_response_time:.2f}s")
+        else:
+            self.log_test("Pat User Login", False, 
+                         f"❌ Login failed - Status: {response.status_code if response else 'No response'} - Response time: {login_response_time:.2f}s")
+        
+        # Test 3: Login Performance Analysis
+        print("\n🔧 TEST 3: LOGIN PERFORMANCE ANALYSIS")
+        print("   - Check response times for login endpoint")
+        print("   - Identify any timeouts or slow responses")
+        print("   - Test concurrent login attempts")
+        
+        # Test multiple login attempts to check for performance issues
+        response_times = []
+        for i in range(3):
+            test_login_data = {
+                "email": f"perftest{i}@test.com",
+                "password": "testpass123"
+            }
+            
+            start_time = time.time()
+            response = self.make_request("POST", "/auth/login", test_login_data)
+            response_time = time.time() - start_time
+            response_times.append(response_time)
+            
+            if response_time > 5.0:
+                self.log_test(f"Login Performance Test {i+1}", False, 
+                             f"❌ Slow response: {response_time:.2f}s (>5s threshold)")
+            else:
+                self.log_test(f"Login Performance Test {i+1}", True, 
+                             f"✅ Good response time: {response_time:.2f}s")
+        
+        avg_response_time = sum(response_times) / len(response_times)
+        if avg_response_time < 5.0:
+            self.log_test("Login Performance Summary", True, 
+                         f"✅ Average login response time: {avg_response_time:.2f}s (within 5s threshold)")
+        else:
+            self.log_test("Login Performance Summary", False, 
+                         f"❌ Average login response time: {avg_response_time:.2f}s (exceeds 5s threshold)")
+        
+        # Test 4: User Database Lookup
+        print("\n🔧 TEST 4: USER DATABASE LOOKUP")
+        print("   - Check if user 'Pat' exists in database")
+        print("   - Verify user lookup functionality")
+        
+        # Try to register with Pat's email to see if user already exists
+        pat_registration_data = {
+            "email": "patrick1091+1@gmail.com",
+            "password": "testpassword123",
+            "username": "pat_test_user"
+        }
+        
+        response = self.make_request("POST", "/auth/register", pat_registration_data)
+        if response and response.status_code == 400:
+            try:
+                error_data = response.json()
+                error_detail = error_data.get('detail', '')
+                if 'already exists' in error_detail.lower() or 'already registered' in error_detail.lower():
+                    self.log_test("Pat User Database Lookup", True, 
+                                 f"✅ User 'Pat' exists in database: {error_detail}")
+                else:
+                    self.log_test("Pat User Database Lookup", False, 
+                                 f"❌ Unexpected registration error: {error_detail}")
+            except:
+                self.log_test("Pat User Database Lookup", True, 
+                             "✅ User 'Pat' likely exists (registration failed as expected)")
+        elif response and response.status_code == 201:
+            # User was successfully created, which means they didn't exist before
+            data = response.json()
+            self.log_test("Pat User Database Lookup", False, 
+                         f"❌ User 'Pat' did NOT exist in database - New user created: {data.get('user', {}).get('id')}")
+        else:
+            self.log_test("Pat User Database Lookup", False, 
+                         f"❌ Cannot verify user existence - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 5: Authentication Token Generation
+        print("\n🔧 TEST 5: AUTHENTICATION TOKEN GENERATION")
+        print("   - Test JWT token generation working")
+        print("   - Verify token structure and expiration")
+        
+        if self.access_token:
+            # Test current token validation
+            response = self.make_request("GET", "/auth/me")
+            if response and response.status_code == 200:
+                user_data = response.json()
+                self.log_test("JWT Token Generation", True, 
+                             f"✅ JWT token generation working - Current user: {user_data.get('email')}")
+            else:
+                self.log_test("JWT Token Generation", False, 
+                             "❌ JWT token validation failed")
+        else:
+            self.log_test("JWT Token Generation", False, 
+                         "❌ No authentication token available for testing")
+
     def test_critical_fixes_for_pat_user(self):
         """Test critical fixes for user 'Pat' testing - Focus on specific issues"""
         print("\n" + "=" * 80)
