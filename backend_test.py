@@ -730,6 +730,125 @@ class BudgetPlannerTester:
         else:
             self.log_test("Monitoring Cycle", False, "Monitoring cycle failed")
     
+    def test_phone_number_cleanup(self):
+        """Test cleanup of specific phone number +919886763496 from database"""
+        print("\n=== TESTING PHONE NUMBER CLEANUP (+919886763496) ===")
+        
+        target_phone = "+919886763496"
+        
+        if not self.access_token:
+            self.log_test("Phone Cleanup Tests", False, "No authentication token available")
+            return
+        
+        # First, check if the phone number exists in any user records
+        print(f"🔍 Checking for existing records with phone number: {target_phone}")
+        
+        # Test phone status endpoint to see current state
+        response = self.make_request("GET", "/phone/status")
+        if response and response.status_code == 200:
+            data = response.json()
+            current_phone = data.get("phone_number")
+            phone_verified = data.get("phone_verified", False)
+            
+            if current_phone == target_phone:
+                self.log_test("Target Phone Found", True, f"Found target phone {target_phone} in current user (verified: {phone_verified})")
+                
+                # Try to unlink the phone number
+                response = self.make_request("DELETE", "/phone/unlink")
+                if response and response.status_code == 200:
+                    self.log_test("Phone Number Unlink", True, f"Successfully unlinked {target_phone} from current user")
+                else:
+                    self.log_test("Phone Number Unlink", False, f"Failed to unlink {target_phone}")
+            else:
+                self.log_test("Target Phone Check", True, f"Target phone {target_phone} not found in current user (current: {current_phone})")
+        else:
+            self.log_test("Phone Status Check", False, "Failed to check phone status")
+        
+        # Test sending verification to the target phone to see if it's clean
+        print(f"🧪 Testing fresh verification flow for {target_phone}")
+        phone_data = {"phone_number": target_phone}
+        response = self.make_request("POST", "/phone/send-verification", phone_data)
+        
+        if response and response.status_code == 200:
+            data = response.json()
+            success = data.get("success", False)
+            message = data.get("message", "")
+            
+            if success:
+                self.log_test("Fresh Phone Verification", True, f"✅ Phone {target_phone} ready for fresh verification: {message}")
+                
+                # Check if we can verify with a test OTP (should fail but endpoint should work)
+                otp_data = {"otp": "123456"}
+                otp_response = self.make_request("POST", "/phone/verify-otp", otp_data)
+                
+                if otp_response and otp_response.status_code == 400:
+                    try:
+                        error_data = otp_response.json()
+                        error_detail = error_data.get('detail', '')
+                        if 'invalid' in error_detail.lower() or 'expired' in error_detail.lower():
+                            self.log_test("Fresh OTP Verification Flow", True, f"✅ OTP verification flow working for {target_phone} (invalid OTP expected)")
+                        else:
+                            self.log_test("Fresh OTP Verification Flow", False, f"❌ Unexpected OTP error: {error_detail}")
+                    except:
+                        self.log_test("Fresh OTP Verification Flow", True, f"✅ OTP verification endpoint accessible for {target_phone}")
+                else:
+                    self.log_test("Fresh OTP Verification Flow", False, f"❌ OTP verification flow not working properly for {target_phone}")
+            else:
+                self.log_test("Fresh Phone Verification", False, f"❌ Phone verification failed for {target_phone}: {message}")
+        else:
+            error_msg = "Phone verification request failed"
+            if response:
+                try:
+                    error_data = response.json()
+                    error_msg = f"Phone verification failed: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    error_msg = f"Phone verification failed with status {response.status_code}"
+            self.log_test("Fresh Phone Verification", False, error_msg)
+        
+        # Test WhatsApp integration with the target phone
+        print(f"🔗 Testing WhatsApp integration readiness for {target_phone}")
+        response = self.make_request("GET", "/whatsapp/status")
+        if response and response.status_code == 200:
+            data = response.json()
+            whatsapp_number = data.get("whatsapp_number")
+            sandbox_code = data.get("sandbox_code")
+            status = data.get("status", "unknown")
+            
+            if status == "active" and whatsapp_number:
+                self.log_test("WhatsApp Integration Ready", True, f"✅ WhatsApp integration ready for {target_phone} - Number: {whatsapp_number}, Sandbox: {sandbox_code}")
+            else:
+                self.log_test("WhatsApp Integration Ready", False, f"❌ WhatsApp integration not ready - Status: {status}")
+        else:
+            self.log_test("WhatsApp Integration Check", False, "Failed to check WhatsApp integration status")
+        
+        # Summary of cleanup status
+        print(f"\n📋 CLEANUP SUMMARY FOR {target_phone}:")
+        cleanup_tests = [
+            "Target Phone Check", "Phone Number Unlink", "Fresh Phone Verification", 
+            "Fresh OTP Verification Flow", "WhatsApp Integration Ready"
+        ]
+        
+        cleanup_passed = 0
+        cleanup_total = 0
+        
+        for test_name in cleanup_tests:
+            test_result = next((r for r in self.test_results if r["test"] == test_name), None)
+            if test_result:
+                cleanup_total += 1
+                status = "✅" if test_result["success"] else "❌"
+                print(f"   {status} {test_name}: {test_result['message']}")
+                if test_result["success"]:
+                    cleanup_passed += 1
+        
+        if cleanup_total > 0:
+            cleanup_success_rate = (cleanup_passed / cleanup_total) * 100
+            print(f"\n🎯 CLEANUP SUCCESS RATE: {cleanup_success_rate:.1f}% ({cleanup_passed}/{cleanup_total})")
+            
+            if cleanup_success_rate >= 80:
+                print(f"   ✅ PHONE NUMBER {target_phone}: READY FOR FRESH TESTING")
+            else:
+                print(f"   ⚠️  PHONE NUMBER {target_phone}: CLEANUP ISSUES DETECTED")
+
     def test_error_handling(self):
         """Test error handling for various endpoints"""
         print("\n=== TESTING ERROR HANDLING ===")
