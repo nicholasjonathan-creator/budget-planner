@@ -348,28 +348,54 @@ class BudgetPlannerTester:
             self.log_test("Analytics Summary", False, "Failed to get analytics summary")
     
     def test_whatsapp_integration(self):
-        """Test WhatsApp integration status"""
-        print("\n=== TESTING WHATSAPP INTEGRATION ===")
+        """Test WhatsApp integration status - FOCUS ON TWILIO CREDENTIALS"""
+        print("\n=== TESTING WHATSAPP INTEGRATION (TWILIO ENABLED) ===")
         
         if not self.access_token:
             self.log_test("WhatsApp Tests", False, "No authentication token available")
             return
         
-        # Test WhatsApp status
+        # Test WhatsApp status - should now show "enabled" instead of "disabled"
         response = self.make_request("GET", "/whatsapp/status")
         if response and response.status_code == 200:
             data = response.json()
             status = data.get("status", "unknown")
-            self.log_test("WhatsApp Status", True, f"WhatsApp status: {status}")
+            whatsapp_number = data.get("whatsapp_number")
+            sandbox_code = data.get("sandbox_code")
+            
+            if status == "active" and whatsapp_number:
+                self.log_test("WhatsApp Status", True, f"✅ WhatsApp ENABLED - Status: {status}, Number: {whatsapp_number}, Sandbox: {sandbox_code}")
+            elif status == "disabled" or not whatsapp_number:
+                self.log_test("WhatsApp Status", False, f"❌ WhatsApp STILL DISABLED - Status: {status}, Number: {whatsapp_number}")
+            else:
+                self.log_test("WhatsApp Status", True, f"WhatsApp status: {status}, Number: {whatsapp_number}")
         else:
             self.log_test("WhatsApp Status", False, "Failed to get WhatsApp status")
         
-        # Test monitoring WhatsApp status
+        # Test monitoring WhatsApp status - should show Twilio service enabled
         response = self.make_request("GET", "/monitoring/whatsapp-status")
         if response and response.status_code == 200:
-            self.log_test("WhatsApp Monitoring", True, "WhatsApp monitoring status retrieved")
+            data = response.json()
+            service_enabled = data.get("service_enabled", False)
+            twilio_configured = data.get("twilio_configured", False)
+            
+            if service_enabled and twilio_configured:
+                self.log_test("WhatsApp Monitoring", True, f"✅ TWILIO CONFIGURED - Service: {service_enabled}, Twilio: {twilio_configured}")
+            else:
+                self.log_test("WhatsApp Monitoring", False, f"❌ TWILIO NOT CONFIGURED - Service: {service_enabled}, Twilio: {twilio_configured}")
         else:
             self.log_test("WhatsApp Monitoring", False, "Failed to get WhatsApp monitoring status")
+        
+        # Test WhatsApp webhook endpoint (should be ready)
+        response = self.make_request("POST", "/whatsapp/webhook", {})
+        if response and response.status_code == 200:
+            self.log_test("WhatsApp Webhook", True, "✅ WhatsApp webhook endpoint is ready")
+        else:
+            # Webhook might return different status codes, check if it's accessible
+            if response and response.status_code in [400, 422]:  # Bad request but endpoint exists
+                self.log_test("WhatsApp Webhook", True, "✅ WhatsApp webhook endpoint is accessible")
+            else:
+                self.log_test("WhatsApp Webhook", False, f"❌ WhatsApp webhook not accessible - Status: {response.status_code if response else 'No response'}")
     
     def test_phone_verification(self):
         """Test phone verification system"""
