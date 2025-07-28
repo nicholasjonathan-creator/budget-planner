@@ -11,8 +11,8 @@ from datetime import datetime, timedelta
 import uuid
 import sys
 
-# Backend URL - Production backend for Phase 2 deployment verification
-BASE_URL = "https://budget-planner-backendjuly.onrender.com/api"
+# Backend URL - Current environment backend URL
+BASE_URL = "https://0767e749-6846-4863-a163-29d316dc927d.preview.emergentagent.com/api"
 
 class BudgetPlannerTester:
     def __init__(self):
