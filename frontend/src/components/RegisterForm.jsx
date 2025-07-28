@@ -89,20 +89,37 @@ const RegisterForm = ({ onSwitchToLogin, onSuccess }) => {
             />
           </div>
           
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium mb-2">
-              Username
-            </label>
-            <Input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Choose a username"
-              required
-              disabled={loading}
-            />
-          </div>
+          {/* Optional Username Field */}
+          {showUsernameField ? (
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium mb-2">
+                Display Name (Optional)
+              </label>
+              <Input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter display name (optional)"
+                disabled={loading}
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                If not provided, we'll use the part before @ in your email
+              </p>
+            </div>
+          ) : (
+            <div className="text-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowUsernameField(true)}
+                disabled={loading}
+              >
+                + Add Custom Display Name (Optional)
+              </Button>
+            </div>
+          )}
           
           <div>
             <label htmlFor="password" className="block text-sm font-medium mb-2">
