@@ -1197,6 +1197,82 @@ async def get_phone_verification_status(current_user: User = Depends(get_current
         logger.error(f"Phone status error: {e}")
         raise HTTPException(status_code=500, detail="Failed to get phone verification status")
 
+# Account Consolidation Endpoints
+@app.get("/api/account/consolidation/preview")
+async def get_consolidation_preview(
+    phone_number: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Preview what data would be consolidated for a phone number
+    """
+    try:
+        from services.account_consolidation_service import account_consolidation_service
+        
+        preview = await account_consolidation_service.get_consolidation_preview(
+            phone_number, current_user.id
+        )
+        
+        return preview
+        
+    except Exception as e:
+        logger.error(f"Consolidation preview error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get consolidation preview")
+
+@app.post("/api/account/consolidation/transfer-phone")
+async def transfer_phone_number(
+    phone_number: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Transfer phone number association to current user
+    """
+    try:
+        from services.account_consolidation_service import account_consolidation_service
+        
+        result = await account_consolidation_service.transfer_phone_number_association(
+            phone_number, current_user.id
+        )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Phone transfer error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to transfer phone number")
+
+@app.post("/api/account/consolidation/full-merge")
+async def full_account_consolidation(
+    phone_number: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Perform full account consolidation (merge all data)
+    """
+    try:
+        from services.account_consolidation_service import account_consolidation_service
+        
+        # First find the source user
+        source_user = await account_consolidation_service.find_user_by_phone_number(phone_number)
+        if not source_user:
+            return {"success": False, "error": "No user found with this phone number"}
+        
+        source_user_id = source_user["id"]
+        
+        # Don't merge if it's the same user
+        if source_user_id == current_user.id:
+            return {"success": False, "error": "Cannot merge account with itself"}
+        
+        # Perform full consolidation
+        result = await account_consolidation_service.consolidate_user_data(
+            source_user_id, current_user.id
+        )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Full consolidation error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to perform full consolidation")
+
 @app.get("/api/whatsapp/status")
 async def whatsapp_status(request: Request, current_user: User = Depends(get_current_active_user)):
     """
