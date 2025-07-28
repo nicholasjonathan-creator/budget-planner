@@ -1697,6 +1697,500 @@ class BudgetPlannerTester:
         print(f"   4. Database is actively processing transactions and SMS messages")
         print(f"   5. Monitoring system is tracking all activities in real-time")
 
+    def test_phase1_username_optional_registration(self):
+        """Test Phase 1: Username Optional Registration"""
+        print("\n=== TESTING PHASE 1: USERNAME OPTIONAL REGISTRATION ===")
+        
+        timestamp = int(time.time())
+        
+        # Test 1: Registration without username (should auto-generate from email)
+        print("🧪 1. Testing registration without username (auto-generate from email)")
+        test_email_no_username = f"nouser{timestamp}@budgetplanner.com"
+        test_password = "SecurePass123!"
+        
+        registration_data_no_username = {
+            "email": test_email_no_username,
+            "password": test_password
+            # No username provided
+        }
+        
+        response = self.make_request("POST", "/auth/register", registration_data_no_username)
+        if response and response.status_code == 201:
+            data = response.json()
+            user_data = data.get("user", {})
+            generated_username = user_data.get("username")
+            
+            if generated_username and generated_username != "":
+                # Check if username was auto-generated from email
+                email_prefix = test_email_no_username.split('@')[0]
+                if email_prefix in generated_username or generated_username.startswith(email_prefix):
+                    self.log_test("Username Auto-Generation", True, 
+                                 f"✅ Username auto-generated from email: '{generated_username}'")
+                else:
+                    self.log_test("Username Auto-Generation", True, 
+                                 f"✅ Username auto-generated: '{generated_username}'")
+            else:
+                self.log_test("Username Auto-Generation", False, 
+                             "❌ No username generated when not provided")
+        else:
+            error_msg = "Registration without username failed"
+            if response:
+                try:
+                    error_data = response.json()
+                    error_msg = f"Registration failed: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    error_msg = f"Registration failed with status {response.status_code}"
+            self.log_test("Username Auto-Generation", False, error_msg)
+        
+        # Test 2: Registration with username (should work as before)
+        print("🧪 2. Testing registration with username (traditional flow)")
+        test_email_with_username = f"withuser{timestamp}@budgetplanner.com"
+        test_username = f"testuser{timestamp}"
+        
+        registration_data_with_username = {
+            "email": test_email_with_username,
+            "password": test_password,
+            "username": test_username
+        }
+        
+        response = self.make_request("POST", "/auth/register", registration_data_with_username)
+        if response and response.status_code == 201:
+            data = response.json()
+            user_data = data.get("user", {})
+            returned_username = user_data.get("username")
+            
+            if returned_username == test_username:
+                self.log_test("Username Provided Registration", True, 
+                             f"✅ Username preserved as provided: '{returned_username}'")
+            else:
+                self.log_test("Username Provided Registration", False, 
+                             f"❌ Username not preserved. Expected: '{test_username}', Got: '{returned_username}'")
+        else:
+            error_msg = "Registration with username failed"
+            if response:
+                try:
+                    error_data = response.json()
+                    error_msg = f"Registration failed: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    error_msg = f"Registration failed with status {response.status_code}"
+            self.log_test("Username Provided Registration", False, error_msg)
+        
+        # Test 3: Duplicate username handling
+        print("🧪 3. Testing duplicate username handling")
+        duplicate_email = f"duplicate{timestamp}@budgetplanner.com"
+        
+        duplicate_registration_data = {
+            "email": duplicate_email,
+            "password": test_password,
+            "username": test_username  # Same username as previous test
+        }
+        
+        response = self.make_request("POST", "/auth/register", duplicate_registration_data)
+        if response and response.status_code == 400:
+            try:
+                error_data = response.json()
+                error_detail = error_data.get('detail', '')
+                if 'username' in error_detail.lower() and ('exists' in error_detail.lower() or 'taken' in error_detail.lower()):
+                    self.log_test("Duplicate Username Handling", True, 
+                                 f"✅ Duplicate username properly rejected: {error_detail}")
+                else:
+                    self.log_test("Duplicate Username Handling", False, 
+                                 f"❌ Unexpected error for duplicate username: {error_detail}")
+            except:
+                self.log_test("Duplicate Username Handling", True, 
+                             "✅ Duplicate username rejected (400 status)")
+        elif response and response.status_code == 201:
+            # If registration succeeded, check if username was modified
+            data = response.json()
+            user_data = data.get("user", {})
+            returned_username = user_data.get("username")
+            
+            if returned_username != test_username:
+                self.log_test("Duplicate Username Handling", True, 
+                             f"✅ Duplicate username handled by modification: '{returned_username}'")
+            else:
+                self.log_test("Duplicate Username Handling", False, 
+                             "❌ Duplicate username not handled properly")
+        else:
+            self.log_test("Duplicate Username Handling", False, 
+                         f"❌ Unexpected response for duplicate username - Status: {response.status_code if response else 'No response'}")
+
+    def test_phase1_password_reset_functionality(self):
+        """Test Phase 1: Password Reset Functionality"""
+        print("\n=== TESTING PHASE 1: PASSWORD RESET FUNCTIONALITY ===")
+        
+        timestamp = int(time.time())
+        test_email = f"resettest{timestamp}@budgetplanner.com"
+        test_password = "OriginalPass123!"
+        new_password = "NewSecurePass456!"
+        
+        # First, create a test user for password reset testing
+        print("🧪 0. Creating test user for password reset testing")
+        registration_data = {
+            "email": test_email,
+            "password": test_password,
+            "username": f"resetuser{timestamp}"
+        }
+        
+        response = self.make_request("POST", "/auth/register", registration_data)
+        if response and response.status_code == 201:
+            data = response.json()
+            self.access_token = data.get("access_token")
+            self.log_test("Reset Test User Creation", True, "✅ Test user created for password reset testing")
+        else:
+            self.log_test("Reset Test User Creation", False, "❌ Failed to create test user")
+            return
+        
+        # Test 1: Forgot Password Endpoint
+        print("🧪 1. Testing forgot password endpoint")
+        forgot_password_data = {"email": test_email}
+        
+        response = self.make_request("POST", "/auth/forgot-password", forgot_password_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            if data.get("success"):
+                reset_token = data.get("reset_token")  # In production, this would be sent via email
+                self.log_test("Forgot Password Endpoint", True, 
+                             f"✅ Password reset initiated successfully")
+                
+                # Store token for subsequent tests (in production, user gets this via email)
+                self.reset_token = reset_token
+            else:
+                self.log_test("Forgot Password Endpoint", False, 
+                             f"❌ Password reset failed: {data.get('error', 'Unknown error')}")
+        else:
+            error_msg = "Forgot password request failed"
+            if response:
+                try:
+                    error_data = response.json()
+                    error_msg = f"Forgot password failed: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    error_msg = f"Forgot password failed with status {response.status_code}"
+            self.log_test("Forgot Password Endpoint", False, error_msg)
+            return
+        
+        # Test 2: Validate Reset Token Endpoint
+        print("🧪 2. Testing validate reset token endpoint")
+        if hasattr(self, 'reset_token') and self.reset_token:
+            validate_token_data = {"token": self.reset_token}
+            
+            response = self.make_request("POST", "/auth/validate-reset-token", validate_token_data)
+            if response and response.status_code == 200:
+                data = response.json()
+                if data.get("valid"):
+                    self.log_test("Validate Reset Token", True, 
+                                 f"✅ Reset token validation successful")
+                else:
+                    self.log_test("Validate Reset Token", False, 
+                                 f"❌ Reset token invalid: {data.get('error', 'Unknown error')}")
+            else:
+                error_msg = "Token validation failed"
+                if response:
+                    try:
+                        error_data = response.json()
+                        error_msg = f"Token validation failed: {error_data.get('detail', 'Unknown error')}"
+                    except:
+                        error_msg = f"Token validation failed with status {response.status_code}"
+                self.log_test("Validate Reset Token", False, error_msg)
+        else:
+            self.log_test("Validate Reset Token", False, "❌ No reset token available for validation")
+        
+        # Test 3: Reset Password Endpoint
+        print("🧪 3. Testing reset password endpoint")
+        if hasattr(self, 'reset_token') and self.reset_token:
+            reset_password_data = {
+                "token": self.reset_token,
+                "new_password": new_password
+            }
+            
+            response = self.make_request("POST", "/auth/reset-password", reset_password_data)
+            if response and response.status_code == 200:
+                data = response.json()
+                if data.get("success"):
+                    self.log_test("Reset Password Endpoint", True, 
+                                 f"✅ Password reset completed successfully")
+                    
+                    # Test login with new password
+                    login_data = {"email": test_email, "password": new_password}
+                    login_response = self.make_request("POST", "/auth/login", login_data)
+                    if login_response and login_response.status_code == 200:
+                        self.log_test("Login After Password Reset", True, 
+                                     "✅ Login successful with new password")
+                        # Update token for subsequent tests
+                        login_data_response = login_response.json()
+                        self.access_token = login_data_response.get("access_token")
+                    else:
+                        self.log_test("Login After Password Reset", False, 
+                                     "❌ Login failed with new password")
+                else:
+                    self.log_test("Reset Password Endpoint", False, 
+                                 f"❌ Password reset failed: {data.get('error', 'Unknown error')}")
+            else:
+                error_msg = "Password reset failed"
+                if response:
+                    try:
+                        error_data = response.json()
+                        error_msg = f"Password reset failed: {error_data.get('detail', 'Unknown error')}"
+                    except:
+                        error_msg = f"Password reset failed with status {response.status_code}"
+                self.log_test("Reset Password Endpoint", False, error_msg)
+        else:
+            self.log_test("Reset Password Endpoint", False, "❌ No reset token available for password reset")
+        
+        # Test 4: Change Password Endpoint (for authenticated users)
+        print("🧪 4. Testing change password endpoint")
+        if self.access_token:
+            change_password_data = {
+                "current_password": new_password,
+                "new_password": "FinalPassword789!"
+            }
+            
+            response = self.make_request("POST", "/auth/change-password", change_password_data)
+            if response and response.status_code == 200:
+                data = response.json()
+                if data.get("success"):
+                    self.log_test("Change Password Endpoint", True, 
+                                 f"✅ Password change successful")
+                    
+                    # Test login with final password
+                    login_data = {"email": test_email, "password": "FinalPassword789!"}
+                    login_response = self.make_request("POST", "/auth/login", login_data)
+                    if login_response and login_response.status_code == 200:
+                        self.log_test("Login After Password Change", True, 
+                                     "✅ Login successful with changed password")
+                    else:
+                        self.log_test("Login After Password Change", False, 
+                                     "❌ Login failed with changed password")
+                else:
+                    self.log_test("Change Password Endpoint", False, 
+                                 f"❌ Password change failed: {data.get('message', 'Unknown error')}")
+            else:
+                error_msg = "Password change failed"
+                if response:
+                    try:
+                        error_data = response.json()
+                        error_msg = f"Password change failed: {error_data.get('detail', 'Unknown error')}"
+                    except:
+                        error_msg = f"Password change failed with status {response.status_code}"
+                self.log_test("Change Password Endpoint", False, error_msg)
+        else:
+            self.log_test("Change Password Endpoint", False, "❌ No authentication token for password change")
+        
+        # Test 5: Invalid token handling
+        print("🧪 5. Testing invalid token handling")
+        invalid_token_data = {"token": "invalid_token_12345"}
+        
+        response = self.make_request("POST", "/auth/validate-reset-token", invalid_token_data)
+        if response and response.status_code == 400:
+            try:
+                error_data = response.json()
+                error_detail = error_data.get('detail', '')
+                if 'invalid' in error_detail.lower() or 'token' in error_detail.lower():
+                    self.log_test("Invalid Token Handling", True, 
+                                 f"✅ Invalid token properly rejected: {error_detail}")
+                else:
+                    self.log_test("Invalid Token Handling", False, 
+                                 f"❌ Unexpected error for invalid token: {error_detail}")
+            except:
+                self.log_test("Invalid Token Handling", True, 
+                             "✅ Invalid token rejected (400 status)")
+        else:
+            self.log_test("Invalid Token Handling", False, 
+                         f"❌ Invalid token not handled properly - Status: {response.status_code if response else 'No response'}")
+
+    def test_phase1_sms_duplicate_detection(self):
+        """Test Phase 1: SMS Duplicate Detection"""
+        print("\n=== TESTING PHASE 1: SMS DUPLICATE DETECTION ===")
+        
+        if not self.access_token:
+            self.log_test("SMS Duplicate Tests", False, "No authentication token available")
+            return
+        
+        # Test 1: SMS List Endpoint
+        print("🧪 1. Testing SMS list endpoint")
+        response = self.make_request("GET", "/sms/list?page=1&limit=10")
+        if response and response.status_code == 200:
+            data = response.json()
+            sms_list = data.get("sms_list", [])
+            total_count = data.get("total_count", 0)
+            self.log_test("SMS List Endpoint", True, 
+                         f"✅ SMS list retrieved - {len(sms_list)} messages, Total: {total_count}")
+        else:
+            error_msg = "SMS list retrieval failed"
+            if response:
+                try:
+                    error_data = response.json()
+                    error_msg = f"SMS list failed: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    error_msg = f"SMS list failed with status {response.status_code}"
+            self.log_test("SMS List Endpoint", False, error_msg)
+        
+        # Test 2: Find Duplicates Endpoint
+        print("🧪 2. Testing find duplicates endpoint")
+        response = self.make_request("POST", "/sms/find-duplicates")
+        if response and response.status_code == 200:
+            data = response.json()
+            duplicate_groups = data.get("duplicate_groups", [])
+            total_groups = data.get("total_groups", 0)
+            self.log_test("Find SMS Duplicates", True, 
+                         f"✅ Duplicate detection completed - {total_groups} duplicate groups found")
+            
+            # Store duplicate info for resolution test
+            self.duplicate_groups = duplicate_groups
+        else:
+            error_msg = "Find duplicates failed"
+            if response:
+                try:
+                    error_data = response.json()
+                    error_msg = f"Find duplicates failed: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    error_msg = f"Find duplicates failed with status {response.status_code}"
+            self.log_test("Find SMS Duplicates", False, error_msg)
+        
+        # Test 3: Create some test SMS messages to test duplicate detection
+        print("🧪 3. Creating test SMS messages for duplicate detection")
+        test_sms_message = "HDFC Bank: Rs 1000.00 debited from A/c **1234 on 15-Dec-23 at TEST MERCHANT. Avl Bal: Rs 10,000.00"
+        
+        # Send the same SMS message multiple times to create duplicates
+        duplicate_created = False
+        for i in range(2):
+            sms_data = {
+                "phone_number": "+919876543210",
+                "message": test_sms_message
+            }
+            response = self.make_request("POST", "/sms/receive", sms_data)
+            if response and response.status_code == 200:
+                if i == 0:
+                    self.log_test("Create Test SMS", True, "✅ Test SMS message created")
+                duplicate_created = True
+            else:
+                self.log_test("Create Test SMS", False, f"❌ Failed to create test SMS message {i+1}")
+        
+        if duplicate_created:
+            # Test duplicate detection again
+            print("🧪 4. Testing duplicate detection after creating test duplicates")
+            response = self.make_request("POST", "/sms/find-duplicates")
+            if response and response.status_code == 200:
+                data = response.json()
+                duplicate_groups = data.get("duplicate_groups", [])
+                total_groups = data.get("total_groups", 0)
+                
+                if total_groups > 0:
+                    self.log_test("SMS Duplicate Detection", True, 
+                                 f"✅ Duplicate detection working - {total_groups} groups found")
+                    
+                    # Test 5: Resolve Duplicates Endpoint
+                    print("🧪 5. Testing resolve duplicates endpoint")
+                    if duplicate_groups:
+                        first_group = duplicate_groups[0]
+                        sms_hash = first_group.get("sms_hash")
+                        sms_ids = first_group.get("sms_ids", [])
+                        
+                        if len(sms_ids) > 1:
+                            resolve_data = {
+                                "sms_hash": sms_hash,
+                                "keep_sms_id": sms_ids[0]  # Keep the first one
+                            }
+                            
+                            response = self.make_request("POST", "/sms/resolve-duplicates", resolve_data)
+                            if response and response.status_code == 200:
+                                data = response.json()
+                                if data.get("success"):
+                                    deleted_count = data.get("deleted_count", 0)
+                                    self.log_test("Resolve SMS Duplicates", True, 
+                                                 f"✅ Duplicates resolved - {deleted_count} SMS deleted")
+                                else:
+                                    self.log_test("Resolve SMS Duplicates", False, 
+                                                 f"❌ Duplicate resolution failed: {data.get('message', 'Unknown error')}")
+                            else:
+                                error_msg = "Resolve duplicates failed"
+                                if response:
+                                    try:
+                                        error_data = response.json()
+                                        error_msg = f"Resolve duplicates failed: {error_data.get('detail', 'Unknown error')}"
+                                    except:
+                                        error_msg = f"Resolve duplicates failed with status {response.status_code}"
+                                self.log_test("Resolve SMS Duplicates", False, error_msg)
+                        else:
+                            self.log_test("Resolve SMS Duplicates", False, "❌ No duplicate SMS IDs to resolve")
+                    else:
+                        self.log_test("Resolve SMS Duplicates", False, "❌ No duplicate groups to resolve")
+                else:
+                    self.log_test("SMS Duplicate Detection", False, "❌ No duplicates detected after creating test duplicates")
+            else:
+                self.log_test("SMS Duplicate Detection", False, "❌ Failed to detect duplicates after creating test messages")
+        
+        # Test 6: Delete SMS Endpoint
+        print("🧪 6. Testing delete SMS endpoint")
+        # Get SMS list to find an SMS to delete
+        response = self.make_request("GET", "/sms/list?page=1&limit=5")
+        if response and response.status_code == 200:
+            data = response.json()
+            sms_list = data.get("sms_list", [])
+            
+            if sms_list:
+                sms_to_delete = sms_list[0]
+                sms_id = sms_to_delete.get("id")
+                
+                response = self.make_request("DELETE", f"/sms/{sms_id}")
+                if response and response.status_code == 200:
+                    data = response.json()
+                    if data.get("success"):
+                        self.log_test("Delete SMS", True, 
+                                     f"✅ SMS deleted successfully")
+                    else:
+                        self.log_test("Delete SMS", False, 
+                                     f"❌ SMS deletion failed: {data.get('message', 'Unknown error')}")
+                else:
+                    error_msg = "SMS deletion failed"
+                    if response:
+                        try:
+                            error_data = response.json()
+                            error_msg = f"SMS deletion failed: {error_data.get('detail', 'Unknown error')}"
+                        except:
+                            error_msg = f"SMS deletion failed with status {response.status_code}"
+                    self.log_test("Delete SMS", False, error_msg)
+            else:
+                self.log_test("Delete SMS", False, "❌ No SMS messages available to delete")
+        else:
+            self.log_test("Delete SMS", False, "❌ Failed to get SMS list for deletion test")
+        
+        # Test 7: SMS Hash Generation (verify duplicate detection mechanism)
+        print("🧪 7. Testing SMS hash generation for duplicate detection")
+        # This is tested implicitly through the duplicate detection, but we can verify
+        # by checking if the same message creates the same hash
+        
+        # Send the same message again and check if it's detected as duplicate
+        sms_data = {
+            "phone_number": "+919876543210",
+            "message": test_sms_message
+        }
+        response = self.make_request("POST", "/sms/receive", sms_data)
+        if response and response.status_code == 200:
+            # Check for duplicates again
+            response = self.make_request("POST", "/sms/find-duplicates")
+            if response and response.status_code == 200:
+                data = response.json()
+                duplicate_groups = data.get("duplicate_groups", [])
+                
+                # Look for our test message in duplicates
+                test_message_found = False
+                for group in duplicate_groups:
+                    if test_sms_message in group.get("message", ""):
+                        test_message_found = True
+                        break
+                
+                if test_message_found:
+                    self.log_test("SMS Hash Generation", True, 
+                                 "✅ SMS hash generation working - identical messages detected as duplicates")
+                else:
+                    self.log_test("SMS Hash Generation", False, 
+                                 "❌ SMS hash generation not working - identical messages not detected as duplicates")
+            else:
+                self.log_test("SMS Hash Generation", False, "❌ Failed to check duplicates for hash verification")
+        else:
+            self.log_test("SMS Hash Generation", False, "❌ Failed to send test SMS for hash verification")
+
     def test_error_handling(self):
         """Test error handling for various endpoints"""
         print("\n=== TESTING ERROR HANDLING ===")
