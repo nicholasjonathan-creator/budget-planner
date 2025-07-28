@@ -11,6 +11,8 @@ const WhatsAppIntegration = () => {
   const [phoneStatus, setPhoneStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showSMSDemo, setShowSMSDemo] = useState(false);
+  const [showConsolidationModal, setShowConsolidationModal] = useState(false);
+  const [consolidationPhoneNumber, setConsolidationPhoneNumber] = useState(null);
   const { toast } = useToast();
 
   useEffect(() => {
