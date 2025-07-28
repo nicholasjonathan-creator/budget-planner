@@ -108,7 +108,7 @@ class SMSService:
     async def reprocess_sms(self, sms_id: str) -> dict:
         """Reprocess a specific SMS message"""
         try:
-            sms_doc = await self.collection.find_one({"_id": sms_id})
+            sms_doc = await self.sms_collection.find_one({"_id": sms_id})
             if not sms_doc:
                 return {"success": False, "message": "SMS not found"}
             
