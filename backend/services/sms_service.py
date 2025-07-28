@@ -14,6 +14,10 @@ class SMSService:
         self.sms_collection = db.sms_transactions
         self.transactions_collection = db.transactions
         
+    def get_sms_hash(self, phone_number: str, message: str) -> str:
+        """Generate hash for SMS duplicate detection"""
+        return hashlib.md5(f"{phone_number}:{message}".encode()).hexdigest()
+        
     async def receive_sms(self, phone_number: str, message: str, user_id: str = None) -> dict:
         """Receive and process incoming SMS"""
         try:
