@@ -66,6 +66,14 @@ const PhoneVerification = ({ onVerificationComplete, onAccountConflict }) => {
       
       setStep('verify');
     } catch (error) {
+      // Check if error is related to account conflict
+      if (error.response?.status === 409 || error.response?.data?.detail?.includes('already registered')) {
+        // Extract phone number from error or use the one entered
+        const conflictPhone = error.response?.data?.phone_number || phoneNumber;
+        onAccountConflict && onAccountConflict(conflictPhone);
+        return;
+      }
+      
       toast({
         title: "Error",
         description: error.response?.data?.detail || "Failed to send verification code",
