@@ -417,7 +417,7 @@ const BudgetDashboard = () => {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-10' : 'grid-cols-9'} mb-6`}>
+          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-13' : 'grid-cols-12'} mb-6`}>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="analytics">
               <BarChart3 className="h-4 w-4 mr-2" />
@@ -438,6 +438,18 @@ const BudgetDashboard = () => {
               <MessageCircle className="h-4 w-4 mr-2" />
               WhatsApp
               <span className="ml-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">NEW</span>
+            </TabsTrigger>
+            <TabsTrigger value="sms">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              SMS
+            </TabsTrigger>
+            <TabsTrigger value="phone">
+              <Phone className="h-4 w-4 mr-2" />
+              Phone
+            </TabsTrigger>
+            <TabsTrigger value="account">
+              <User className="h-4 w-4 mr-2" />
+              Account
             </TabsTrigger>
             <TabsTrigger value="monitoring">
               Monitoring
