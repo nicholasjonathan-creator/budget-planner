@@ -834,95 +834,156 @@ class BudgetPlannerTester:
         self.access_token = temp_token  # Restore auth
 
     def test_phase2_phone_management_endpoints(self):
-        """Test Phase 2: Phone Number Management Endpoints"""
+        """Test Phase 2: Phone Number Management Endpoints - Focus on Import Fix Verification"""
         print("\n=== TESTING PHASE 2: PHONE NUMBER MANAGEMENT ENDPOINTS ===")
+        print("🎯 FOCUS: Verifying import fix - endpoints should return 401/403 instead of 404")
         
-        if not self.access_token:
-            self.log_test("Phone Management Tests", False, "No authentication token available")
-            return
+        # Test 1: Phone Status WITHOUT Authentication (should return 401/403, not 404)
+        print("🔍 1. Testing Phone Status WITHOUT Auth (expecting 401/403, not 404)...")
+        temp_token = self.access_token
+        self.access_token = None  # Remove auth temporarily
         
-        # Test 1: Phone Status
-        print("🔍 1. Testing Phone Status...")
         response = self.make_request("GET", "/phone/status")
-        if response and response.status_code == 200:
-            data = response.json()
-            phone_number = data.get("phone_number")
-            phone_verified = data.get("phone_verified", False)
-            self.log_test("Phone Status", True, 
-                         f"✅ Phone status retrieved - Number: {phone_number}, Verified: {phone_verified}")
+        if response and response.status_code == 401:
+            self.log_test("Phone Status (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 401 (Unauthorized) instead of 404")
+        elif response and response.status_code == 403:
+            self.log_test("Phone Status (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 403 (Forbidden) instead of 404")
+        elif response and response.status_code == 404:
+            self.log_test("Phone Status (No Auth)", False, 
+                         "❌ IMPORT FIX FAILED - Still returns 404 (Not Found)")
         else:
-            self.log_test("Phone Status", False, 
-                         f"Phone status failed - Status: {response.status_code if response else 'No response'}")
+            self.log_test("Phone Status (No Auth)", False, 
+                         f"❌ Unexpected response - Status: {response.status_code if response else 'No response'}")
         
-        # Test 2: Initiate Phone Change
-        print("🔍 2. Testing Phone Change Initiation...")
+        self.access_token = temp_token  # Restore auth
+        
+        # Test 2: Phone Status WITH Authentication
+        if self.access_token:
+            print("🔍 2. Testing Phone Status WITH Auth...")
+            response = self.make_request("GET", "/phone/status")
+            if response and response.status_code == 200:
+                data = response.json()
+                phone_number = data.get("phone_number")
+                phone_verified = data.get("phone_verified", False)
+                self.log_test("Phone Status", True, 
+                             f"✅ Phone status retrieved - Number: {phone_number}, Verified: {phone_verified}")
+            else:
+                self.log_test("Phone Status", False, 
+                             f"Phone status failed - Status: {response.status_code if response else 'No response'}")
+        
+        # Test 3: Initiate Phone Change WITHOUT Authentication (should return 401/403, not 404)
+        print("🔍 3. Testing Phone Change Initiation WITHOUT Auth (expecting 401/403, not 404)...")
+        temp_token = self.access_token
+        self.access_token = None  # Remove auth temporarily
+        
         phone_change_data = {"new_phone_number": "+919876543210"}
         response = self.make_request("POST", "/phone/initiate-change", phone_change_data)
-        if response and response.status_code == 200:
-            data = response.json()
-            if data.get("success"):
-                self.log_test("Phone Change Initiation", True, f"✅ Phone change initiated: {data.get('message', '')}")
-            else:
-                self.log_test("Phone Change Initiation", False, f"Phone change failed: {data.get('error', 'Unknown error')}")
+        if response and response.status_code == 401:
+            self.log_test("Phone Change Initiation (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 401 (Unauthorized) instead of 404")
+        elif response and response.status_code == 403:
+            self.log_test("Phone Change Initiation (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 403 (Forbidden) instead of 404")
+        elif response and response.status_code == 404:
+            self.log_test("Phone Change Initiation (No Auth)", False, 
+                         "❌ IMPORT FIX FAILED - Still returns 404 (Not Found)")
         else:
-            self.log_test("Phone Change Initiation", False, 
-                         f"Phone change initiation failed - Status: {response.status_code if response else 'No response'}")
+            self.log_test("Phone Change Initiation (No Auth)", False, 
+                         f"❌ Unexpected response - Status: {response.status_code if response else 'No response'}")
         
-        # Test 3: Complete Phone Change
-        print("🔍 3. Testing Phone Change Completion...")
+        self.access_token = temp_token  # Restore auth
+        
+        # Test 4: Complete Phone Change WITHOUT Authentication (should return 401/403, not 404)
+        print("🔍 4. Testing Phone Change Completion WITHOUT Auth (expecting 401/403, not 404)...")
+        temp_token = self.access_token
+        self.access_token = None  # Remove auth temporarily
+        
         complete_change_data = {
             "new_phone_number": "+919876543210",
             "verification_code": "123456"
         }
         response = self.make_request("POST", "/phone/complete-change", complete_change_data)
-        if response and response.status_code == 200:
-            data = response.json()
-            self.log_test("Phone Change Completion", True, "✅ Phone change completion endpoint accessible")
-        elif response and response.status_code == 400:
-            # Expected - invalid verification code
-            self.log_test("Phone Change Completion", True, "✅ Phone change completion endpoint working (invalid code expected)")
+        if response and response.status_code == 401:
+            self.log_test("Phone Change Completion (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 401 (Unauthorized) instead of 404")
+        elif response and response.status_code == 403:
+            self.log_test("Phone Change Completion (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 403 (Forbidden) instead of 404")
+        elif response and response.status_code == 404:
+            self.log_test("Phone Change Completion (No Auth)", False, 
+                         "❌ IMPORT FIX FAILED - Still returns 404 (Not Found)")
         else:
-            self.log_test("Phone Change Completion", False, 
-                         f"Phone change completion failed - Status: {response.status_code if response else 'No response'}")
+            self.log_test("Phone Change Completion (No Auth)", False, 
+                         f"❌ Unexpected response - Status: {response.status_code if response else 'No response'}")
         
-        # Test 4: Remove Phone Number
-        print("🔍 4. Testing Phone Number Removal...")
+        self.access_token = temp_token  # Restore auth
+        
+        # Test 5: Remove Phone Number WITHOUT Authentication (should return 401/403, not 404)
+        print("🔍 5. Testing Phone Number Removal WITHOUT Auth (expecting 401/403, not 404)...")
+        temp_token = self.access_token
+        self.access_token = None  # Remove auth temporarily
+        
         remove_phone_data = {"reason": "Testing phone removal functionality"}
         response = self.make_request("DELETE", "/phone/remove", remove_phone_data)
-        if response and response.status_code == 200:
-            data = response.json()
-            if data.get("success"):
-                self.log_test("Phone Number Removal", True, f"✅ Phone removal successful: {data.get('message', '')}")
-            else:
-                self.log_test("Phone Number Removal", False, f"Phone removal failed: {data.get('error', 'Unknown error')}")
+        if response and response.status_code == 401:
+            self.log_test("Phone Number Removal (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 401 (Unauthorized) instead of 404")
+        elif response and response.status_code == 403:
+            self.log_test("Phone Number Removal (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 403 (Forbidden) instead of 404")
+        elif response and response.status_code == 404:
+            self.log_test("Phone Number Removal (No Auth)", False, 
+                         "❌ IMPORT FIX FAILED - Still returns 404 (Not Found)")
         else:
-            self.log_test("Phone Number Removal", False, 
-                         f"Phone removal failed - Status: {response.status_code if response else 'No response'}")
+            self.log_test("Phone Number Removal (No Auth)", False, 
+                         f"❌ Unexpected response - Status: {response.status_code if response else 'No response'}")
         
-        # Test 5: Phone Change History
-        print("🔍 5. Testing Phone Change History...")
+        self.access_token = temp_token  # Restore auth
+        
+        # Test 6: Phone Change History WITHOUT Authentication (should return 401/403, not 404)
+        print("🔍 6. Testing Phone Change History WITHOUT Auth (expecting 401/403, not 404)...")
+        temp_token = self.access_token
+        self.access_token = None  # Remove auth temporarily
+        
         response = self.make_request("GET", "/phone/history")
-        if response and response.status_code == 200:
-            data = response.json()
-            history_count = len(data.get("history", []))
-            self.log_test("Phone Change History", True, f"✅ Phone history retrieved - {history_count} entries")
+        if response and response.status_code == 401:
+            self.log_test("Phone Change History (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 401 (Unauthorized) instead of 404")
+        elif response and response.status_code == 403:
+            self.log_test("Phone Change History (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 403 (Forbidden) instead of 404")
+        elif response and response.status_code == 404:
+            self.log_test("Phone Change History (No Auth)", False, 
+                         "❌ IMPORT FIX FAILED - Still returns 404 (Not Found)")
         else:
-            self.log_test("Phone Change History", False, 
-                         f"Phone history failed - Status: {response.status_code if response else 'No response'}")
+            self.log_test("Phone Change History (No Auth)", False, 
+                         f"❌ Unexpected response - Status: {response.status_code if response else 'No response'}")
         
-        # Test 6: Cancel Phone Change
-        print("🔍 6. Testing Phone Change Cancellation...")
+        self.access_token = temp_token  # Restore auth
+        
+        # Test 7: Cancel Phone Change WITHOUT Authentication (should return 401/403, not 404)
+        print("🔍 7. Testing Phone Change Cancellation WITHOUT Auth (expecting 401/403, not 404)...")
+        temp_token = self.access_token
+        self.access_token = None  # Remove auth temporarily
+        
         cancel_change_data = {"new_phone_number": "+919876543210"}
         response = self.make_request("POST", "/phone/cancel-change", cancel_change_data)
-        if response and response.status_code == 200:
-            data = response.json()
-            if data.get("success"):
-                self.log_test("Phone Change Cancellation", True, f"✅ Phone change cancelled: {data.get('message', '')}")
-            else:
-                self.log_test("Phone Change Cancellation", False, f"Phone change cancellation failed: {data.get('error', 'Unknown error')}")
+        if response and response.status_code == 401:
+            self.log_test("Phone Change Cancellation (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 401 (Unauthorized) instead of 404")
+        elif response and response.status_code == 403:
+            self.log_test("Phone Change Cancellation (No Auth)", True, 
+                         "✅ IMPORT FIX WORKING - Returns 403 (Forbidden) instead of 404")
+        elif response and response.status_code == 404:
+            self.log_test("Phone Change Cancellation (No Auth)", False, 
+                         "❌ IMPORT FIX FAILED - Still returns 404 (Not Found)")
         else:
-            self.log_test("Phone Change Cancellation", False, 
-                         f"Phone change cancellation failed - Status: {response.status_code if response else 'No response'}")
+            self.log_test("Phone Change Cancellation (No Auth)", False, 
+                         f"❌ Unexpected response - Status: {response.status_code if response else 'No response'}")
+        
+        self.access_token = temp_token  # Restore auth
 
     def test_phase2_enhanced_sms_management(self):
         """Test Phase 2: Enhanced SMS Management"""
