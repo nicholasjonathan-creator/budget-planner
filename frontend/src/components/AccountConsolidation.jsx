@@ -37,10 +37,7 @@ const AccountConsolidation = ({ phoneNumber, onConsolidationComplete }) => {
     setError(null);
     
     try {
-      const response = await apiCall(
-        `/account/consolidation/transfer-phone?phone_number=${encodeURIComponent(phoneNumber)}`,
-        'POST'
-      );
+      const response = await apiService.transferPhoneNumber(phoneNumber);
       
       if (response.success) {
         onConsolidationComplete && onConsolidationComplete('transfer', response);
