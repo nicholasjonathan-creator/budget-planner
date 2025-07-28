@@ -368,6 +368,37 @@ class ApiService {
     }
   }
 
+  // Account consolidation methods
+  async getConsolidationPreview(phoneNumber) {
+    try {
+      const response = await this.api.get(`/account/consolidation/preview?phone_number=${encodeURIComponent(phoneNumber)}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error getting consolidation preview:', error);
+      throw error;
+    }
+  }
+
+  async transferPhoneNumber(phoneNumber) {
+    try {
+      const response = await this.api.post(`/account/consolidation/transfer-phone?phone_number=${encodeURIComponent(phoneNumber)}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error transferring phone number:', error);
+      throw error;
+    }
+  }
+
+  async consolidateAccounts(phoneNumber) {
+    try {
+      const response = await this.api.post(`/account/consolidation/full-merge?phone_number=${encodeURIComponent(phoneNumber)}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error consolidating accounts:', error);
+      throw error;
+    }
+  }
+
 }
 
 export default new ApiService();
