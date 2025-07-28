@@ -1407,8 +1407,6 @@ async def complete_phone_change(
     Complete phone number change with verification
     """
     try:
-        from services.phone_management_service import phone_management_service
-        
         new_phone_number = request.get("new_phone_number")
         verification_code = request.get("verification_code")
         
