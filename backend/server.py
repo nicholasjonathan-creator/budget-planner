@@ -1302,8 +1302,6 @@ async def soft_delete_account(
     Soft delete account (deactivate but preserve data)
     """
     try:
-        from services.account_deletion_service import account_deletion_service
-        
         reason = request.get("reason", "User requested account deactivation")
         
         result = await account_deletion_service.soft_delete_account(current_user.id, reason)
