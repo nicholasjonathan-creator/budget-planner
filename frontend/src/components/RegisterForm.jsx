@@ -123,7 +123,7 @@ const RegisterForm = ({ onSwitchToLogin, onSuccess }) => {
           
           <div>
             <label htmlFor="password" className="block text-sm font-medium mb-2">
-              Password
+              Password *
             </label>
             <Input
               id="password"
