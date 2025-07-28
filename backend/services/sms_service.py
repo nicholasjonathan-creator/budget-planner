@@ -122,9 +122,9 @@ class SMSService:
     async def get_sms_stats(self) -> dict:
         """Get SMS processing statistics"""
         try:
-            total_sms = await self.collection.count_documents({})
-            processed_sms = await self.collection.count_documents({"processed": True})
-            failed_sms = await self.collection.count_documents({"processed": False})
+            total_sms = await self.sms_collection.count_documents({})
+            processed_sms = await self.sms_collection.count_documents({"processed": True})
+            failed_sms = await self.sms_collection.count_documents({"processed": False})
             
             return {
                 "total_sms": total_sms,
