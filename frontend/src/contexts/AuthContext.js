@@ -69,20 +69,14 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (email, username, password) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, username, password }),
+      // Use ApiService with proper error handling
+      const response = await ApiService.client.post('/auth/register', {
+        email,
+        username,
+        password
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Registration failed');
-      }
-
-      const data = await response.json();
+      const data = response.data;
       
       // Store token and user data in cookies
       Cookies.set('auth_token', data.access_token, { expires: 1 }); // 1 day
@@ -94,7 +88,8 @@ export const AuthProvider = ({ children }) => {
       return { success: true, user: data.user };
     } catch (error) {
       console.error('Registration error:', error);
-      return { success: false, error: error.message };
+      const errorMessage = error.response?.data?.detail || error.message || 'Registration failed';
+      return { success: false, error: errorMessage };
     }
   };
 
