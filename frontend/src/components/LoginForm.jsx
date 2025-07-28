@@ -99,6 +99,15 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
         </form>
         
         <div className="mt-4 text-center">
+          <button
+            onClick={() => setShowPasswordReset(true)}
+            className="text-blue-600 hover:text-blue-500 font-medium text-sm"
+          >
+            Forgot your password?
+          </button>
+        </div>
+        
+        <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?{' '}
             <button
