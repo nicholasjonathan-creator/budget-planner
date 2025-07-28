@@ -1252,6 +1252,11 @@ class BudgetPlannerTester:
             self.test_phone_verification()
             self.test_sms_processor_with_twilio()
             
+            # PRIORITY: Test account consolidation functionality
+            print("\n🔥 PRIORITY TESTING: ACCOUNT CONSOLIDATION FUNCTIONALITY")
+            print("=" * 60)
+            self.test_account_consolidation_functionality()
+            
             # Test phone number cleanup for the specific target phone
             print("\n🧹 PHONE NUMBER CLEANUP TESTING")
             print("=" * 40)
