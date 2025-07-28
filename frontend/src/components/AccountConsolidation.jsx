@@ -56,10 +56,7 @@ const AccountConsolidation = ({ phoneNumber, onConsolidationComplete }) => {
     setError(null);
     
     try {
-      const response = await apiCall(
-        `/account/consolidation/full-merge?phone_number=${encodeURIComponent(phoneNumber)}`,
-        'POST'
-      );
+      const response = await apiService.consolidateAccounts(phoneNumber);
       
       if (response.success) {
         onConsolidationComplete && onConsolidationComplete('consolidate', response);
