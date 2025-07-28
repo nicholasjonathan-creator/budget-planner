@@ -3,7 +3,7 @@ import { Phone, Shield, CheckCircle, AlertCircle, Clock, Trash2 } from 'lucide-r
 import apiService from '../services/api';
 import { useToast } from '../hooks/use-toast';
 
-const PhoneVerification = () => {
+const PhoneVerification = ({ onVerificationComplete, onAccountConflict }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState('input'); // 'input', 'verify', 'verified'
