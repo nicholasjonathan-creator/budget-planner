@@ -398,8 +398,8 @@ class BudgetPlannerTester:
                 self.log_test("WhatsApp Webhook", False, f"❌ WhatsApp webhook not accessible - Status: {response.status_code if response else 'No response'}")
     
     def test_phone_verification(self):
-        """Test phone verification system"""
-        print("\n=== TESTING PHONE VERIFICATION ===")
+        """Test phone verification system - FOCUS ON TWILIO INTEGRATION"""
+        print("\n=== TESTING PHONE VERIFICATION (TWILIO ENABLED) ===")
         
         if not self.access_token:
             self.log_test("Phone Tests", False, "No authentication token available")
@@ -410,18 +410,69 @@ class BudgetPlannerTester:
         if response and response.status_code == 200:
             data = response.json()
             verified = data.get("phone_verified", False)
-            self.log_test("Phone Status", True, f"Phone verification status: {verified}")
+            phone_number = data.get("phone_number")
+            self.log_test("Phone Status", True, f"Phone verification status: {verified}, Number: {phone_number}")
         else:
             self.log_test("Phone Status", False, "Failed to get phone status")
         
-        # Test sending verification (this will likely fail in production without proper setup)
+        # Test sending verification with Twilio credentials
         phone_data = {"phone_number": "+919876543210"}
         response = self.make_request("POST", "/phone/send-verification", phone_data)
         if response and response.status_code == 200:
-            self.log_test("Send Phone Verification", True, "Verification code sent successfully")
+            data = response.json()
+            success = data.get("success", False)
+            message = data.get("message", "")
+            demo_mode = data.get("demo_mode", False)
+            fallback_mode = data.get("fallback_mode", False)
+            
+            if success and not demo_mode and not fallback_mode:
+                self.log_test("Send Phone Verification", True, f"✅ TWILIO WORKING - {message}")
+            elif success and (demo_mode or fallback_mode):
+                self.log_test("Send Phone Verification", False, f"❌ TWILIO NOT CONFIGURED - Using fallback/demo mode: {message}")
+            else:
+                self.log_test("Send Phone Verification", False, f"❌ Phone verification failed: {message}")
         else:
-            # This is expected to fail in production without Twilio setup
-            self.log_test("Send Phone Verification", True, "Phone verification disabled (expected in production)")
+            error_msg = "Phone verification request failed"
+            if response:
+                try:
+                    error_data = response.json()
+                    error_msg = f"Phone verification failed: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    error_msg = f"Phone verification failed with status {response.status_code}"
+            self.log_test("Send Phone Verification", False, error_msg)
+        
+        # Test OTP verification endpoint (without actual OTP)
+        otp_data = {"otp": "123456"}  # Test OTP
+        response = self.make_request("POST", "/phone/verify-otp", otp_data)
+        if response:
+            if response.status_code == 400:
+                # Expected - invalid OTP but endpoint is working
+                try:
+                    error_data = response.json()
+                    error_detail = error_data.get('detail', '')
+                    if 'invalid' in error_detail.lower() or 'expired' in error_detail.lower():
+                        self.log_test("OTP Verification Endpoint", True, "✅ OTP verification endpoint working (invalid OTP expected)")
+                    else:
+                        self.log_test("OTP Verification Endpoint", False, f"❌ Unexpected OTP error: {error_detail}")
+                except:
+                    self.log_test("OTP Verification Endpoint", True, "✅ OTP verification endpoint accessible")
+            elif response.status_code == 200:
+                # Unexpected success with test OTP
+                self.log_test("OTP Verification Endpoint", False, "❌ Test OTP should not succeed")
+            else:
+                self.log_test("OTP Verification Endpoint", False, f"❌ OTP endpoint error: {response.status_code}")
+        else:
+            self.log_test("OTP Verification Endpoint", False, "❌ OTP verification endpoint not accessible")
+        
+        # Test resend OTP endpoint
+        response = self.make_request("POST", "/phone/resend-otp")
+        if response:
+            if response.status_code in [200, 400]:  # Either success or expected error
+                self.log_test("Resend OTP Endpoint", True, "✅ Resend OTP endpoint accessible")
+            else:
+                self.log_test("Resend OTP Endpoint", False, f"❌ Resend OTP endpoint error: {response.status_code}")
+        else:
+            self.log_test("Resend OTP Endpoint", False, "❌ Resend OTP endpoint not accessible")
     
     def test_budget_management(self):
         """Test budget limits functionality"""
