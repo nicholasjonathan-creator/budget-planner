@@ -1425,7 +1425,8 @@ class BudgetPlannerTester:
         critical_tests = [
             "Health Check", "Database Categories Access", "Database Metrics", 
             "Environment Detection", "User Registration", "WhatsApp Service Configuration",
-            "Twilio Configuration Status"
+            "Twilio Configuration Status", "Consolidation Preview", "Phone Number Transfer",
+            "Full Account Consolidation"
         ]
         
         for test_name in critical_tests:
