@@ -621,17 +621,93 @@ class BudgetPlannerTester:
         else:
             self.log_test("Unprocessed SMS", False, "Failed to get unprocessed SMS")
     
-    def test_whatsapp_status_without_auth(self):
-        """Test WhatsApp status endpoint without authentication"""
-        print("\n=== TESTING WHATSAPP STATUS (NO AUTH) ===")
+    def test_twilio_service_configuration(self):
+        """Test Twilio service configuration and environment variables"""
+        print("\n=== TESTING TWILIO SERVICE CONFIGURATION ===")
         
-        # Test monitoring WhatsApp status
+        # Test WhatsApp status for Twilio configuration details
+        response = self.make_request("GET", "/whatsapp/status")
+        if response and response.status_code == 200:
+            data = response.json()
+            whatsapp_number = data.get("whatsapp_number")
+            sandbox_code = data.get("sandbox_code")
+            status = data.get("status", "unknown")
+            
+            if whatsapp_number and whatsapp_number != "None":
+                self.log_test("Twilio WhatsApp Number", True, f"✅ TWILIO_WHATSAPP_NUMBER configured: {whatsapp_number}")
+            else:
+                self.log_test("Twilio WhatsApp Number", False, f"❌ TWILIO_WHATSAPP_NUMBER not configured: {whatsapp_number}")
+            
+            if sandbox_code:
+                self.log_test("Twilio Sandbox Code", True, f"✅ Sandbox code available: {sandbox_code}")
+            else:
+                self.log_test("Twilio Sandbox Code", False, "❌ Sandbox code not available")
+                
+            if status == "active":
+                self.log_test("Twilio Service Status", True, f"✅ Twilio service is ACTIVE")
+            else:
+                self.log_test("Twilio Service Status", False, f"❌ Twilio service status: {status}")
+        else:
+            self.log_test("Twilio Configuration Check", False, "Cannot check Twilio configuration")
+        
+        # Test monitoring endpoint for detailed Twilio status
         response = self.make_request("GET", "/monitoring/whatsapp-status")
         if response and response.status_code == 200:
             data = response.json()
-            self.log_test("WhatsApp Monitoring Status", True, "WhatsApp monitoring status retrieved")
+            
+            # Check for Twilio-specific configuration indicators
+            service_enabled = data.get("service_enabled", False)
+            twilio_configured = data.get("twilio_configured", False)
+            error_message = data.get("error", "")
+            
+            if "Twilio not configured" in error_message:
+                self.log_test("Twilio Configuration Status", False, f"❌ TWILIO NOT CONFIGURED: {error_message}")
+            elif "fallback mode" in error_message.lower():
+                self.log_test("Twilio Configuration Status", False, f"❌ TWILIO FALLBACK MODE: {error_message}")
+            elif service_enabled and twilio_configured:
+                self.log_test("Twilio Configuration Status", True, f"✅ TWILIO FULLY CONFIGURED")
+            elif service_enabled:
+                self.log_test("Twilio Configuration Status", True, f"✅ Service enabled, checking Twilio details...")
+            else:
+                self.log_test("Twilio Configuration Status", False, f"❌ Service not enabled: {data}")
         else:
-            self.log_test("WhatsApp Monitoring Status", False, "Failed to get WhatsApp monitoring status")
+            self.log_test("Twilio Monitoring Status", False, "Cannot check Twilio monitoring status")
+    
+    def test_sms_processor_with_twilio(self):
+        """Test SMS processing with Twilio integration"""
+        print("\n=== TESTING SMS PROCESSOR WITH TWILIO ===")
+        
+        if not self.access_token:
+            self.log_test("SMS Twilio Tests", False, "No authentication token available")
+            return
+        
+        # Test SMS stats to see if Twilio integration affects processing
+        response = self.make_request("GET", "/sms/stats")
+        if response and response.status_code == 200:
+            data = response.json()
+            self.log_test("SMS Stats with Twilio", True, f"SMS processing stats available: {data}")
+        else:
+            self.log_test("SMS Stats with Twilio", False, "SMS stats not available")
+        
+        # Test SMS simulation to see if it works with Twilio enabled
+        response = self.make_request("POST", "/sms/simulate?bank_type=hdfc")
+        if response and response.status_code == 200:
+            data = response.json()
+            self.log_test("SMS Simulation with Twilio", True, f"SMS simulation working with Twilio enabled")
+        else:
+            self.log_test("SMS Simulation with Twilio", False, "SMS simulation failed with Twilio enabled")
+        
+        # Test receiving SMS (simulated)
+        sms_data = {
+            "phone_number": "+919876543210",
+            "message": "HDFC Bank: Rs 500.00 debited from A/c **1234 on 15-Dec-23 at AMAZON INDIA. Avl Bal: Rs 15,000.00"
+        }
+        response = self.make_request("POST", "/sms/receive", sms_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            self.log_test("SMS Processing with Twilio", True, f"SMS processing working with Twilio enabled")
+        else:
+            self.log_test("SMS Processing with Twilio", False, "SMS processing failed with Twilio enabled")
     
     def test_production_environment_status(self):
         """Test production-specific endpoints and configurations"""
