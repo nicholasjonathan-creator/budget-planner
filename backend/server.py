@@ -1455,8 +1455,6 @@ async def get_phone_history(
     Get phone number change history
     """
     try:
-        from services.phone_management_service import phone_management_service
-        
         history = await phone_management_service.get_phone_history(current_user.id)
         
         return history
