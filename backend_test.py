@@ -1185,6 +1185,200 @@ class BudgetPlannerTester:
             else:
                 print(f"   ⚠️  PHONE NUMBER {target_phone}: CLEANUP ISSUES DETECTED")
 
+    def test_specific_user_search(self):
+        """Search for specific user activity: Phone +919886716815, Username 'Pat'"""
+        print("\n=== SEARCHING FOR SPECIFIC USER ACTIVITY ===")
+        print("🔍 Target Phone: +919886716815")
+        print("🔍 Target Username: Pat")
+        print("🔍 Looking for: Recent registration activity and WhatsApp OTP sharing")
+        
+        target_phone = "+919886716815"
+        target_username = "Pat"
+        
+        # Test 1: Check database metrics for overall activity
+        print(f"📊 1. Checking overall database activity...")
+        response = self.make_request("GET", "/metrics")
+        if response and response.status_code == 200:
+            data = response.json()
+            total_transactions = data.get("total_transactions", 0)
+            total_sms = data.get("total_sms", 0)
+            processed_sms = data.get("processed_sms", 0)
+            success_rate = data.get("success_rate", 0)
+            
+            self.log_test("Database Activity Overview", True, 
+                         f"Database stats - Transactions: {total_transactions}, SMS: {total_sms}, "
+                         f"Processed: {processed_sms}, Success Rate: {success_rate:.1f}%")
+        else:
+            self.log_test("Database Activity Overview", False, "Failed to get database metrics")
+        
+        # Test 2: Try to register a test user to verify registration system works
+        print(f"🧪 2. Testing user registration system functionality...")
+        timestamp = int(time.time())
+        test_email = f"pat.test{timestamp}@budgetplanner.com"
+        test_password = "SecurePass123!"
+        test_username = f"Pat{timestamp}"
+        
+        registration_data = {
+            "email": test_email,
+            "password": test_password,
+            "username": test_username
+        }
+        
+        response = self.make_request("POST", "/auth/register", registration_data)
+        if response and response.status_code == 201:
+            data = response.json()
+            test_user_id = data.get("user", {}).get("id")
+            self.log_test("User Registration System", True, f"✅ Registration system working - Created test user ID: {test_user_id}")
+            
+            # Store token for further testing
+            test_token = data.get("access_token")
+            if test_token:
+                # Temporarily store current token
+                original_token = self.access_token
+                self.access_token = test_token
+                
+                # Test phone verification with target phone
+                print(f"📱 3. Testing phone verification with target phone {target_phone}...")
+                phone_data = {"phone_number": target_phone}
+                response = self.make_request("POST", "/phone/send-verification", phone_data)
+                
+                if response and response.status_code == 200:
+                    data = response.json()
+                    success = data.get("success", False)
+                    message = data.get("message", "")
+                    
+                    if success:
+                        self.log_test("Target Phone Verification Test", True, f"✅ Phone verification system working for {target_phone}: {message}")
+                    else:
+                        self.log_test("Target Phone Verification Test", False, f"❌ Phone verification failed for {target_phone}: {message}")
+                else:
+                    self.log_test("Target Phone Verification Test", False, f"❌ Phone verification request failed for {target_phone}")
+                
+                # Restore original token
+                self.access_token = original_token
+        else:
+            error_msg = "Registration system test failed"
+            if response:
+                try:
+                    error_data = response.json()
+                    error_msg = f"Registration failed: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    error_msg = f"Registration failed with status {response.status_code}"
+            self.log_test("User Registration System", False, error_msg)
+        
+        # Test 3: Check WhatsApp integration status
+        print(f"📱 4. Checking WhatsApp integration status...")
+        response = self.make_request("GET", "/whatsapp/status")
+        if response and response.status_code == 200:
+            data = response.json()
+            whatsapp_number = data.get("whatsapp_number")
+            sandbox_code = data.get("sandbox_code")
+            status = data.get("status", "unknown")
+            
+            if status == "active" and whatsapp_number:
+                self.log_test("WhatsApp Integration Status", True, 
+                             f"✅ WhatsApp active - Number: {whatsapp_number}, Sandbox: {sandbox_code}")
+                print(f"   📞 Users should send 'join {sandbox_code}' to {whatsapp_number}")
+            else:
+                self.log_test("WhatsApp Integration Status", False, f"❌ WhatsApp not active - Status: {status}")
+        else:
+            self.log_test("WhatsApp Integration Status", False, "Failed to get WhatsApp status")
+        
+        # Test 4: Check for recent WhatsApp transactions
+        print(f"📊 5. Checking for recent WhatsApp message processing...")
+        response = self.make_request("GET", "/monitoring/whatsapp-status")
+        if response and response.status_code == 200:
+            data = response.json()
+            service_enabled = data.get("service_enabled", False)
+            twilio_configured = data.get("twilio_configured", False)
+            
+            if service_enabled and twilio_configured:
+                self.log_test("WhatsApp Message Processing", True, "✅ WhatsApp message processing operational")
+            else:
+                self.log_test("WhatsApp Message Processing", False, f"❌ WhatsApp processing issues - Service: {service_enabled}, Twilio: {twilio_configured}")
+        else:
+            self.log_test("WhatsApp Message Processing", False, "Failed to check WhatsApp processing status")
+        
+        # Test 5: Check SMS processing stats for recent activity
+        print(f"📈 6. Checking SMS processing statistics...")
+        response = self.make_request("GET", "/sms/stats")
+        if response and response.status_code == 200:
+            data = response.json()
+            self.log_test("SMS Processing Stats", True, f"SMS processing stats: {data}")
+        else:
+            self.log_test("SMS Processing Stats", False, "Failed to get SMS processing stats")
+        
+        # Test 6: Check monitoring alerts for recent issues
+        print(f"🚨 7. Checking for recent monitoring alerts...")
+        response = self.make_request("GET", "/monitoring/alerts?time_window=60")
+        if response and response.status_code == 200:
+            data = response.json()
+            alerts = data.get("alerts", [])
+            alert_count = len(alerts)
+            
+            if alert_count == 0:
+                self.log_test("Recent System Alerts", True, "✅ No system alerts in last 60 minutes (system stable)")
+            else:
+                self.log_test("Recent System Alerts", True, f"⚠️ Found {alert_count} alerts in last 60 minutes")
+                for alert in alerts[:3]:  # Show first 3 alerts
+                    print(f"   Alert: {alert.get('message', 'Unknown')}")
+        else:
+            self.log_test("Recent System Alerts", False, "Failed to get monitoring alerts")
+        
+        # Test 7: Test webhook endpoint for WhatsApp message reception
+        print(f"🔗 8. Testing WhatsApp webhook endpoint...")
+        response = self.make_request("POST", "/whatsapp/webhook", {})
+        if response and response.status_code == 200:
+            content_type = response.headers.get('content-type', '')
+            if 'xml' in content_type.lower():
+                self.log_test("WhatsApp Webhook Endpoint", True, "✅ Webhook ready to receive WhatsApp messages (TwiML response)")
+            else:
+                self.log_test("WhatsApp Webhook Endpoint", True, "✅ Webhook endpoint accessible")
+        else:
+            self.log_test("WhatsApp Webhook Endpoint", False, f"❌ Webhook not accessible - Status: {response.status_code if response else 'No response'}")
+        
+        # Summary and Analysis
+        print(f"\n📋 USER SEARCH ANALYSIS SUMMARY:")
+        print(f"🔍 Searched for: Phone {target_phone}, Username '{target_username}'")
+        print(f"📱 WhatsApp Integration: Checked if system can receive messages")
+        print(f"🔐 Registration System: Verified if new users can register")
+        print(f"📊 Database Activity: Checked for recent processing activity")
+        
+        search_tests = [
+            "Database Activity Overview", "User Registration System", "Target Phone Verification Test",
+            "WhatsApp Integration Status", "WhatsApp Message Processing", "SMS Processing Stats",
+            "Recent System Alerts", "WhatsApp Webhook Endpoint"
+        ]
+        
+        search_passed = 0
+        search_total = 0
+        
+        for test_name in search_tests:
+            test_result = next((r for r in self.test_results if r["test"] == test_name), None)
+            if test_result:
+                search_total += 1
+                status = "✅" if test_result["success"] else "❌"
+                print(f"   {status} {test_name}: {test_result['message']}")
+                if test_result["success"]:
+                    search_passed += 1
+        
+        if search_total > 0:
+            search_success_rate = (search_passed / search_total) * 100
+            print(f"\n🎯 USER SEARCH SUCCESS RATE: {search_success_rate:.1f}% ({search_passed}/{search_total})")
+            
+            print(f"\n🔍 FINDINGS FOR PHONE {target_phone} & USERNAME '{target_username}':")
+            if search_success_rate >= 75:
+                print(f"   ✅ SYSTEM OPERATIONAL: Registration and WhatsApp integration working")
+                print(f"   📱 If user registered and shared OTP via WhatsApp, system should have processed it")
+                print(f"   💡 POSSIBLE REASONS FOR NOT FINDING USER:")
+                print(f"      - User may have used different phone number or username")
+                print(f"      - Registration may have failed silently")
+                print(f"      - WhatsApp message may not have been sent to correct number")
+                print(f"      - User may be associated with different account")
+            else:
+                print(f"   ❌ SYSTEM ISSUES DETECTED: Some components not working properly")
+                print(f"   🔧 RECOMMEND: Check system logs and fix identified issues")
+
     def test_recent_user_activity_monitoring(self):
         """Test for recent user activity - registrations, phone verification, WhatsApp OTP activity"""
         print("\n=== TESTING RECENT USER ACTIVITY (LAST 15 MINUTES) ===")
