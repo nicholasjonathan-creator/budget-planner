@@ -1046,10 +1046,10 @@ class BudgetPlannerTester:
             self.log_test("Malformed JSON Handling", False, f"Error testing malformed JSON: {e}")
     
     def run_all_tests(self):
-        """Run all test suites with focus on Twilio integration"""
-        print("🚀 Starting Comprehensive Backend Testing - TWILIO INTEGRATION FOCUS")
+        """Run all test suites with focus on WhatsApp message processing verification"""
+        print("🚀 Starting Comprehensive Backend Testing - WHATSAPP MESSAGE PROCESSING VERIFICATION")
         print(f"🎯 Target: {self.base_url}")
-        print("🔧 Focus: Testing Twilio WhatsApp and Phone Verification after credential deployment")
+        print("🔧 Focus: Verifying WhatsApp message processing for phone +919886763496")
         print("=" * 80)
         
         start_time = time.time()
@@ -1059,7 +1059,12 @@ class BudgetPlannerTester:
         self.test_database_connectivity()
         self.test_production_environment_status()
         
-        # PRIORITY: Test Twilio integration immediately
+        # PRIORITY: Test WhatsApp message processing verification
+        print("\n🔥 PRIORITY TESTING: WHATSAPP MESSAGE PROCESSING VERIFICATION")
+        print("=" * 60)
+        self.test_whatsapp_message_processing_verification()
+        
+        # PRIORITY: Test Twilio integration status
         print("\n🔥 PRIORITY TESTING: TWILIO INTEGRATION STATUS")
         print("=" * 50)
         self.test_twilio_service_configuration()
@@ -1078,6 +1083,11 @@ class BudgetPlannerTester:
             self.test_phone_verification()
             self.test_sms_processor_with_twilio()
             
+            # Test phone number cleanup for the specific target phone
+            print("\n🧹 PHONE NUMBER CLEANUP TESTING")
+            print("=" * 40)
+            self.test_phone_number_cleanup()
+            
             # Test other functionality
             self.test_transaction_management()
             self.test_sms_parsing_system()
@@ -1091,12 +1101,12 @@ class BudgetPlannerTester:
         self.test_monitoring_system()
         self.test_error_handling()
         
-        # Generate summary with Twilio focus
+        # Generate summary with WhatsApp message processing focus
         end_time = time.time()
         duration = end_time - start_time
         
         print("\n" + "=" * 80)
-        print("📊 TEST SUMMARY - TWILIO INTEGRATION FOCUS")
+        print("📊 TEST SUMMARY - WHATSAPP MESSAGE PROCESSING VERIFICATION")
         print("=" * 80)
         
         total_tests = len(self.test_results)
@@ -1108,6 +1118,38 @@ class BudgetPlannerTester:
         print(f"❌ Failed: {failed_tests}")
         print(f"⏱️  Duration: {duration:.2f} seconds")
         print(f"📈 Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        
+        # WHATSAPP MESSAGE PROCESSING SUMMARY
+        print("\n📱 WHATSAPP MESSAGE PROCESSING STATUS:")
+        whatsapp_processing_tests = [
+            "WhatsApp Service Configuration", "Database Activity Check", "WhatsApp Webhook Endpoint",
+            "Target Phone Association", "WhatsApp Transaction Processing", "WhatsApp Processing Flow",
+            "SMS Processing Stats"
+        ]
+        
+        whatsapp_passed = 0
+        whatsapp_total = 0
+        
+        for test_name in whatsapp_processing_tests:
+            test_result = next((r for r in self.test_results if r["test"] == test_name), None)
+            if test_result:
+                whatsapp_total += 1
+                status = "✅" if test_result["success"] else "❌"
+                print(f"   {status} {test_name}: {test_result['message']}")
+                if test_result["success"]:
+                    whatsapp_passed += 1
+        
+        if whatsapp_total > 0:
+            whatsapp_success_rate = (whatsapp_passed / whatsapp_total) * 100
+            print(f"\n🎯 WHATSAPP MESSAGE PROCESSING SUCCESS RATE: {whatsapp_success_rate:.1f}% ({whatsapp_passed}/{whatsapp_total})")
+            
+            if whatsapp_success_rate >= 80:
+                print("   ✅ WHATSAPP MESSAGE PROCESSING: FULLY OPERATIONAL")
+                print("   📱 Phone +919886763496 can forward messages to +14155238886")
+            elif whatsapp_success_rate >= 60:
+                print("   ⚠️  WHATSAPP MESSAGE PROCESSING: PARTIALLY WORKING")
+            else:
+                print("   ❌ WHATSAPP MESSAGE PROCESSING: ISSUES DETECTED")
         
         # TWILIO-SPECIFIC SUMMARY
         print("\n🔧 TWILIO INTEGRATION STATUS:")
@@ -1140,6 +1182,34 @@ class BudgetPlannerTester:
             else:
                 print("   ❌ TWILIO INTEGRATION: NOT WORKING")
         
+        # PHONE NUMBER CLEANUP SUMMARY
+        print("\n🧹 PHONE NUMBER CLEANUP STATUS (+919886763496):")
+        cleanup_tests = [
+            "Target Phone Check", "Phone Number Unlink", "Fresh Phone Verification", 
+            "Fresh OTP Verification Flow", "WhatsApp Integration Ready"
+        ]
+        
+        cleanup_passed = 0
+        cleanup_total = 0
+        
+        for test_name in cleanup_tests:
+            test_result = next((r for r in self.test_results if r["test"] == test_name), None)
+            if test_result:
+                cleanup_total += 1
+                status = "✅" if test_result["success"] else "❌"
+                print(f"   {status} {test_name}: {test_result['message']}")
+                if test_result["success"]:
+                    cleanup_passed += 1
+        
+        if cleanup_total > 0:
+            cleanup_success_rate = (cleanup_passed / cleanup_total) * 100
+            print(f"\n🎯 PHONE CLEANUP SUCCESS RATE: {cleanup_success_rate:.1f}% ({cleanup_passed}/{cleanup_total})")
+            
+            if cleanup_success_rate >= 80:
+                print("   ✅ PHONE NUMBER +919886763496: READY FOR FRESH TESTING")
+            else:
+                print("   ⚠️  PHONE NUMBER +919886763496: CLEANUP ISSUES DETECTED")
+        
         if failed_tests > 0:
             print("\n🔍 FAILED TESTS:")
             for result in self.test_results:
@@ -1149,7 +1219,8 @@ class BudgetPlannerTester:
         print("\n🎯 CRITICAL FUNCTIONALITY STATUS:")
         critical_tests = [
             "Health Check", "Database Categories Access", "Database Metrics", 
-            "Environment Detection", "User Registration", "Twilio Configuration Status"
+            "Environment Detection", "User Registration", "WhatsApp Service Configuration",
+            "Twilio Configuration Status"
         ]
         
         for test_name in critical_tests:
