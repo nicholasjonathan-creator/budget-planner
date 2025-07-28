@@ -44,6 +44,14 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
     }
   };
 
+  if (showPasswordReset) {
+    return (
+      <PasswordReset 
+        onBackToLogin={() => setShowPasswordReset(false)} 
+      />
+    );
+  }
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
