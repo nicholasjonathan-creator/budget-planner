@@ -97,6 +97,42 @@ const WhatsAppIntegration = () => {
         </p>
       </div>
 
+      {/* WhatsApp Setup Information (Always visible) */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold text-blue-800 flex items-center">
+              <MessageCircle className="h-5 w-5 mr-2" />
+              WhatsApp Number
+            </h3>
+            <p className="text-2xl font-bold text-blue-900 mt-2">
+              +14155238886
+            </p>
+            <p className="text-sm text-blue-700 mt-1">
+              Save this number as "Budget Planner" in your contacts
+            </p>
+          </div>
+          <button
+            onClick={() => copyToClipboard('+14155238886')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-700 transition-colors"
+          >
+            <Copy className="h-4 w-4 mr-2" />
+            Copy Number
+          </button>
+        </div>
+        
+        <div className="mt-4 p-4 bg-blue-100 rounded-lg">
+          <h4 className="font-semibold text-blue-900 mb-2">Quick Setup:</h4>
+          <ol className="text-sm text-blue-800 space-y-1">
+            <li>1. Save +14155238886 as "Budget Planner" in contacts</li>
+            <li>2. Send "join distance-living" to activate WhatsApp</li>
+            <li>3. Verify your phone number below</li>
+            <li>4. Forward bank SMS messages to this number</li>
+            <li>5. Transactions will be processed automatically!</li>
+          </ol>
+        </div>
+      </div>
+
       {/* Phone Verification Required */}
       {!phoneStatus?.phone_verified && (
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
