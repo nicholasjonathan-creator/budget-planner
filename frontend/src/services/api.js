@@ -399,6 +399,97 @@ class ApiService {
     }
   }
 
+  // Password reset methods
+  async forgotPassword(email) {
+    try {
+      const response = await this.client.post('/auth/forgot-password', { email });
+      return response.data;
+    } catch (error) {
+      console.error('Error initiating password reset:', error);
+      throw error;
+    }
+  }
+
+  async validateResetToken(token) {
+    try {
+      const response = await this.client.post('/auth/validate-reset-token', { token });
+      return response.data;
+    } catch (error) {
+      console.error('Error validating reset token:', error);
+      throw error;
+    }
+  }
+
+  async resetPassword(token, newPassword) {
+    try {
+      const response = await this.client.post('/auth/reset-password', { 
+        token, 
+        new_password: newPassword 
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      throw error;
+    }
+  }
+
+  async changePassword(currentPassword, newPassword) {
+    try {
+      const response = await this.client.post('/auth/change-password', {
+        current_password: currentPassword,
+        new_password: newPassword
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error changing password:', error);
+      throw error;
+    }
+  }
+
+  // SMS management methods
+  async getSMSList(page = 1, limit = 20) {
+    try {
+      const response = await this.client.get(`/sms/list?page=${page}&limit=${limit}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error getting SMS list:', error);
+      throw error;
+    }
+  }
+
+  async deleteSMS(smsId) {
+    try {
+      const response = await this.client.delete(`/sms/${smsId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting SMS:', error);
+      throw error;
+    }
+  }
+
+  async findDuplicateSMS() {
+    try {
+      const response = await this.client.post('/sms/find-duplicates');
+      return response.data;
+    } catch (error) {
+      console.error('Error finding duplicate SMS:', error);
+      throw error;
+    }
+  }
+
+  async resolveDuplicateSMS(smsHash, keepSmsId) {
+    try {
+      const response = await this.client.post('/sms/resolve-duplicates', {
+        sms_hash: smsHash,
+        keep_sms_id: keepSmsId
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error resolving duplicate SMS:', error);
+      throw error;
+    }
+  }
+
 }
 
 export default new ApiService();
