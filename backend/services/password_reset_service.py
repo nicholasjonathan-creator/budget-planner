@@ -60,7 +60,7 @@ class PasswordResetService:
             return {
                 "success": True,
                 "message": "Password reset link sent to your email",
-                "token": reset_token,  # Remove this in production
+                "reset_token": reset_token,  # Remove this in production
                 "expires_in_hours": self.token_expiry_hours
             }
             
