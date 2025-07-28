@@ -139,7 +139,7 @@ const RegisterForm = ({ onSwitchToLogin, onSuccess }) => {
           
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
-              Confirm Password
+              Confirm Password *
             </label>
             <Input
               id="confirmPassword"
