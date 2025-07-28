@@ -4,6 +4,7 @@ from models.transaction import SMSTransaction
 from services.sms_parser import SMSTransactionParser
 from database import db
 import logging
+import hashlib
 
 logger = logging.getLogger(__name__)
 
