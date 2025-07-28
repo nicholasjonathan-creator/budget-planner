@@ -10,6 +10,7 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   const { login } = useAuth();
 
   const handleSubmit = async (e) => {
