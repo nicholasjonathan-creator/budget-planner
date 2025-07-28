@@ -1191,32 +1191,49 @@ class BudgetPlannerTester:
         self.generate_phase2_summary()
 
     def generate_phase2_summary(self):
-        """Generate Phase 2 specific test summary"""
+        """Generate Phase 2 Import Fix Verification Summary"""
         print("\n" + "=" * 80)
-        print("📊 PHASE 2 DEPLOYMENT VERIFICATION SUMMARY")
+        print("📊 PHASE 2 IMPORT FIX VERIFICATION SUMMARY")
+        print("🎯 FOCUS: Verifying endpoints return 401/403 instead of 404")
         print("=" * 80)
         
-        # Phase 2 test categories
-        phase2_categories = {
-            "Account Deletion Endpoints": [
-                "Account Deletion Preview", "Soft Delete Account", 
-                "Hard Delete Account", "Account Data Export"
+        # Import Fix Verification Categories
+        import_fix_categories = {
+            "Account Deletion Import Fix": [
+                "Account Deletion Preview (No Auth)", "Hard Delete Account (No Auth)", 
+                "Account Data Export (No Auth)"
             ],
-            "Phone Number Management Endpoints": [
-                "Phone Status", "Phone Change Initiation", "Phone Change Completion",
-                "Phone Number Removal", "Phone Change History", "Phone Change Cancellation"
+            "Phone Management Import Fix": [
+                "Phone Status (No Auth)", "Phone Change Initiation (No Auth)", 
+                "Phone Change Completion (No Auth)", "Phone Number Removal (No Auth)",
+                "Phone Change History (No Auth)", "Phone Change Cancellation (No Auth)"
             ],
-            "Enhanced SMS Management": [
-                "SMS List Retrieval", "Test SMS Creation", "SMS Duplicate Detection",
-                "Duplicate SMS Creation", "SMS Duplicate Resolution", "SMS Deletion Endpoint",
-                "SMS Hash Generation"
+            "Enhanced SMS Management Import Fix": [
+                "SMS List Retrieval (No Auth)", "SMS Duplicate Detection (No Auth)",
+                "SMS Duplicate Resolution (No Auth)", "SMS Deletion (No Auth)"
             ]
         }
         
-        overall_passed = 0
-        overall_total = 0
+        # Functional Test Categories (with auth)
+        functional_categories = {
+            "Account Deletion Functionality": [
+                "Account Deletion Preview", "Soft Delete Account"
+            ],
+            "Phone Management Functionality": [
+                "Phone Status"
+            ],
+            "Enhanced SMS Management Functionality": [
+                "SMS List Retrieval", "SMS Duplicate Detection", "SMS Hash Generation"
+            ]
+        }
         
-        for category, test_names in phase2_categories.items():
+        import_fix_passed = 0
+        import_fix_total = 0
+        functional_passed = 0
+        functional_total = 0
+        
+        print("\n🔧 IMPORT FIX VERIFICATION RESULTS:")
+        for category, test_names in import_fix_categories.items():
             print(f"\n🔍 {category}:")
             category_passed = 0
             category_total = 0
@@ -1225,28 +1242,61 @@ class BudgetPlannerTester:
                 test_result = next((r for r in self.test_results if r["test"] == test_name), None)
                 if test_result:
                     category_total += 1
-                    overall_total += 1
+                    import_fix_total += 1
                     status = "✅" if test_result["success"] else "❌"
                     print(f"   {status} {test_name}: {test_result['message']}")
                     if test_result["success"]:
                         category_passed += 1
-                        overall_passed += 1
+                        import_fix_passed += 1
             
             if category_total > 0:
                 category_success_rate = (category_passed / category_total) * 100
                 print(f"   📈 {category} Success Rate: {category_success_rate:.1f}% ({category_passed}/{category_total})")
         
-        # Overall Phase 2 summary
-        if overall_total > 0:
-            overall_success_rate = (overall_passed / overall_total) * 100
-            print(f"\n🎯 OVERALL PHASE 2 SUCCESS RATE: {overall_success_rate:.1f}% ({overall_passed}/{overall_total})")
+        print("\n🚀 FUNCTIONAL TESTING RESULTS:")
+        for category, test_names in functional_categories.items():
+            print(f"\n🔍 {category}:")
+            category_passed = 0
+            category_total = 0
             
-            if overall_success_rate >= 80:
-                print("   ✅ PHASE 2 DEPLOYMENT: FULLY OPERATIONAL")
-            elif overall_success_rate >= 60:
-                print("   ⚠️  PHASE 2 DEPLOYMENT: PARTIALLY WORKING")
+            for test_name in test_names:
+                test_result = next((r for r in self.test_results if r["test"] == test_name), None)
+                if test_result:
+                    category_total += 1
+                    functional_total += 1
+                    status = "✅" if test_result["success"] else "❌"
+                    print(f"   {status} {test_name}: {test_result['message']}")
+                    if test_result["success"]:
+                        category_passed += 1
+                        functional_passed += 1
+            
+            if category_total > 0:
+                category_success_rate = (category_passed / category_total) * 100
+                print(f"   📈 {category} Success Rate: {category_success_rate:.1f}% ({category_passed}/{category_total})")
+        
+        # Overall Import Fix Summary
+        if import_fix_total > 0:
+            import_fix_success_rate = (import_fix_passed / import_fix_total) * 100
+            print(f"\n🎯 IMPORT FIX SUCCESS RATE: {import_fix_success_rate:.1f}% ({import_fix_passed}/{import_fix_total})")
+            
+            if import_fix_success_rate >= 80:
+                print("   ✅ IMPORT FIX: FULLY SUCCESSFUL - Endpoints return proper auth errors")
+            elif import_fix_success_rate >= 60:
+                print("   ⚠️  IMPORT FIX: PARTIALLY SUCCESSFUL - Some endpoints still return 404")
             else:
-                print("   ❌ PHASE 2 DEPLOYMENT: CRITICAL ISSUES DETECTED")
+                print("   ❌ IMPORT FIX: FAILED - Most endpoints still return 404")
+        
+        # Overall Functional Summary
+        if functional_total > 0:
+            functional_success_rate = (functional_passed / functional_total) * 100
+            print(f"\n🚀 FUNCTIONAL SUCCESS RATE: {functional_success_rate:.1f}% ({functional_passed}/{functional_total})")
+            
+            if functional_success_rate >= 80:
+                print("   ✅ PHASE 2 FUNCTIONALITY: FULLY OPERATIONAL")
+            elif functional_success_rate >= 60:
+                print("   ⚠️  PHASE 2 FUNCTIONALITY: PARTIALLY WORKING")
+            else:
+                print("   ❌ PHASE 2 FUNCTIONALITY: CRITICAL ISSUES DETECTED")
         
         # Authentication status
         auth_tests = ["User Registration", "User Login", "Protected Route Access"]
@@ -1269,6 +1319,17 @@ class BudgetPlannerTester:
         if health_total > 0:
             health_success_rate = (health_passed / health_total) * 100
             print(f"🏥 SERVICE HEALTH: {health_success_rate:.1f}% ({health_passed}/{health_total})")
+        
+        # Final Deployment Status
+        print(f"\n🎯 PHASE 2 DEPLOYMENT STATUS:")
+        if import_fix_success_rate >= 80 and functional_success_rate >= 60:
+            print("   ✅ DEPLOYMENT SUCCESSFUL - Import fix working, Phase 2 features operational")
+        elif import_fix_success_rate >= 80:
+            print("   ⚠️  DEPLOYMENT PARTIALLY SUCCESSFUL - Import fix working, but functionality issues")
+        elif functional_success_rate >= 60:
+            print("   ⚠️  DEPLOYMENT PARTIALLY SUCCESSFUL - Some functionality working, but import issues remain")
+        else:
+            print("   ❌ DEPLOYMENT FAILED - Critical import and functionality issues")
         
         print("\n" + "=" * 80)
         """Test WhatsApp message processing verification for +919886763496"""
