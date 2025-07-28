@@ -1321,8 +1321,6 @@ async def hard_delete_account(
     Hard delete account (complete removal of all data)
     """
     try:
-        from services.account_deletion_service import account_deletion_service
-        
         reason = request.get("reason", "User requested complete account deletion")
         confirmation = request.get("confirmation")
         
