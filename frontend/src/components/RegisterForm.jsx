@@ -7,10 +7,11 @@ import { toast } from '../hooks/use-toast';
 
 const RegisterForm = ({ onSwitchToLogin, onSuccess }) => {
   const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState(''); // Optional field
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showUsernameField, setShowUsernameField] = useState(false);
   const { register } = useAuth();
 
   const handleSubmit = async (e) => {
